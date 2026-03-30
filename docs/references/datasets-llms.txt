@@ -1,0 +1,29 @@
+# Datasets (LLMs)
+
+Purpose: Track dataset origins and expected local paths for reproducible runs.
+
+## ToolBench
+- Source: OpenBMB ToolBench repository.
+- Local expected path: `experiments/toolbench/data/data/`.
+- Required subpaths:
+  - `test_query/`
+  - `toolenv/tools/`
+  - `answer/`
+- Notes: Retriever cache may be downloaded via `entrypoint.sh`.
+
+## ALFWorld
+- Source: ALFWorld official dataset/download command.
+- Local cache: `~/.cache/alfworld`.
+- Notes: Dataset can be auto-downloaded or manually fetched.
+
+## Oasis
+- Source: Oasis sub-project under `experiments/oasis_watermark/oasis/`.
+- Notes: Managed as isolated dependency tree.
+
+## RLNC/Semantic Rewriting Inputs
+- RLNC configs: `experiments/rlnc_trajectory/*.json`.
+- Semantic rewriting samples: `experiments/semantic_rewriting/data/`.
+
+## TODO
+- TODO: Add checksums and frozen snapshot references.
+- TODO: Add minimal sample datasets for CI smoke runs.

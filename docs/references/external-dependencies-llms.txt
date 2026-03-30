@@ -1,0 +1,43 @@
+# External Dependencies (LLMs)
+
+Purpose: Machine-readable reference for dependency sources used by AgentMark.
+
+## Python Runtime And Package Sources
+- Python version baseline: >= 3.9 (see pyproject and README).
+- Conda environment file: `environment.yml`.
+- Pip dependencies: `requirements.txt`.
+- Build metadata: `pyproject.toml`.
+
+## Core Python Packages
+- openai
+- fastapi
+- uvicorn
+- torch
+- numpy
+- scipy
+- pandas
+- pyyaml
+- requests
+- tenacity
+- transformers
+- sentence-transformers
+- tiktoken
+
+## Frontend And Tooling
+- React + TypeScript + Vite
+- ESLint + TypeScript ESLint
+- Tailwind CSS + PostCSS
+- Package manifest: `dashboard/package.json`
+
+## Container And Deployment
+- Dockerfile at repository root.
+- Compose files: `docker-compose.yml`, `docker-compose.prod.yml`.
+- Entrypoint script with retriever cache bootstrap: `entrypoint.sh`.
+
+## Isolation Notes
+- `experiments/oasis_watermark/oasis/` has its own dependency universe.
+- `experiments/toolbench/MarkLLM/` has experimental model dependencies.
+
+## TODO
+- TODO: Add exact tested version matrix for production runs.
+- TODO: Add OS-specific package caveats.
