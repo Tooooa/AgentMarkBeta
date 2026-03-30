@@ -12,7 +12,7 @@ interface StepCardProps {
     isErased: boolean;
     showWatermarkDetails?: boolean;
     showDistribution?: boolean;
-    displayIndex?: number; // 用于显示的步骤序号，如果不提供则使用 step.stepIndex
+    displayIndex?: number; // Step number for display, if not provided, use step.stepIndex
     variant?: 'default' | 'add_agent';
 }
 
@@ -34,7 +34,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
     const { t, locale } = useI18n();
     const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-    // 使用 displayIndex 如果提供了，否则使用 step.stepIndex
+    // Use displayIndex if provided, otherwise use step.stepIndex
     const stepNumber = displayIndex !== undefined ? displayIndex : step.stepIndex;
 
     const { sortedDistribution, bins } = React.useMemo(() => {
@@ -177,7 +177,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                         className={`h-full relative ${showWatermarkDetails ? 'flex-1' : 'w-1/2 cursor-pointer hover:bg-white/50 transition-colors rounded-lg'}`}
                                         onClick={!showWatermarkDetails ? () => setIsDetailOpen(true) : undefined}
                                     >
-                                        {/* 选中指示手指 */}
+                                        {/* Selection indicator finger */}
                                         {sortedDistribution.findIndex(d => d.isSelected) !== -1 && (
                                             <div
                                                 className="absolute top-0 z-10 w-4 h-4"
@@ -186,17 +186,17 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                                     transform: 'translateX(-50%) rotate(90deg)'
                                                 }}
                                             >
-                                                <img src="/手指.svg" alt="selected" className="w-full h-full" />
+                                                <img src="/finger.svg" alt="selected" className="w-full h-full" />
                                             </div>
                                         )}
-                                        <ResponsiveContainer width="99%" height="100%">
+                                        <ResponsiveContainer width="99%" height="100%" debounce={50}>
                                             <BarChart data={sortedDistribution} margin={{ top: 20, right: 5, left: 5, bottom: 5 }}>
-                                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                                                {/* Slicing Lines */}
-                                                {sortedDistribution.map((d, i) => (
+                                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} isAnimationActive={false} />
+                                                {/* Only show a few reference lines to avoid performance issues */}
+                                                {sortedDistribution.slice(0, 5).map((d, i) => (
                                                     <ReferenceLine key={`line-${i}`} y={d.prob} stroke="#cbd5e1" strokeDasharray="3 3" />
                                                 ))}
-                                                <Bar dataKey="prob" radius={[2, 2, 0, 0]} maxBarSize={60}>
+                                                <Bar dataKey="prob" radius={[2, 2, 0, 0]} maxBarSize={60} isAnimationActive={false}>
                                                     {sortedDistribution.map((entry, index) => (
                                                         <Cell
                                                             key={`c-${index}`}
@@ -206,7 +206,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                                 </Bar>
                                             </BarChart>
                                         </ResponsiveContainer>
-                                        {/* 为 baseline 模式也添加放大按钮 */}
+                                        {/* Add zoom button for baseline mode as well */}
                                         {!showWatermarkDetails && (
                                             <button onClick={(e) => { e.stopPropagation(); setIsDetailOpen(true); }} className={`absolute top-0 right-0 p-1 hover:bg-white rounded shadow-sm transition-colors z-10 ${isAddAgent ? 'text-amber-500' : 'text-indigo-500'
                                                 }`}>
@@ -221,7 +221,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
 
                                             {/* Chart 2: Bins */}
                                             <div className="flex-1 h-full relative">
-                                                {/* 选中指示手指 */}
+                                                {/* Selection indicator finger */}
                                                 {bins.findIndex(b => b.isTarget) !== -1 && (
                                                     <div
                                                         className="absolute top-0 z-10 w-4 h-4"
@@ -230,13 +230,13 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                                             transform: 'translateX(-50%) rotate(90deg)'
                                                         }}
                                                     >
-                                                        <img src="/手指.svg" alt="selected" className="w-full h-full" />
+                                                        <img src="/finger.svg" alt="selected" className="w-full h-full" />
                                                     </div>
                                                 )}
-                                                <ResponsiveContainer width="99%" height="100%">
+                                                <ResponsiveContainer width="99%" height="100%" debounce={50}>
                                                     <BarChart data={bins} margin={{ top: 20, right: 5, left: 5, bottom: 5 }}>
-                                                        <Tooltip cursor={{ fill: 'transparent' }} content={() => null} />
-                                                        <Bar dataKey="weight" radius={[2, 2, 0, 0]} maxBarSize={60}>
+                                                        <Tooltip cursor={{ fill: 'transparent' }} content={() => null} isAnimationActive={false} />
+                                                        <Bar dataKey="weight" radius={[2, 2, 0, 0]} maxBarSize={60} isAnimationActive={false}>
                                                             {bins.map((e, idx) => (
                                                                 <Cell
                                                                     key={`b-${idx}`}
