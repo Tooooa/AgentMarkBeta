@@ -1,0 +1,31 @@
+name: Architecture and Docs Guard
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run docs guard
+        run: python scripts/guards/check_docs_health.py
+
+      - name: Run architecture guard
+        run: python scripts/guards/check_architecture.py
+
+      - name: Run guard effectiveness check
+        run: python scripts/guards/check_guard_effectiveness.py
+
+      - name: Run convention guard
+        run: python scripts/guards/check_repo_conventions.py
