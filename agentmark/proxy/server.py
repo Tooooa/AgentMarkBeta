@@ -11,22 +11,22 @@ Usage:
     uvicorn agentmark.proxy.server:app --host 0.0.0.0 --port 8000
 
 Client side (minimal change):
-    export OPENAI_BASE_URL=http://localhost:8000/v1   # 或直接替换调用地址
-    export OPENAI_API_KEY=<对方原有 key>              # 我们不使用，但保持兼容
+    export OPENAI_BASE_URL=http://localhost:8000/v1   # Or replace the call address directly
+    export OPENAI_API_KEY=<original key>              # Not used by us, but kept for compatibility
 
-POST /v1/chat/completions 兼容 OpenAI 风格请求：
+POST /v1/chat/completions compatible with OpenAI style requests:
     {
       "model": "...",
       "messages": [...],
       "temperature": 0.2,
       "max_tokens": 300,
-      "candidates": ["A","B","C"],   # 可选，显式提供候选
-      "context": "task||step1"       # 可选，水印解码用
+      "candidates": ["A","B","C"],   # Optional, explicitly provide candidates
+      "context": "task||step1"       # Optional, for watermark decoding
     }
 
-响应：
-    原始 LLM 响应字段 + watermark 字段（包含 action/action_args/probabilities_used/frontend_data/decoded_bits）。
-    原始 content 不做修改，方便向后兼容；消费者可读取 watermark 部分。
+Response:
+    Original LLM response fields + watermark field (contains action/action_args/probabilities_used/frontend_data/decoded_bits).
+    Original content is not modified for backward compatibility; consumers can read the watermark section.
 """
 
 from __future__ import annotations
@@ -34,6 +34,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 import uuid
 from collections import OrderedDict
 from typing import Optional, List, Dict, Any, Tuple
@@ -63,6 +64,7 @@ class Message(BaseModel):
     role: str
     content: Optional[str] = None
     tool_call_id: Optional[str] = None
+    tool_calls: Optional[List[Any]] = None
 
 
 def _message_to_dict(message: Message) -> Dict[str, Any]:
@@ -257,7 +259,7 @@ def _inject_prompt(
     msgs.extend([_message_to_dict(m) for m in messages])
 
     if candidates:
-        user_lines = "候选动作：\n" + "\n".join(f"- {c}" for c in candidates)
+        user_lines = "Candidate actions:\n" + "\n".join(f"- {c}" for c in candidates)
         tool_lines = ""
         if tools:
             tool_specs = []
@@ -275,7 +277,7 @@ def _inject_prompt(
                     else:
                         tool_specs.append(f"- {name}(...)")
             if tool_specs:
-                tool_lines = "\n可用工具参数：\n" + "\n".join(tool_specs)
+                tool_lines = "\nAvailable tool parameters:\n" + "\n".join(tool_specs)
         # Append to last user message, or add new user message if none
         for m in reversed(msgs):
             if m["role"] == "user":
@@ -286,8 +288,9 @@ def _inject_prompt(
     else:
         # Bootstrap mode: ask LLM to propose candidates + probabilities
         bootstrap_note = (
-            "未提供候选动作，请先生成一组合理的候选动作，并在 action_weights 中给出每个候选的概率。"
-            "候选应为短语/动作名称，数量适中（3-8个）。"
+            "No candidate actions provided. Please first generate a set of reasonable candidate actions, "
+            "and provide the probability for each candidate in 'action_weights'."
+            "Candidates should be phrases/action names, in a moderate quantity (3-8)."
         )
         msgs[0]["content"] += "\n" + bootstrap_note
     # Record mode inside first system for transparency
@@ -458,17 +461,21 @@ def _extract_candidates(req: CompletionRequest, system_agentmark: Dict[str, Any]
                 name = tool.get("function", {}).get("name") or tool.get("name")
                 if name:
                     candidates.append(name)
+    # Always add a finish option for chat-based agents
+    candidates.append("finish")
+
     if candidates:
         mode = "tools"
         return _normalize_candidates(candidates), mode
 
     # 2) system agentmark metadata
+    # ... (rest is same, just need to be careful with indentation/context)
     sys_candidates = _coerce_candidates(system_agentmark.get("candidates"))
     if sys_candidates:
         mode = "system"
         return _normalize_candidates(sys_candidates), mode
 
-    # 3) extra_body.agentmark.candidates or top-level candidates
+    # 3) extra_body...
     eb = req.extra_body or {}
     agentmark_cfg = eb.get("agentmark") or {}
     eb_candidates = _coerce_candidates(
@@ -478,8 +485,10 @@ def _extract_candidates(req: CompletionRequest, system_agentmark: Dict[str, Any]
         mode = "extra_body"
         return _normalize_candidates(list(eb_candidates)), mode
 
-    # 4) prompt extraction could be added here (regex), skipped for now
+    # 4) ...
     return [], mode
+
+
 
 
 def _extract_context(
@@ -502,6 +511,12 @@ def _extract_context(
 def proxy_completion(req: CompletionRequest, request: Request):
     try:
         instr = get_prompt_instruction()
+        # Append ToolBench specific instructions for Finish
+        instr += (
+             "\nIMPORTANT: If the user's query is a greeting, chat, or general knowledge question "
+             "that does not require the available tools, you MUST explicitly choose 'finish' "
+             "with a polite and helpful response in 'final_answer'."
+        )
         system_agentmark = _extract_agentmark_from_system(req.messages)
         candidates, mode = _extract_candidates(req, system_agentmark)
         session_key = _get_session_key(req, system_agentmark, request)
@@ -594,6 +609,49 @@ def proxy_completion(req: CompletionRequest, request: Request):
             logger.exception("watermark processing failed")
             raise HTTPException(status_code=500, detail=f"watermark processing failed: {e}")
 
+        if result["action"] == "finish":
+             _debug_print("action_decision", "Selected finish. Using generated response args.")
+             
+             # Extract response content from the args generated by the scoring model
+             finish_args = result.get("action_args") or {}
+             # ToolBench uses 'final_answer', Swarm might simpler 'content' or 'response'
+             final_content = (
+                 finish_args.get("response") 
+                 or finish_args.get("content") 
+                 or finish_args.get("final_answer") 
+                 or "Task completed."
+             )
+             
+             # Construct a standard assistant message with content (terminates Swarm loop)
+             resp_dict = {
+                 "id": f"chatcmpl-{uuid.uuid4()}",
+                 "object": "chat.completion",
+                 "created": int(time.time()),
+                 "model": target_model,
+                 "choices": [{
+                     "index": 0,
+                     "message": {
+                         "role": "assistant",
+                         "content": str(final_content),
+                     },
+                     "finish_reason": "stop"
+                 }],
+                 "usage": scoring_resp.usage.model_dump() if scoring_resp.usage else None
+             }
+             
+             resp_dict["watermark"] = {
+                  "action": "finish",
+                  "decoded_bits": wm.decode(
+                      result["probabilities_used"], 
+                      "finish", 
+                      context=context_used, 
+                      round_num=round_used
+                  ),
+                  "mode": "explicit_finish",
+                  "round_num": round_used
+             }
+             return resp_dict
+
         action_args_map = _build_action_args_map(
             result.get("raw_payload") or {},
             candidates,
@@ -685,5 +743,17 @@ def proxy_completion(req: CompletionRequest, request: Request):
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         logger.exception("proxy_completion failed")
         raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=8000)
+    args, unknown = parser.parse_known_args()
+    
+    uvicorn.run(app, host=args.host, port=args.port)
