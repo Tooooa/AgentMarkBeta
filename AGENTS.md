@@ -37,3 +37,11 @@ AgentMark 是一个用于 LLM Agent 行为水印、验证与可视化评测的�
 1. 阅读 [docs/index.md](./docs/index.md) 和 [ARCHITECTURE.md](./ARCHITECTURE.md) 了解边界与路径。
 2. 运行 `python scripts/guards/check_docs_health.py` 与 `python scripts/guards/check_architecture.py` 做基线检查。
 3. 按任务所在子域进入 `docs/design-docs/`、`docs/operations/` 或 `docs/exec-plans/active/` 获取执行上下文。
+
+## 水印开发指南 (Watermark Dev Guide)
+- **SDK 接入**：使用 `agentmark.sdk.watermarker.AgentWatermarker`。
+- **算法选择**：
+    - 缺省使用 `algorithm='rank'` (RankStego)，它是弱非对称方案，推荐用于所有生产和实验场景。
+    - 若需复现旧版论文结果或极小动作空间对比，可用 `algorithm='differential'`。
+- **PRG 同步**：若修改 `core/watermark_sampler.py`，必须确保编码与解码端的 `generate_random()` 调用序列严格对齐，建议使用 `rt_sync` 机制。
+- **添加新算法**：按 `Dist` -> `Step` -> `Adapter` -> `SDK Branch` 的顺序进行分层实现。

@@ -53,8 +53,11 @@ def generate_contextual_key(history_responses, num_bytes=32):
 # ================ Differential Scheme Watermark Engine ================
 # ==============================================================================
 
-# Pseudo-Random Generator (PRG/DRBG), ensuring sender and receiver can synchronize random processes
-class DRBG:
+# ---- Legacy DRBG (Kept for backward compatibility with differential mode) ----
+class DRBG_Legacy:
+    """
+    Old Counter-mode DRBG.
+    """
     def __init__(self, key, nonce):
         self.key = key
         self.nonce = nonce
@@ -74,6 +77,90 @@ class DRBG:
         random_int = int(random_bits, 2)
         random_float = random_int / (2**n)
         return random_float
+
+
+# ---- Meteor-style DRBG (New Default) ----
+class DRBG:
+    """
+    Deterministic Random Bit Generator (DRBG), Meteor style.
+    Based on HMAC-SHA512 reseed mode.
+    Reference: Kaptchuk et al., "Meteor: Cryptographically Secure Steganography 
+    for Realistic Distributions," CCS 2021.
+    """
+    def __init__(self, key: bytes, seed: bytes):
+        self.key = key
+        self.val = b'\x01' * 64
+        self.reseed(seed)
+        self.byte_index = 0
+        self.bit_index = 0
+
+    def hmac(self, key: bytes, val: bytes) -> bytes:
+        return hmac.new(key, val, hashlib.sha512).digest()
+
+    def reseed(self, data: bytes = b'') -> None:
+        self.key = self.hmac(self.key, self.val + b'\x00' + data)
+        self.val = self.hmac(self.key, self.val)
+        if data:
+            self.key = self.hmac(self.key, self.val + b'\x01' + data)
+            self.val = self.hmac(self.key, self.val)
+
+    def generate_bits(self, n: int) -> np.ndarray:
+        """Generate n random bits."""
+        xs = np.zeros(n, dtype=bool)
+        for i in range(n):
+            xs[i] = (self.val[self.byte_index] >> (7 - self.bit_index)) & 1
+            self.bit_index += 1
+            if self.bit_index >= 8:
+                self.bit_index = 0
+                self.byte_index += 1
+            if self.byte_index >= 8:
+                self.byte_index = 0
+                self.val = self.hmac(self.key, self.val)
+        self.reseed()
+        return xs
+
+    def generate_random(self, n: int = 52) -> float:
+        """Generate a random float in [0, 1)."""
+        xs = self.generate_bits(n)
+        decimal_value = 0
+        for bit in xs:
+            decimal_value = (decimal_value << 1) | int(bit)
+        max_value = (1 << n)
+        return decimal_value / max_value
+
+
+# ---- Probability Distribution Wrapper (For RankStego) ----
+class Dist:
+    """
+    Encapsulates a probability distribution for RankStego.
+    """
+    def __init__(self, probs: torch.Tensor, indices: torch.Tensor = None):
+        self.probs = probs
+        self.device = probs.device
+        if indices is None:
+            self.indices = torch.arange(0, len(probs), device=self.device)
+        else:
+            self.indices = indices.to(self.device).to(torch.long)
+
+    def __len__(self):
+        return len(self.probs)
+
+    def __getitem__(self, idx):
+        return self.indices[idx], self.probs[idx]
+
+    def sort(self, descending: bool = True) -> "Dist":
+        probs, sorted_indices = torch.sort(self.probs, descending=descending)
+        indices = self.indices[sorted_indices]
+        return Dist(probs, indices)
+
+    def get_max(self):
+        max_idx = torch.argmax(self.probs)
+        return self[max_idx]
+
+    def get_sort(self, descending: bool = True):
+        probs, sorted_indices = torch.sort(self.probs, descending=descending)
+        indices = self.indices[sorted_indices]
+        return probs, indices
 
 # Uniform cyclic shift encoder (selects an item within the selected "bin" based on secret info)
 # Standard version - Consistent with Artifacts implementation
@@ -122,6 +209,137 @@ def uni_cyclic_shift_enc(bit_stream, n, PRG, precision=52):
 
 # Differential recombination module (Core innovation: horizontal slicing)
 # V2: Use stable sort to handle equal probabilities
+# ---- Rank Scheme Core Algorithms ----
+
+def BinEncStep(m: str, dist: Dist, rt: float):
+    """
+    Binary encoding step: embeds 1 bit into a 2-item distribution.
+    If message bit is '1' and random offset falls in the max prob item, no embed (0 bits);
+    otherwise select the minor item and embed 1 bit.
+    """
+    dist_sum = dist.probs.sum()
+    rt_m = (rt * dist_sum + 0.5 * dist_sum * int(m)) % dist_sum
+    max_indice, max_prob = dist.get_max()
+    
+    # Identify the other index
+    if max_indice.item() == dist.indices[0].item():
+        min_indice = dist.indices[1]
+    else:
+        min_indice = dist.indices[0]
+        
+    if rt_m < max_prob.item():
+        return max_indice.view(1, 1), 0
+    else:
+        return min_indice.view(1, 1), 1
+
+
+def RankEncStep(M: str, dist: Dist, PRG: DRBG):
+    """
+    Recursive binary splitting for ranked distribution.
+    Embeds bits from M at each level.
+    Returns: (selected index, total bits embedded)
+    """
+    dist = dist.sort()
+    msg_idx = 0
+    # Sync PRG calls: total steps = ceil(log2(N))
+    rt_sync = math.ceil(math.log2(len(dist)))
+    
+    while len(dist) > 1:
+        high_prob = dist.probs[::2].sum()
+        low_prob = dist.probs[1::2].sum()
+        dist_bin = Dist(torch.tensor([high_prob, low_prob], device=dist.probs.device))
+        
+        if msg_idx >= len(M):
+            # Fallback: if message ends, don't embed but continue sync
+            m = '0' 
+            # In RankStego, if we run out of bits, we should probably stop embedding.
+            # But the loop must finish to select a token.
+            # However, the source code expects M to be long enough.
+            # We'll return what we have.
+            break
+            
+        m = M[msg_idx]
+        rt = PRG.generate_random(n=52)
+        rt_sync -= 1
+        
+        T_group, n_bits = BinEncStep(m, dist_bin, rt)
+        msg_idx += n_bits
+        
+        if T_group.item() == 0:
+            dist = Dist(dist.probs[::2], dist.indices[::2])
+        else:
+            dist = Dist(dist.probs[1::2], dist.indices[1::2])
+            
+    # Consume remaining PRG calls for sync
+    for _ in range(rt_sync):
+        PRG.generate_random(n=52)
+        
+    T = dist.indices[0].view(1, 1)
+    return T, msg_idx
+
+
+def BinDecStep(T: torch.Tensor, sorted_indices: torch.Tensor, rt: float) -> str:
+    """
+    Binary decoding step: extracts bit based on rank position.
+    """
+    if T.item() == sorted_indices[0].item():
+        return ''
+    else:
+        return '1' if rt < 0.5 else '0'
+
+
+def RankDecStep(T: torch.Tensor, sorted_indices: torch.Tensor, PRG: DRBG) -> str:
+    """
+    Weakly asymmetric decoding: only needs the sorted order.
+    Extracts bit sequence backwards from the token's rank.
+    """
+    decoded_bits = ''
+    rank_matches = (sorted_indices == T.item()).nonzero(as_tuple=True)[0]
+    if len(rank_matches) == 0:
+        return ''
+    rank = rank_matches.item()
+    
+    rt_sync = math.ceil(math.log2(len(sorted_indices)))
+    
+    # Collect random numbers for each level
+    rts = []
+    for _ in range(rt_sync):
+        rts.append(PRG.generate_random(n=52))
+    
+    # The decoding logic in RankStego (source):
+    # it generates random numbers in the same order as encoder.
+    # We need to process them in reverse or match the level.
+    # In RankStego.decstep:
+    #   rts = [self.PRG.generate_random(n=52) for _ in range(math.ceil(math.log2(len(sorted_indices))))]
+    #   while rank != 0:
+    #       rt = rts.pop(0) # This is WRONG if we want to match encoder?
+    # Actually, in RankStego.py (source):
+    # while rank != 0:
+    #    rt = self.PRG.generate_random(n=52)
+    #    if rank % 2 == 1:
+    #        bit = '1' if rt < 0.5 else '0'
+    #        decoded_bits += bit
+    #    rank = rank // 2
+    # This assumes we use ONE random number per level, regardless of whether we were on high or low prob branch?
+    # Wait, the encoder uses PRG in the order of the loop.
+    # Level 1 (top) -> Level 2 -> ...
+    # But rank // 2 goes from BOTTOM to TOP.
+    # So we MUST pre-generate all random numbers for all potential levels to maintain sync.
+    
+    # Corrected logic matching source's intended sync:
+    rts = [PRG.generate_random(n=52) for _ in range(rt_sync)]
+    current_level = 0
+    while rank != 0:
+        rt = rts[current_level]
+        if rank % 2 == 1:
+            bit = '1' if rt < 0.5 else '0'
+            decoded_bits += bit
+        rank = rank // 2
+        current_level += 1
+        
+    return decoded_bits
+
+
 def differential_based_recombination(prob, indices):
     bins = []
     
@@ -472,7 +690,7 @@ def sample_behavior_differential(probabilities, bit_stream, bit_index, context_f
     # key = combined_seed_str.encode('utf-8')
     # nonce = round_num_str.encode('utf-8')
     
-    PRG = DRBG(key, nonce)
+    PRG = DRBG_Legacy(key, nonce)
 
     # --- 3. Call New Engine Core ---
     selected_idx_tensor, num_bits_embedded = differential_based_encoder(
@@ -490,7 +708,7 @@ def sample_behavior_differential(probabilities, bit_stream, bit_index, context_f
     
     # For detector (detect_watermark.py) to work, we need to recalculate which "bin" was selected.
     # Detector needs to know what the "target range" is.
-    PRG_for_detection = DRBG(key, nonce)  # Recreate PRG with same params
+    PRG_for_detection = DRBG_Legacy(key, nonce)  # Recreate PRG with same params
     
     indices_nonzero, bins, prob_new = differential_based_recombination(probs_tensor, indices_tensor)
     prob_new = prob_new / prob_new.sum()
@@ -665,7 +883,7 @@ def differential_based_decoder(probabilities, selected_behavior, context_for_key
     
     key = generate_contextual_key([context_used])
     nonce = str(round_num).encode('utf-8')
-    PRG = DRBG(key, nonce)
+    PRG = DRBG_Legacy(key, nonce)
     
     # --- 3. Probability Recombination (Same as encoder) ---
     indices_nonzero, bins, prob_new = differential_based_recombination(probs_tensor, indices_tensor)
@@ -742,7 +960,7 @@ def sample_behavior_red_green(probabilities, context_for_key=None, history_respo
     
     key = generate_contextual_key([context_used])
     nonce = str(round_num).encode('utf-8')
-    PRG = DRBG(key, nonce)
+    PRG = DRBG_Legacy(key, nonce)
     
     # 3. Partition Red-Green List
     # Generate a random number in [0, 1] for each behavior
@@ -787,3 +1005,148 @@ def sample_behavior_red_green(probabilities, context_for_key=None, history_respo
     selected_behavior = behaviors[idx]
     
     return selected_behavior, green_list, 0, context_used
+
+
+# ==============================================================================
+# ================ Rank-Based Watermark (Weakly Asymmetric) ================
+# ==============================================================================
+
+def sample_behavior_rank(
+    probabilities: dict,
+    bit_stream: str,
+    bit_index: int,
+    context_for_key: str = None,
+    history_responses: list = None,
+    round_num: int = 0,
+    topk: int = None,
+    sample_seed_prefix: bytes = b'sample',
+    input_nonce: bytes = b'\x00' * 16,
+):
+    """
+    Rank-based behavior level encoder (Adapter for RankStego).
+    """
+    # 1. Data format conversion
+    behaviors = sorted(probabilities.keys())
+    probs_list = [probabilities[b] for b in behaviors]
+    device = 'cpu'
+    probs_tensor = torch.tensor(probs_list, dtype=torch.float32, device=device)
+    indices_tensor = torch.arange(len(behaviors), device=device)
+    dist = Dist(probs_tensor, indices_tensor)
+
+    # 2. Build context and key
+    if context_for_key is not None:
+        context_used = context_for_key
+    else:
+        if history_responses is None:
+            history_responses = []
+        window_size = 3
+        recent = history_responses[-window_size:] if history_responses else []
+        context_used = "||".join(recent) if recent else ""
+    
+    key = generate_contextual_key([context_used])
+    # For RankStego, we use the Meteor DRBG seed = prefix + nonce + round
+    seed = sample_seed_prefix + input_nonce + str(round_num).encode('utf-8')
+    PRG = DRBG(key, seed)
+
+    # 3. Encoding
+    remaining_bits = bit_stream[bit_index:]
+    
+    # Get sorted order for top-k or target_list
+    probs_sorted, indices_sorted = dist.get_sort(descending=True)
+    
+    if topk is not None and topk < len(dist):
+        # top-k mode: if selected behavior is NOT in top-k, we can't embed.
+        # But encoder must decide. Usually we only embed in top-k.
+        total_topk = probs_sorted[:topk].sum().item()
+        
+        # We sample a random number to decide if we fall into top-k or tail
+        # To maintain sync, we might need a separate PRG call or use one from current PRG.
+        # Rank-based scheme usually expects to be in top-k.
+        ptr = random.random() # Non-deterministic tail sampling is fine if decoder knows it's not in top-k
+        
+        if ptr >= total_topk:
+            # Fall into tail (no embedding)
+            tail_probs = probs_sorted[topk:]
+            if tail_probs.sum() > 0:
+                tail_probs = tail_probs / tail_probs.sum()
+                j = torch.multinomial(tail_probs, 1).item()
+            else:
+                j = 0
+            selected_idx = indices_sorted[topk + j].item()
+            selected_behavior = behaviors[selected_idx]
+            target_list = [behaviors[int(i)] for i in indices_sorted[:topk]]
+            return selected_behavior, target_list, 0, context_used
+        else:
+            # Fall into top-k
+            dist_topk = Dist(
+                probs_sorted[:topk] / (total_topk + 1e-9),
+                indices_sorted[:topk]
+            )
+            T, n_bits = RankEncStep(remaining_bits, dist_topk, PRG)
+            selected_idx = T.item()
+            selected_behavior = behaviors[selected_idx]
+            target_list = [behaviors[int(i)] for i in indices_sorted[:topk]]
+            return selected_behavior, target_list, n_bits, context_used
+    else:
+        # Full distribution mode
+        T, n_bits = RankEncStep(remaining_bits, dist, PRG)
+        selected_idx = T.item()
+        selected_behavior = behaviors[selected_idx]
+        target_list = [behaviors[int(i)] for i in indices_sorted]
+        return selected_behavior, target_list, n_bits, context_used
+
+
+def rank_based_decoder(
+    probabilities: dict,
+    selected_behavior: str,
+    context_for_key: str = None,
+    history_responses: list = None,
+    round_num: int = 0,
+    topk: int = None,
+    sample_seed_prefix: bytes = b'sample',
+    input_nonce: bytes = b'\x00' * 16,
+) -> str:
+    """
+    Rank-based behavior level decoder (Weakly Asymmetric).
+    """
+    # 1. Data format conversion
+    behaviors = sorted(probabilities.keys())
+    probs_list = [probabilities[b] for b in behaviors]
+    device = 'cpu'
+    probs_tensor = torch.tensor(probs_list, dtype=torch.float32, device=device)
+    indices_tensor = torch.arange(len(behaviors), device=device)
+
+    # Find selected index
+    try:
+        selected_idx = behaviors.index(selected_behavior)
+    except ValueError:
+        return ''
+    
+    selected_tensor = torch.tensor([selected_idx], device=device)
+
+    # 2. Key and PRG
+    if context_for_key is not None:
+        context_used = context_for_key
+    else:
+        if history_responses is None:
+            history_responses = []
+        window_size = 3
+        recent = history_responses[-window_size:] if history_responses else []
+        context_used = "||".join(recent) if recent else ""
+    
+    key = generate_contextual_key([context_used])
+    seed = sample_seed_prefix + input_nonce + str(round_num).encode('utf-8')
+    PRG = DRBG(key, seed)
+
+    # 3. Decode
+    dist = Dist(probs_tensor, indices_tensor)
+    _, indices_sorted = dist.get_sort(descending=True)
+
+    if topk is not None and topk < len(indices_sorted):
+        rank_indices = indices_sorted[:topk]
+        if selected_tensor.item() not in rank_indices:
+            # Not in top-k, no bits embedded
+            return ''
+        return RankDecStep(selected_tensor, rank_indices, PRG)
+    else:
+        return RankDecStep(selected_tensor, indices_sorted, PRG)

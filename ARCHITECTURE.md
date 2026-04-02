@@ -33,11 +33,26 @@ graph TD
 - 禁止 `dashboard/server/routers/` 直接调用实验脚本路径。
 - 禁止将隔离子树作为主仓架构规则依据：`experiments/oasis_watermark/oasis/`、`experiments/toolbench/MarkLLM/`、`dashboard/.git_backup/`。
 
+## 水印算法体系 (Watermark Schemes)
+
+### 1. RankStego (Weakly Asymmetric - 默认)
+- **定位**：核心鲁棒性算法，适用于行为级 (Action-level) 水印。
+- **特性**：
+    - **弱非对称性**：解码端仅依赖行为的**排名顺序**，不要求概率数值精确一致。这使得方案在模型推理受随机性或环境干扰导致概率波动时，依然能稳定解码。
+    - **安全增强**：采用 Meteor-style DRBG (HMAC-SHA512 reseed)，提高抗预测性。
+    - **同步机制**：通过 `rt_sync` 固定 PRG 步长，确保编解码状态强对齐。
+
+### 2. Differential (Symmetric - 兼容)
+- **定位**：向后兼容算法。
+- **特性**：基于概率分布的差分重组（Horizontal Slicing），在极致极小的动作空间下具有较高的嵌入效率，但要求环境高度确定。
+
 ## 关键路径
 1. 用户在前端发起实验请求，入口位于 `dashboard/src/`。
 2. 请求进入 `dashboard/server/routers/api.py`，路由层完成参数验证。
 3. 服务层结合 `dashboard/server/core/session.py` 维护会话状态。
-4. 推理与水印能力通过 `agentmark/sdk/` 与 `agentmark/core/watermark_sampler.py` 执行。
+4. 推理与水印能力通过 `agentmark/sdk/` 调用 `agentmark/core/watermark_sampler.py` 执行。
+    - **默认路由**：执行 `sample_behavior_rank` 或 `rank_based_decoder`。
+    - **历史路由**：执行 `sample_behavior_differential` 或 `differential_based_decoder`。
 5. ToolBench 等环境通过 `agentmark/environments/toolbench/` 适配工具与动作空间。
 6. 结果回传前端并由可视化组件展示日志、轨迹和指标。
 

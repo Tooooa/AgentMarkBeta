@@ -19,6 +19,8 @@ import torch
 from agentmark.core.watermark_sampler import (
     sample_behavior_differential,
     differential_based_decoder,
+    sample_behavior_rank,
+    rank_based_decoder,
     differential_based_recombination,
     generate_contextual_key,
     DRBG,
@@ -59,7 +61,7 @@ class AgentWatermarker:
         payload_text: Optional[str] = None,
         *,
         mock: bool = False,
-        algorithm: str = "differential",
+        algorithm: str = "rank",
     ) -> None:
         if payload_bits and payload_text:
             raise ValueError("Specify either payload_bits or payload_text, not both.")
@@ -119,14 +121,25 @@ class AgentWatermarker:
             )
 
         # --- Real sampling via core algorithm ---
-        selected_action, target_list, bits_cnt, context_used = sample_behavior_differential(
-            probabilities=probs_norm,
-            bit_stream=self._bit_stream,
-            bit_index=self._bit_index,
-            context_for_key=context or None,
-            history_responses=history,
-            round_num=round_used,
-        )
+        if self.algorithm == "differential":
+            selected_action, target_list, bits_cnt, context_used = sample_behavior_differential(
+                probabilities=probs_norm,
+                bit_stream=self._bit_stream,
+                bit_index=self._bit_index,
+                context_for_key=context or None,
+                history_responses=history,
+                round_num=round_used,
+            )
+        else:
+            # Default to "rank"
+            selected_action, target_list, bits_cnt, context_used = sample_behavior_rank(
+                probabilities=probs_norm,
+                bit_stream=self._bit_stream,
+                bit_index=self._bit_index,
+                context_for_key=context or None,
+                history_responses=history,
+                round_num=round_used,
+            )
 
         self._bit_index += bits_cnt
         self._round_num = round_used + 1
@@ -162,13 +175,22 @@ class AgentWatermarker:
         probs_norm = self._normalize_probabilities(probabilities)
         round_used = self._round_num if round_num is None else round_num
 
-        return differential_based_decoder(
-            probabilities=probs_norm,
-            selected_behavior=selected_action,
-            context_for_key=context or None,
-            history_responses=history,
-            round_num=round_used,
-        )
+        if self.algorithm == "differential":
+            return differential_based_decoder(
+                probabilities=probs_norm,
+                selected_behavior=selected_action,
+                context_for_key=context or None,
+                history_responses=history,
+                round_num=round_used,
+            )
+        else:
+            return rank_based_decoder(
+                probabilities=probs_norm,
+                selected_behavior=selected_action,
+                context_for_key=context or None,
+                history_responses=history,
+                round_num=round_used,
+            )
 
     def reset(self) -> None:
         """Reset internal bit index and round counter."""
@@ -242,6 +264,21 @@ class AgentWatermarker:
         device = "cpu"
         probs_tensor = torch.tensor(probs_list, dtype=torch.float32, device=device)
         indices_tensor = torch.arange(len(behaviors), device=device)
+
+        if self.algorithm == "rank":
+            # For rank algorithm, we just show target set and highlight selection
+            target_set = set(target_list) if target_list else set()
+            diff = []
+            for b in behaviors:
+                diff.append({
+                    "action": b,
+                    "original_prob": float(probs_norm[b]),
+                    "watermarked_prob": 1.0 if b == selected_action else 0.0,
+                    "is_target_bin": b in target_set,
+                    "is_selected": b == selected_action,
+                    "note": "rank_scheme"
+                })
+            return diff
 
         indices_nonzero, bins, prob_new = differential_based_recombination(
             probs_tensor, indices_tensor
