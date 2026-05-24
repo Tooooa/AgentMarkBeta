@@ -95,4 +95,15 @@ T.~Ho, M.~M{\'e}dard, R.~Koetter, D.~R. Karger, M.~Effros, J.~Shi, and
 {DeepSeek-AI}, ``{DeepSeek} llm: Scaling open-source language models with
   longtermism,'' \emph{arXiv preprint arXiv:2401.02954}, 2024.
 
+\bibitem{kirchenbauer2024reliability}
+J.~Kirchenbauer, J.~Geiping, Y.~Wen, M.~Shu, K.~Saifullah, K.~Kong,
+  K.~Fernando, A.~Saha, M.~Goldblum, and T.~Goldstein, ``On the reliability of
+  watermarks for large language models,'' in \emph{Proceedings of the
+  International Conference on Learning Representations}, 2024.
+
+\bibitem{kuditipudi2024robust}
+R.~Kuditipudi, J.~Thickstun, T.~Hashimoto, and P.~Liang, ``Robust
+  distortion-free watermarks for language models,'' \emph{Transactions on
+  Machine Learning Research}, 2024.
+
 \end{thebibliography}
