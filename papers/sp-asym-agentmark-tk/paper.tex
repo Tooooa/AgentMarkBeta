@@ -340,7 +340,7 @@ ToolBench & 2 & 18/18 per group & 1,440 (720 per watermark) \\
 
 The evaluation pipeline starts from logged trajectories containing the selected behavior, candidate list, behavior probabilities when available, and watermark metadata. Utility and JSD are computed over all valid task trajectories. Watermark recovery is computed on the decode-capable subset: trajectories with a recorded watermark configuration, a recoverable candidate ordering, and enough logged context to replay the deterministic DRBG schedule. This distinction is reported explicitly in the corpus counts above.
 
-For each decode-capable trajectory, we run the same verifier under several channel views. The \emph{exact} view uses the logged probabilities as an upper bound. The \emph{top-$k$} views discard numeric probabilities and retain only the ordered candidate list. The selected-only view is used as a negative control when available. Rank-noise experiments use a bit-level disagreement proxy parameterized by $\epsilon$ because the postprocessed logs do not contain full alternate rank lists for every verifier; erasure experiments remove a random fraction of observed steps before RLNC solving. All tables aggregate over the available model/split groups rather than selecting the best configuration per task.
+For each decode-capable trajectory, we run the same verifier under several channel views. The \emph{exact} view uses the logged probabilities as an upper bound. The \emph{top-$k$} views discard numeric probabilities and retain only the ordered candidate list. The selected-only view is used as a negative control when available. Rank-noise experiments use a bit-level disagreement proxy parameterized by $\epsilon$ because the postprocessed logs do not contain full alternate rank lists for every verifier; erasure experiments remove a random fraction of observed steps before RLNC solving. All tables aggregate over the available model/split groups rather than selecting the best configuration per task. These aggregates are descriptive comparisons over the generated corpus; they are not presented as hypothesis tests for small differences between methods.
 
 \subsection{Artifact Availability}
 
@@ -356,7 +356,7 @@ We report task success rate and average steps for utility. We report Jensen-Shan
 
 \subsection{Utility Preservation}
 
-Table~\ref{tab:utility} reports average task success and steps. On ALFWorld, \ours{} reaches 78.6\% success versus 80.0\% for clean and 79.4\% for \agentmark{}. On ToolBench, \ours{} reaches 77.1\%, slightly above the clean pipeline's 75.7\%. The result supports the distribution-preservation goal: rank encoding does not introduce the large utility tax associated with naive behavior bias.
+Table~\ref{tab:utility} reports average task success and steps. On ALFWorld, \ours{} reaches 78.6\% success versus 80.0\% for clean and 79.4\% for \agentmark{}. On ToolBench, \ours{} reaches 77.1\% versus 75.7\% for the clean pipeline. We interpret these descriptive aggregates conservatively: rank encoding stays close to the clean and symmetric pipelines and does not exhibit the large utility tax associated with naive behavior bias.
 
 \begin{table}[t]
 \centering
@@ -533,6 +533,9 @@ Capacity and robustness experiments are computed from logged trajectories and of
 
 \textbf{Benchmark coverage.}
 ALFWorld and ToolBench cover embodied planning and tool-use, but they do not exhaust the space of agentic workflows. Social simulation, GUI control, multi-agent collaboration, and long-running enterprise agents may have different rank stability and trajectory length. The construction is domain-agnostic, but the best $k$ and payload length should be calibrated per environment.
+
+\textbf{Statistical uncertainty.}
+The evaluation reports aggregate success, JSD, and recovery rates over the completed model/split groups in the artifact bundle. These aggregates support the qualitative channel-knowledge comparison, but they should not be read as formal significance tests for small utility differences. A deployment study should pre-register its task distribution, sampling budget, and uncertainty intervals before using small deltas as operational evidence.
 
 \textbf{Candidate canonicalization.}
 Rank decoding assumes that the verifier can map the logged behavior and reconstructed candidates into the same canonical behavior set. This is straightforward for enumerated actions and structured tool calls, but less automatic for free-form plans, GUI operations, or APIs whose schemas evolve over time. A deployment should canonicalize tool names, arguments, and environment actions before ranking; otherwise a semantically correct but differently serialized behavior may appear outside the verifier's top-$k$ list and become an erasure.
