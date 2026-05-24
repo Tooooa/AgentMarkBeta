@@ -312,6 +312,22 @@ We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023t
 
 Unless otherwise stated, recovery rates in this draft are computed from the available offline decoder artifacts. Capacity tables are bit-level channel proxies over logged trajectories and should not be conflated with a separate end-to-end RLNC recovery run. We use 8-bit payloads in these tables to make capacity differences measurable on short benchmark trajectories; deployable attribution should use longer payloads and the false-positive accounting in Section~\ref{sec:false-positive-results}.
 
+Table~\ref{tab:coverage} summarizes the evaluation coverage. Utility and stealth metrics use all five methods. Decode-capable counts apply to the two watermarking methods because vanilla, clean, and RG trajectories do not carry payload metadata. The two watermarked methods are balanced within each dataset, which avoids comparing rank and symmetric decoders on different trajectory pools.
+
+\begin{table}[t]
+\centering
+\caption{Evaluation coverage after postprocessing.}
+\label{tab:coverage}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrr}
+\toprule
+Dataset & Model/split groups & Completed runs & Decode-capable trajectories \\
+\midrule
+ALFWorld & 4 & 3/3 per group & 3,288 (1,644 per watermark) \\
+ToolBench & 2 & 18/18 per group & 1,440 (720 per watermark) \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \subsection{Evaluation Protocol}
 
 The evaluation pipeline starts from logged trajectories containing the selected behavior, candidate list, behavior probabilities when available, and watermark metadata. Utility and JSD are computed over all valid task trajectories. Watermark recovery is computed on the decode-capable subset: trajectories with a recorded watermark configuration, a recoverable candidate ordering, and enough logged context to replay the deterministic DRBG schedule. This distinction is reported explicitly in the corpus counts above.
