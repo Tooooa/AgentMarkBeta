@@ -1,0 +1,392 @@
+\documentclass[conference,10pt]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{balance}
+
+\newcommand{\ours}{AsymAgentMark-TK}
+\newcommand{\agentmark}{AgentMark-F}
+\newcommand{\Enc}{\ensuremath{\mathsf{Enc}}}
+\newcommand{\Dec}{\ensuremath{\mathsf{Dec}}}
+\newcommand{\RankEnc}{\ensuremath{\mathsf{RankEnc}}}
+\newcommand{\RankDec}{\ensuremath{\mathsf{RankDec}}}
+\newcommand{\BinEnc}{\ensuremath{\mathsf{BinEnc}}}
+\newcommand{\DRBG}{\mathcal{G}}
+\newcommand{\B}{\mathcal{B}}
+
+\title{\ours: Weakly Asymmetric Behavioral Watermarking for LLM Agents}
+
+\author{
+\IEEEauthorblockN{Anonymous Authors}
+\IEEEauthorblockA{Paper under double-blind review}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Autonomous LLM agents increasingly make consequential multi-step decisions through planning behaviors such as tool selection, subgoal choice, and embodied action selection. Existing content watermarks attribute generated text, but they do not directly attest to the planning behavior that drives an agent's execution. AgentMark introduced distribution-preserving behavioral watermarking for this setting, but its concrete symmetric construction requires the verifier to reconstruct the exact behavior distribution used by the embedder. This assumption is brittle under realistic verification: API quantization, temperature changes, model refreshes, and cross-model re-querying may preserve the order of likely behaviors while perturbing probability values enough to break symmetric decoding.
+
+We propose \ours, a weakly asymmetric behavioral watermark for LLM agents. The embedder uses full per-step behavior probabilities to preserve the agent's marginal policy, while the verifier needs only top-$k$ rank order. The construction replaces probability-dependent differential bins with an interleaved binary partition tree over rank-sorted behaviors. Each selected behavior's rank determines a decoding path, allowing bit recovery from rank positions alone. A fixed-budget HMAC-SHA512 DRBG schedule keeps encoder and decoder synchronized, and deterministic random linear network coding turns variable per-step bits into erasure-tolerant payload recovery.
+
+We evaluate \ours{} on ALFWorld and ToolBench using DeepSeek and Gemini Flash. Across 11,820 trajectories, rank watermarking preserves task utility relative to a clean AgentMark pipeline: average success is 78.6\% versus 80.0\% on ALFWorld and 77.1\% versus 75.7\% on ToolBench. Behavior-distribution divergence from clean remains comparable to symmetric AgentMark. Under exact probabilities, symmetric AgentMark has higher 8-bit payload recovery on ALFWorld, but under top-10 rank-only verification it collapses from 0.700 to 0.014 while \ours{} remains at 0.068. These results show that partial channel knowledge can be converted into practical behavioral provenance without requiring exact probability reconstruction.
+\end{abstract}
+
+\section{Introduction}
+
+LLM systems are rapidly shifting from passive text generators to agents that perceive context, plan, call tools, and act across multiple steps~\cite{yao2022react,achiam2023gpt4,team2023gemini}. This shift changes what provenance must mean. For a chatbot, attributing the final string may be enough. For an agent, the consequential object is often the trajectory: which tool it selected, which subgoal it pursued, which API it invoked, or which embodied action it chose. These planning behaviors can affect safety, accountability, intellectual-property protection, and post-hoc auditing even when the final natural-language output is short or absent.
+
+Content watermarking for LLM outputs has made substantial progress~\cite{kirchenbauer2023watermark,dathathri2024synthid}, but it does not directly solve behavioral provenance. Planning behaviors are not token-native: an LLM's reasoning text may be compiled into structured tool calls or environment actions, discarding the lexical signal used by token watermarks. In response, AgentMark~\cite{agentmark2026} formulated behavioral watermarking as distribution-preserving sampling over an explicit per-step behavior distribution. Its concrete construction, which we call \agentmark{}, embeds multi-bit identifiers while preserving the marginal behavior distribution, and it tolerates partial logs through erasure coding.
+
+However, \agentmark{} is symmetric: decoding requires the verifier to reconstruct the same probability distribution used by the embedder. This is a strong assumption in real deployments. The verifier may access a rounded top-$k$ API, a model after provider-side updates, a different serving stack, or a proxy model used for audit. These changes often preserve the relative order of plausible behaviors while shifting the numeric probabilities. Symmetric distribution-preserving encoders are fragile under this mismatch because their decoding bins are probability-dependent. A small change in probabilities can alter bin boundaries and desynchronize decoding.
+
+This paper asks whether behavioral provenance can survive with less verifier knowledge. We answer affirmatively by importing the principle of weakly asymmetric steganography~\cite{weakasym2026} into LLM-agent behavior channels. In our setting, the embedder has the full behavior distribution $P_t$, but the verifier observes only partial channel knowledge: the top-$k$ rank ordering $\sigma_t$. This setting is weaker than exact-probability verification but stronger than fully asymmetric verification with no channel knowledge. It matches common audit interfaces that expose candidate rankings without calibrated probabilities.
+
+We present \ours, a top-$k$ rank-based behavioral watermark. The key technical idea is to redesign the encoder and decoder together. The encoder sorts behaviors by probability and recursively partitions the top-$k$ list into even and odd ranks. At each level, a binary distribution-preserving primitive uses probability masses to choose a group without changing the marginal policy. The decoder, by contrast, never uses probability values: the selected behavior's rank determines the path through the same interleaved partition tree, and odd branches reveal embedded bits. A fixed-budget DRBG schedule ensures that encoder and decoder consume the same pseudorandomness even when no bit is embedded at a level.
+
+Our contributions are:
+\begin{itemize}[leftmargin=*]
+  \item We formulate weakly asymmetric behavioral watermarking for LLM agents, separating the embedder's full channel access from the verifier's top-$k$ rank-only access.
+  \item We design \ours, a distribution-preserving rank encoder/decoder that decodes from top-$k$ ordering rather than exact probabilities.
+  \item We integrate the construction with deterministic random linear network coding (RLNC), enabling payload recovery from variable-bit and partially observed trajectories.
+  \item We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023toolllm} across DeepSeek and Gemini Flash models, measuring utility, stealth, rank-only decoding, top-$k$ sensitivity, rank noise, and false-positive rates.
+\end{itemize}
+
+\section{Background and Motivation}
+
+\subsection{Behavioral Watermarking for Agents}
+
+An LLM agent operates over a trajectory of observations, planning behaviors, and execution actions. At each step $t$, the agent chooses a behavior $b_t$ from a finite admissible set $\B_t$. Examples include ALFWorld navigation actions, ToolBench API calls, or social-simulation behaviors in OASIS~\cite{gao2024oasis}. AgentMark models this choice as sampling from an elicited behavior distribution $P_t$ and replaces ordinary sampling with a distribution-preserving encoder:
+\begin{equation}
+  \hat b_t \leftarrow \Enc(P_t, r_t), \quad
+  \Pr[\hat b_t=b]=P_t(b).
+\end{equation}
+The distribution-preservation requirement is central. Agent trajectories are long-horizon and stateful; even small per-step distribution shifts can compound into task drift, failures, or visibly abnormal behavior.
+
+\subsection{The Symmetry Bottleneck}
+
+The concrete \agentmark{} construction uses differential recombination over $P_t$ followed by cyclic-shift encoding. This is efficient when both embedder and verifier share exact probabilities. The same property makes it brittle under probability perturbation: if the verifier's reconstructed $P'_t$ differs from $P_t$, recombined bins may differ, so the selected behavior is interpreted under the wrong bin structure.
+
+The weakness is not merely numerical. Many verification interfaces intentionally withhold calibrated probabilities. Auditors may receive ranked candidates, top-$k$ choices, or sampled logs. Even when probabilities are available, temperature scaling, quantization, floating-point differences, model upgrades, and fine-tuning can perturb values. These transformations frequently preserve a useful invariant: the order of high-probability behaviors.
+
+This observation is especially natural for agents. Candidate behaviors are usually semantic alternatives produced by a planning prompt: a tool call, a navigation operation, a search/refine step, or a social action. A downstream auditor may be able to ask a model to rank plausible next behaviors from the same logged context even if the exact sampling distribution is hidden. In this sense, behavior-level verification has a useful middle ground that token-level watermarking often lacks: ranks are easier to reproduce than calibrated probabilities, and more informative than the selected action alone.
+
+\subsection{Weak Asymmetry}
+
+Provably secure steganography traditionally separates symmetric settings, where sender and receiver share channel distributions, from asymmetric settings, where the receiver has no channel oracle~\cite{hopper2002provably,kaptchuk2021meteor}. Weak asymmetry occupies the middle ground: the sender has the full channel, while the receiver has partial but nontrivial channel knowledge~\cite{weakasym2026}. We instantiate this idea for behavioral watermarking. The embedder uses $P_t$ to preserve the agent policy; the verifier uses only $\sigma_t=\operatorname{argsort}_k(P_t)$ to decode.
+
+\section{Problem Formulation}
+
+\subsection{Agent Behavior Channel}
+
+For a trajectory of length $T$, each step $t$ has a behavior set $\B_t=\{b_{t,1},\ldots,b_{t,n_t}\}$ and a behavior distribution $P_t$ induced by the agent and environment context. A watermarking key $K_{\mathrm{sh}}$ and step context $h_t$ derive per-step pseudorandomness. The embedder encodes a payload $m\in\{0,1\}^L$ into selected behaviors $\hat b_1,\ldots,\hat b_T$ while preserving $P_t$ at each step.
+
+The verifier observes a possibly incomplete set of indices $I\subseteq\{1,\ldots,T\}$ and, for each observed step, the selected behavior $\hat b_t$ plus channel side information. In the symmetric setting, the side information is $P_t$ or an exact reconstruction. In our setting, it is the top-$k$ ordering $\sigma_t$.
+
+\subsection{Adversary and Requirements}
+
+We consider three perturbations. First, \emph{step erasure}: some logged steps are missing due to execution failures, platform deletion, or incomplete telemetry. Second, \emph{distribution perturbation}: a verifier reconstructs $P'_t$ whose numeric values differ from $P_t$. Third, \emph{rank noise}: some adjacent ranks in $\sigma_t$ are swapped, modeling top-$k$ instability or proxy-model disagreement.
+
+A scheme should satisfy:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Utility preservation}: $\Pr[\hat b_t=b]=P_t(b)$ per step.
+  \item \textbf{Weak-asymmetric correctness}: if $\operatorname{argsort}_k(P'_t)=\operatorname{argsort}_k(P_t)$, decoding from $P'_t$'s order returns the same bits as decoding from $P_t$'s order.
+  \item \textbf{Low false positives}: a clean trajectory should match a claimed $L$-bit payload with probability approximately $2^{-L}$ under independent payload trials.
+  \item \textbf{Erasure tolerance}: payload recovery should degrade gracefully when only a subset of steps is observed.
+\end{itemize}
+
+\subsection{Non-Goals}
+
+\ours{} is not a general-purpose watermark removal defense. If an adversary controls the agent and can arbitrarily rewrite the trajectory, no behavioral watermark can force attribution without an external logging root of trust. Our target is post-hoc verification for trajectories that are generated by an honest embedder but later audited through an imperfect channel interface. We also do not assume the verifier can re-run the exact original model. The verifier may use a same-family model, a refreshed endpoint, or a restricted API as long as the top-$k$ order remains sufficiently stable.
+
+\section{Design}
+
+\subsection{Overview}
+
+\ours{} has four components. First, the agent elicits or estimates $P_t$ over candidate behaviors, following AgentMark's black-box-compatible behavior-distribution interface~\cite{agentmark2026}. Second, the encoder sorts behaviors by descending probability and restricts embedding to the top-$k$ region. Third, recursive interleaved binary splitting embeds bits while preserving the behavior distribution. Fourth, deterministic RLNC maps the payload into a stream of coded bits so that the verifier can solve for the payload after observing enough independent coded bits.
+
+\subsection{Binary Distribution-Preserving Primitive}
+
+At a tree node, the encoder must choose between two groups with masses $S_0$ and $S_1$ while optionally embedding one bit. Assume $S_0\geq S_1$ and $S=S_0+S_1$. Given message bit $m\in\{0,1\}$ and $r\leftarrow U[0,1)$ from the DRBG, define
+\begin{equation}
+  r_m=(rS+\tfrac{1}{2}Sm)\bmod S.
+\end{equation}
+\BinEnc{} selects group $0$ if $r_m<S_0$ and group $1$ otherwise. If group $1$ is selected, one bit is embedded; if group $0$ is selected, no bit is consumed and the same bit is retried at the next level. Because $r_m$ is uniform over $[0,S)$ for uniform $r$, the selected group has exactly the desired marginal probabilities $S_0/S$ and $S_1/S$.
+
+\subsection{Rank Encoder}
+
+Let $\sigma_t$ be the descending rank ordering of $P_t$. The encoder first samples whether to enter the top-$k$ region with probability $S_{\mathrm{top}}=\sum_{i=1}^{k}P_t(\sigma_t(i))$. If not, it samples from the tail proportionally and embeds no bits. Inside top-$k$, it normalizes probabilities and applies recursive splitting:
+\begin{enumerate}[leftmargin=*]
+  \item Split the current sorted list into even ranks $(0,2,4,\ldots)$ and odd ranks $(1,3,5,\ldots)$.
+  \item Use \BinEnc{} on the two group masses.
+  \item Recurse into the selected group until a single behavior remains.
+\end{enumerate}
+Interleaving is important. A top-half/bottom-half split would place most mass in the first group, producing low embedding opportunity. Even/odd splitting balances mass while preserving a rank path that the verifier can recover.
+
+\begin{figure}[t]
+\centering
+\fbox{\begin{minipage}{0.94\columnwidth}
+\footnotesize
+\textbf{Algorithm 1: One-step rank encoding.}\\
+\textbf{Input:} distribution $P_t$, context $h_t$, key $K_{\mathrm{sh}}$, payload stream $M$, pointer $\ell$, top-$k$.\\
+1. Derive DRBG $\DRBG_t$ from $(K_{\mathrm{sh}},h_t)$.\\
+2. Sort behaviors: $\sigma_t\leftarrow\operatorname{argsort}(P_t)$.\\
+3. With probability $1-\sum_{i\leq k}P_t(\sigma_t(i))$, sample from the tail and return no bits.\\
+4. Normalize the top-$k$ distribution $D$.\\
+5. While $|D|>1$: split $D$ into even/odd ranks; run \BinEnc{} on the group masses; consume a message bit only when \BinEnc{} enters the odd group; recurse into the chosen group.\\
+6. Advance unused DRBG calls until exactly $\lceil\log_2 k\rceil$ calls are consumed.\\
+\textbf{Output:} selected behavior and consumed coded bits.
+\end{minipage}}
+\caption{Encoder sketch. The encoder uses probability values only to preserve the marginal behavior distribution.}
+\label{fig:enc}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Decoder information requirements.}
+\label{tab:compare}
+\begin{tabular}{lll}
+\toprule
+Scheme & Encoder input & Decoder input \\
+\midrule
+\agentmark{} & exact $P_t$ & exact $P_t$ \\
+\ours{} & exact $P_t$ & top-$k$ rank $\sigma_t$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Rank Decoder}
+
+Given selected behavior $\hat b_t$ and top-$k$ order $\sigma_t$, the decoder finds the zero-indexed rank $q$ of $\hat b_t$. If $\hat b_t$ is outside top-$k$, the step yields no bits. Otherwise, the decoder reconstructs the path by repeatedly reading the parity of $q$:
+\begin{equation}
+  q_0=q,\quad q_{\ell+1}=\lfloor q_{\ell}/2\rfloor.
+\end{equation}
+Whenever $q_\ell$ is odd, the selected path entered the odd group and one bit was embedded. The value of that bit is determined by the same DRBG value used at level $\ell$: the implementation decodes it as $1$ if $r_\ell<0.5$ and $0$ otherwise. The decoder consumes exactly $\lceil\log_2 k\rceil$ DRBG values per step, matching the encoder's fixed synchronization budget.
+
+\begin{figure}[t]
+\centering
+\fbox{\begin{minipage}{0.94\columnwidth}
+\footnotesize
+\textbf{Algorithm 2: One-step rank decoding.}\\
+\textbf{Input:} selected behavior $\hat b_t$, top-$k$ order $\sigma_t$, context $h_t$, key $K_{\mathrm{sh}}$.\\
+1. Derive the same DRBG sequence $r_0,\ldots,r_{\lceil\log_2 k\rceil-1}$.\\
+2. If $\hat b_t\notin\sigma_t[1:k]$, return the empty string.\\
+3. Let $q$ be the zero-indexed rank of $\hat b_t$.\\
+4. While $q\neq0$: if $q$ is odd, append $1$ when the corresponding $r_i<0.5$ and $0$ otherwise; set $q\leftarrow\lfloor q/2\rfloor$.\\
+\textbf{Output:} decoded coded bits for step $t$.
+\end{minipage}}
+\caption{Decoder sketch. No numeric probability appears in the decoder.}
+\label{fig:dec}
+\end{figure}
+
+\subsection{Coding Layer}
+
+Per-step embedding capacity varies with $P_t$, $k$, and trajectory length. To avoid requiring a contiguous bitstream, \ours{} uses deterministic RLNC over GF(2). For payload $m\in\{0,1\}^L$, the $i$-th coded bit is
+\begin{equation}
+  c_i = \langle a_i, m\rangle \bmod 2,
+\end{equation}
+where coefficient vector $a_i$ is generated deterministically from a stream key and index $i$. The verifier collects decoded coded bits and solves the resulting linear system by Gaussian elimination over GF(2). This layer is inherited from AgentMark's erasure-resilience design but is independent of whether the step decoder is symmetric or rank-only.
+
+\subsection{Implementation Notes}
+
+The implementation follows the repository's production path. The public SDK exposes an \texttt{AgentWatermarker} wrapper with \texttt{algorithm="rank"} as the default. Internally, \texttt{Dist} stores probability tensors and stable indices, \texttt{RankEncStep} applies the interleaved split, and \texttt{RankDecStep} reconstructs bits from sorted indices. The DRBG is an HMAC-SHA512 reseed construction inspired by Meteor~\cite{kaptchuk2021meteor}. A synchronization counter, \texttt{rt\_sync}, forces both sides to advance exactly $\lceil\log_2 n\rceil$ random draws per step. This detail is small but critical: without it, a zero-bit level would shift all later decoding.
+
+Tie handling uses stable sorting after probability normalization. Ties are rare in model-scored behavior sets but can occur after rounding or prompt templates that assign equal fallback scores. Stable sorting makes the order deterministic when both sides see the same candidate list. If the verifier obtains a tied but differently ordered top-$k$ list, this is treated as rank noise and measured through the adjacent-swap experiment.
+
+\section{Security Analysis}
+
+\textbf{Proposition 1 (distribution preservation).}
+For each step $t$ and behavior $b\in\B_t$, \ours{} outputs $b$ with probability $P_t(b)$.
+
+\emph{Proof sketch.}
+The top/tail gate selects the top-$k$ region with probability equal to its total mass and otherwise samples the tail proportionally. Conditioned on entering top-$k$, each binary split uses \BinEnc{}, whose selected group probability equals its normalized mass because $r_m$ is uniform. Induction over the partition tree gives each leaf its normalized probability within top-$k$. Multiplying by the top-$k$ mass recovers $P_t(b)$. \hfill$\square$
+
+\textbf{Theorem 1 (weak asymmetry).}
+Let $P_t$ and $P'_t$ satisfy $\operatorname{argsort}_k(P_t)=\operatorname{argsort}_k(P'_t)$. For any selected behavior $\hat b_t$ and shared context-derived DRBG stream,
+\begin{equation}
+  \RankDec(\hat b_t,\operatorname{argsort}_k(P_t))
+  =
+  \RankDec(\hat b_t,\operatorname{argsort}_k(P'_t)).
+\end{equation}
+
+\emph{Proof.}
+\RankDec{} accesses channel information only through the rank position of $\hat b_t$ in the top-$k$ order. If the two orders are equal, this rank is identical. The DRBG stream depends on the secret key and context, not probability values. Therefore the decoded path and bit values are identical. \hfill$\square$
+
+\textbf{False positives.}
+For an unwatermarked trajectory, a claimed $L$-bit payload matches by chance with probability $2^{-L}$ under the standard assumption that decoded clean bits are independent of the claimed payload. In practice the verifier can tune $L$ to the desired audit threshold; $L=32$ yields $2.33\times10^{-10}$ and $L=64$ yields $5.42\times10^{-20}$.
+
+\textbf{Limits.}
+\ours{} is robust to value perturbations that preserve top-$k$ order, not to arbitrary rank manipulation. If an adversary can force targeted rank swaps in the top-$k$ list, it can corrupt decoded paths. This is the expected boundary of any rank-only weakly asymmetric scheme. The evaluation therefore includes adjacent rank-noise injection.
+
+\section{Evaluation}
+
+\subsection{Setup}
+
+We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023toolllm}. ALFWorld tests embodied planning over ID and OOD splits; ToolBench tests tool-use behavior across six split categories. We use DeepSeek~\cite{deepseek2024} and Gemini Flash~\cite{team2023gemini}. The postprocessed corpus contains 11,820 trajectories and 4,728 watermark decode-capable trajectories. Methods are: vanilla LLM agent, clean AgentMark pipeline without embedding, red-green (RG) behavior bias, symmetric \agentmark{}, and rank-based \ours{}.
+
+Unless otherwise stated, recovery rates in this draft are computed from the available offline decoder artifacts. Capacity tables are bit-level channel proxies over logged trajectories and should not be conflated with a separate end-to-end RLNC recovery run.
+
+\subsection{Research Questions}
+
+The evaluation answers five questions. \textbf{RQ1}: Does rank-based embedding preserve task utility compared with clean and symmetric AgentMark pipelines? \textbf{RQ2}: Does it leave behavior-frequency distributions close to clean trajectories? \textbf{RQ3}: What is the tradeoff between exact-probability capacity and rank-only robustness? \textbf{RQ4}: How sensitive is the method to the top-$k$ parameter? \textbf{RQ5}: How quickly does decoding degrade when the verifier's rank order is noisy?
+
+\subsection{Utility Preservation}
+
+Table~\ref{tab:utility} reports average task success and steps. On ALFWorld, \ours{} reaches 78.6\% success versus 80.0\% for clean and 79.4\% for \agentmark{}. On ToolBench, \ours{} reaches 77.1\%, slightly above the clean pipeline's 75.7\%. The result supports the distribution-preservation goal: rank encoding does not introduce the large utility tax associated with naive behavior bias.
+
+\begin{table}[t]
+\centering
+\caption{Task utility averaged over available model/split groups.}
+\label{tab:utility}
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & Method & Success & Steps & Groups \\
+\midrule
+\multirow{5}{*}{ALFWorld}
+& Vanilla & 69.1 & 16.54 & 4 \\
+& Clean & 80.0 & 16.23 & 4 \\
+& RG & 74.9 & 17.58 & 4 \\
+& \agentmark{} & 79.4 & 16.58 & 4 \\
+& \ours{} & 78.6 & 16.40 & 4 \\
+\midrule
+\multirow{5}{*}{ToolBench}
+& Vanilla & 84.1 & 4.06 & 2 \\
+& Clean & 75.7 & 5.32 & 2 \\
+& RG & 75.1 & 4.78 & 2 \\
+& \agentmark{} & 74.7 & 4.54 & 2 \\
+& \ours{} & 77.1 & 5.07 & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Behavioral Stealth}
+
+We compare empirical action distributions against clean trajectories using Jensen-Shannon divergence (JSD). On ALFWorld, mean JSD to clean is 0.121 for \ours{} and 0.122 for \agentmark{}; on ToolBench it is 0.140 for \ours{} and 0.174 for \agentmark{}. RG is comparable on ALFWorld but worse on ToolBench. These measurements are coarse because behavior distributions are task- and split-dependent, but they show no obvious distributional anomaly introduced by rank splitting.
+
+\begin{table}[t]
+\centering
+\caption{Mean JSD to clean behavior frequency. Lower is closer to clean.}
+\label{tab:jsd}
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & \agentmark{} & \ours{} & RG & Vanilla \\
+\midrule
+ALFWorld & 0.122 & 0.121 & 0.134 & 0.564 \\
+ToolBench & 0.174 & 0.140 & 0.181 & 0.162 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Rank-Only Verification}
+
+Table~\ref{tab:capacity} compares payload recovery and bit match for 8-bit payloads under different verifier knowledge. Under exact probabilities on ALFWorld, \agentmark{} has higher payload recovery (0.700) than \ours{} (0.532), reflecting the efficiency cost of rank-only structure. Under top-10 rank-only verification, \agentmark{} collapses to 0.014 payload recovery, while \ours{} remains at 0.068. This is the central tradeoff: \agentmark{} is better when exact probabilities are available; \ours{} is more reliable when the verifier only has rank knowledge.
+
+ToolBench is lower-capacity for both schemes because trajectories are short and many tool choices have low recoverable entropy. Nevertheless, \ours{} remains stable from exact probabilities to top-10 rank-only decoding (0.033 to 0.032), whereas \agentmark{} drops from 0.085 to 0.003.
+
+\begin{table}[t]
+\centering
+\caption{8-bit recovery under verifier channel knowledge. Cells show payload recovery / bit-match rate.}
+\label{tab:capacity}
+\resizebox{\columnwidth}{!}{\begin{tabular}{llrrrr}
+\toprule
+Dataset & Method & Exact & Top-10 & Top-6 & Top-2 \\
+\midrule
+\multirow{2}{*}{ALFWorld}
+& \agentmark{} & .700/.985 & .014/.594 & .004/.498 & .004/.504 \\
+& \ours{} & .532/.942 & .068/.718 & .028/.641 & .006/.566 \\
+\midrule
+\multirow{2}{*}{ToolBench}
+& \agentmark{} & .085/.582 & .003/.299 & .000/.292 & .000/.309 \\
+& \ours{} & .033/.502 & .032/.501 & .007/.470 & .000/.357 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{\texorpdfstring{Top-$k$}{Top-k} Ablation}
+
+Increasing $k$ raises both the amount of available rank information and the risk of rank instability. In ALFWorld, \ours{}'s mean bit-match rate rises from 0.558 at $k=2$ to 0.863 at $k=20$, with payload recovery increasing from 0.006 to 0.313. ToolBench improves more modestly, from 0.351 to 0.505 bit-match, reflecting lower behavior entropy and shorter horizons. These results suggest that $k$ should be selected per environment: larger $k$ helps high-entropy embodied planning, while low-entropy tool tasks require either longer traces, stronger coding, or adaptive gating.
+
+\begin{table}[t]
+\centering
+\caption{Top-$k$ ablation for \ours{}. Cells show bit-match / payload recovery.}
+\label{tab:topk}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrr}
+\toprule
+Dataset & $k=2$ & $k=4$ & $k=6$ & $k=8$ & $k=10$ & $k=20$ \\
+\midrule
+ALFWorld & .558/.006 & .601/.013 & .642/.028 & .670/.048 & .707/.064 & .863/.313 \\
+ToolBench & .351/.000 & .426/.006 & .470/.010 & .488/.021 & .495/.032 & .505/.035 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Rank Noise}
+
+We inject adjacent rank swaps with noise rate $\epsilon$. On ALFWorld, \ours{} maintains a bit-match rate of 0.900 at $\epsilon=0.05$ and 0.858 at $\epsilon=0.10$, degrading to 0.688 at $\epsilon=0.30$. ToolBench starts near chance because of lower decoded length and capacity, but its degradation is smooth. The experiment confirms the expected boundary: rank-only decoding is insensitive to probability values but sensitive to rank swaps.
+
+\begin{table}[t]
+\centering
+\caption{Rank-noise sensitivity for \ours{}. Cells show bit-match / payload recovery.}
+\label{tab:noise}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrr}
+\toprule
+Dataset & 0.00 & 0.05 & 0.10 & 0.20 & 0.30 \\
+\midrule
+ALFWorld & .942/.532 & .900/.368 & .858/.239 & .769/.108 & .688/.042 \\
+ToolBench & .502/.033 & .489/.025 & .454/.017 & .413/.003 & .375/.003 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{False Positives}
+
+Analytic clean-trajectory trials match the expected false-positive probability $2^{-L}$. For payload lengths $L=8,16,32,64$, the expected rates are $3.91\times10^{-3}$, $1.53\times10^{-5}$, $2.33\times10^{-10}$, and $5.42\times10^{-20}$. Operational deployments should use at least 32-bit claims for audit-grade attribution, with longer payloads when enough trajectory length is available.
+
+\section{Discussion}
+
+\textbf{Exact probability is a luxury.}
+The evaluation supports a pragmatic conclusion: if exact $P_t$ is available, symmetric \agentmark{} can be more capacity-efficient. If the verifier has only top-$k$ ranks, symmetric decoding becomes unreliable and weak asymmetry becomes necessary.
+
+\textbf{ToolBench exposes a low-entropy regime.}
+Tool-use traces are shorter and often contain fewer semantically viable actions than embodied planning. \ours{} preserves utility in this setting, but the current offline payload recovery is low. This suggests combining rank encoding with adaptive step selection, longer audit windows, or higher-level tool-plan aggregation.
+
+\textbf{Rank consistency is observable.}
+Unlike exact probability equality, rank consistency can be measured directly during verification. A verifier can report top-$k$ agreement, Kendall tau distance, or adjacent-swap rates to calibrate confidence.
+
+\textbf{Adaptive adversaries.}
+An adversary aware of the watermark could try to perturb ranks while preserving task success. This attack is outside pure distribution perturbation and should be treated as an active removal attack. Defenses include randomized $k$, context-dependent rank partitions, and cross-step consistency checks.
+
+\section{Related Work}
+
+\textbf{LLM and agent watermarking.}
+Token-level LLM watermarking modifies or tests generated text distributions~\cite{kirchenbauer2023watermark,dathathri2024synthid}. These methods are complementary to behavioral watermarking because agents often compile natural-language plans into structured actions. AgentMark~\cite{agentmark2026} is the closest prior work and establishes distribution-preserving behavioral watermarking. \ours{} keeps its utility-preservation objective but weakens the verifier's channel requirement.
+
+\textbf{Steganography and distribution-preserving sampling.}
+Provably secure steganography formalizes indistinguishability between cover and stego content~\cite{hopper2002provably}. Meteor provides a practical cryptographic construction for realistic distributions~\cite{kaptchuk2021meteor}. Weakly asymmetric steganography studies receivers with partial channel knowledge~\cite{weakasym2026}. \ours{} adapts this idea from token/text channels to planning-behavior channels.
+
+\textbf{Agent benchmarks.}
+ALFWorld aligns text-based embodied environments with interactive learning~\cite{shridhar2021alfworld}. ToolBench evaluates LLM tool-use over real-world APIs~\cite{qin2023toolllm}. OASIS demonstrates large-scale social-agent simulation~\cite{gao2024oasis}. These benchmarks highlight why behavior-level provenance matters: the action trajectory is often more important than the final message.
+
+\section{Limitations and Ethics}
+
+This work is intended for provenance, audit, and authorized ownership verification. It should not be used to conceal malicious coordination or bypass platform policy. The construction assumes access to a behavior distribution at embedding time and top-$k$ rank information at verification time. It does not protect against arbitrary rank manipulation, model-level watermark removal, or compromised keys. The current evaluation uses offline decoder artifacts; a final deployment study should include end-to-end RLNC recovery under live logging and cross-model rank reconstruction.
+
+\section{Conclusion}
+
+Behavioral provenance for LLM agents should not depend on a verifier reproducing exact per-step probabilities. \ours{} shows that top-$k$ rank order is enough to recover useful watermark signal while preserving the agent's marginal behavior policy. By replacing probability-dependent bins with a rank-decodable binary partition tree, the scheme trades some exact-channel capacity for robustness under realistic partial-channel verification. This weakly asymmetric view makes behavioral watermarking better aligned with how agents are actually audited.
+
+\balance
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
