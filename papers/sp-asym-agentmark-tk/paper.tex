@@ -310,7 +310,7 @@ The watermark key is used only to derive context-specific pseudorandomness. The 
 
 We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023toolllm}. ALFWorld tests embodied planning over ID and OOD splits; ToolBench tests tool-use behavior across six split categories. We use DeepSeek~\cite{deepseek2024} and Gemini Flash~\cite{team2023gemini}. The postprocessed corpus contains 11,820 trajectories and 4,728 watermark decode-capable trajectories. Methods are: vanilla LLM agent, clean AgentMark pipeline without embedding, red-green (RG) behavior bias, symmetric \agentmark{}, and rank-based \ours{}.
 
-Unless otherwise stated, recovery rates in this draft are computed from the available offline decoder artifacts. Capacity tables are bit-level channel proxies over logged trajectories and should not be conflated with a separate end-to-end RLNC recovery run.
+Unless otherwise stated, recovery rates in this draft are computed from the available offline decoder artifacts. Capacity tables are bit-level channel proxies over logged trajectories and should not be conflated with a separate end-to-end RLNC recovery run. We use 8-bit payloads in these tables to make capacity differences measurable on short benchmark trajectories; deployable attribution should use longer payloads and the false-positive accounting in Section~\ref{sec:false-positive-results}.
 
 \subsection{Evaluation Protocol}
 
@@ -457,8 +457,11 @@ Method & View & 0.0 & 0.1 & 0.2 & 0.3 & 0.5 \\
 \end{table}
 
 \subsection{False Positives}
+\label{sec:false-positive-results}
 
 Analytic clean-trajectory trials match the expected false-positive probability $2^{-L}$. For payload lengths $L=8,16,32,64$, the expected rates are $3.91\times10^{-3}$, $1.53\times10^{-5}$, $2.33\times10^{-10}$, and $5.42\times10^{-20}$. Operational deployments should use at least 32-bit claims for audit-grade attribution, with longer payloads when enough trajectory length is available.
+
+The threshold must also account for multiple testing. If an operator tests $N$ independent key/payload claims against the same corpus, a conservative union bound gives a family-wise false-positive rate at most $N2^{-L}$. Thus an 8-bit payload is appropriate for controlled capacity diagnostics but not for open-ended attribution. A 64-bit payload keeps the bound below $10^{-12}$ even for one million tested claims, assuming the verifier also enforces the rank-quality gate described in Section~IV-D.
 
 The binomial confidence curves provide an additional view when a verifier reports a bit-level score rather than a decoded payload. For example, ALFWorld rank trajectories with 50 observed bits have match rates near 0.98 in the logged exact/rank-consistent settings, corresponding to one-sided $p$-values below $10^{-13}$. This is not a replacement for strict payload recovery, but it gives an audit operator a calibrated early-warning statistic before enough equations are available for RLNC decoding.
 
