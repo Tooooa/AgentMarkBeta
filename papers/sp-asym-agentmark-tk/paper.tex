@@ -107,7 +107,7 @@ This condition permits arbitrary probability-value changes as long as the verifi
 
 \subsection{Adversary and Requirements}
 
-We consider three perturbations. First, \emph{step erasure}: some logged steps are missing due to execution failures, platform deletion, or incomplete telemetry. Second, \emph{distribution perturbation}: a verifier reconstructs $P'_t$ whose numeric values differ from $P_t$. Third, \emph{rank noise}: some adjacent ranks in $\sigma_t$ are swapped, modeling top-$k$ instability or proxy-model disagreement.
+We consider three perturbations. First, \emph{step erasure}: some logged steps are missing due to execution failures, platform deletion, or incomplete telemetry. Second, \emph{distribution perturbation}: a verifier reconstructs $P'_t$ whose numeric values differ from $P_t$. Third, \emph{rank noise}: the verifier's top-$k$ order disagrees with the embedder's order, modeling top-$k$ instability or proxy-model disagreement.
 
 The adversary observes watermarked trajectories and may know the algorithm and public parameters, including $k$, but not $K_{\mathrm{sh}}$. This is the standard secret-key provenance setting: a platform or model owner embeds an identifier, while a later verifier checks a claimed key and payload. We do not rely on security through obscurity of the rank partition or coding scheme.
 
@@ -339,7 +339,7 @@ ToolBench & 2 & 18/18 per group & 1,440 (720 per watermark) \\
 
 The evaluation pipeline starts from logged trajectories containing the selected behavior, candidate list, behavior probabilities when available, and watermark metadata. Utility and JSD are computed over all valid task trajectories. Watermark recovery is computed on the decode-capable subset: trajectories with a recorded watermark configuration, a recoverable candidate ordering, and enough logged context to replay the deterministic DRBG schedule. This distinction is reported explicitly in the corpus counts above.
 
-For each decode-capable trajectory, we run the same verifier under several channel views. The \emph{exact} view uses the logged probabilities as an upper bound. The \emph{top-$k$} views discard numeric probabilities and retain only the ordered candidate list. The selected-only view is used as a negative control when available. Rank-noise experiments perturb the top-$k$ order by adjacent swaps before decoding, and erasure experiments remove a random fraction of observed steps before RLNC solving. All tables aggregate over the available model/split groups rather than selecting the best configuration per task.
+For each decode-capable trajectory, we run the same verifier under several channel views. The \emph{exact} view uses the logged probabilities as an upper bound. The \emph{top-$k$} views discard numeric probabilities and retain only the ordered candidate list. The selected-only view is used as a negative control when available. Rank-noise experiments use a bit-level disagreement proxy parameterized by $\epsilon$ because the postprocessed logs do not contain full alternate rank lists for every verifier; erasure experiments remove a random fraction of observed steps before RLNC solving. All tables aggregate over the available model/split groups rather than selecting the best configuration per task.
 
 \subsection{Artifact Availability}
 
@@ -447,7 +447,7 @@ ToolBench & .351/.000 & .426/.006 & .470/.010 & .488/.021 & .495/.032 & .505/.03
 
 \subsection{Rank Noise}
 
-We inject adjacent rank swaps with noise rate $\epsilon$. On ALFWorld, \ours{} maintains a bit-match rate of 0.900 at $\epsilon=0.05$ and 0.858 at $\epsilon=0.10$, degrading to 0.688 at $\epsilon=0.30$. ToolBench starts near chance because of lower decoded length and capacity, but its degradation is smooth. The experiment confirms the expected boundary: rank-only decoding is insensitive to probability values but sensitive to rank swaps.
+We inject rank disagreement through the offline decoder proxy with noise rate $\epsilon$, which lowers the per-bit match probability while keeping decoded length fixed. This is weaker than a live cross-model rank-reconstruction experiment but isolates the expected channel boundary. On ALFWorld, \ours{} maintains a bit-match rate of 0.900 at $\epsilon=0.05$ and 0.858 at $\epsilon=0.10$, degrading to 0.688 at $\epsilon=0.30$. ToolBench starts near chance because of lower decoded length and capacity, but its degradation is smooth. The experiment confirms the expected boundary: rank-only decoding is insensitive to probability values but sensitive to rank disagreement.
 
 \begin{table}[t]
 \centering
