@@ -120,7 +120,7 @@ A scheme should satisfy:
 \end{itemize}
 
 \textbf{Detection statistic.}
-For an audited trajectory, the verifier decodes a multiset of coded bits and attempts to recover payload $\hat m$. A strict positive attribution requires $\hat m=m$ for the claimed payload. For bit-level channel diagnostics, we also report the bit match rate between decoded coded bits and the coded stream induced by $m$. Payload recovery is stricter and is used for provenance claims; bit match is useful for comparing noisy channels even when there are too few equations for full RLNC recovery.
+For an audited trajectory, the verifier decodes a multiset of coded bits and attempts to recover payload $\hat m$. A strict positive attribution requires $\hat m=m$ for a pre-registered claimed payload. For bit-level channel diagnostics, we also report the bit match rate between decoded coded bits and the coded stream induced by $m$. Payload recovery is stricter and is used for provenance claims; bit match is useful for comparing noisy channels even when there are too few equations for full RLNC recovery.
 
 \subsection{Non-Goals}
 
@@ -259,7 +259,7 @@ The coding layer also cleanly separates two questions that are often conflated. 
 
 \subsection{Verification Protocol}
 
-An audit takes as input a claimed key/payload pair, a trajectory log, and a verifier-side procedure for reconstructing top-$k$ candidate orders. The verifier first derives the per-step DRBG streams from logged contexts and decodes all observed steps using \RankDec{}. It then runs RLNC elimination over the recovered coded equations. If the system recovers the claimed payload and the reconstructed ranks pass a deployment-specific quality gate, the audit reports a positive attribution. If the payload does not recover but the rank-quality gate fails or too few independent equations are available, the audit reports \emph{inconclusive}. A negative attribution is reserved for the case where the verifier has enough rank-consistent evidence to decode but the recovered payload contradicts the claim.
+An audit takes as input a pre-registered key/payload claim, a trajectory log, and a verifier-side procedure for reconstructing top-$k$ candidate orders. The verifier first derives the per-step DRBG streams from logged contexts and decodes all observed steps using \RankDec{}. It then runs RLNC elimination over the recovered coded equations. If the system recovers the registered payload and the reconstructed ranks pass a deployment-specific quality gate, the audit reports a positive attribution. If the payload does not recover but the rank-quality gate fails or too few independent equations are available, the audit reports \emph{inconclusive}. A negative attribution is reserved for the case where the verifier has enough rank-consistent evidence to decode but the recovered payload contradicts the registered claim.
 
 The rank-quality gate is intentionally separate from the watermark statistic. A verifier can estimate it using held-out calibration contexts, duplicate model queries, or agreement between independent rankers. This prevents a common operational error: treating a failed rank-only decode as evidence that a trajectory is clean when the verifier's channel reconstruction is itself unreliable.
 
