@@ -547,6 +547,8 @@ The method assumes that the embedder can elicit or estimate a behavior distribut
 
 This work is intended for provenance, audit, and authorized ownership verification. It should not be used to conceal malicious coordination or bypass platform policy. The construction assumes access to a behavior distribution at embedding time and top-$k$ rank information at verification time. It does not protect against arbitrary rank manipulation, model-level watermark removal, or compromised keys. The evaluation uses offline decoder artifacts; deployment use requires end-to-end RLNC recovery under live logging and cross-model rank reconstruction.
 
+The reported evaluation uses benchmark task trajectories and postprocessed experiment artifacts rather than private user data. A deployment that logs real agent behavior should treat trajectories as potentially sensitive operational records, minimize retained context, and bind verification access to an explicit audit purpose.
+
 Watermarking creates governance risks as well as benefits. A false or overconfident attribution can harm users, developers, or organizations. Deployments should therefore publish the verification threshold, report inconclusive outcomes, retain audit logs, and separate watermark evidence from broader incident investigation. The method should not be used for covert monitoring of users without notice; its appropriate role is provenance for agents or services controlled by the embedding party.
 
 \section{Conclusion}
