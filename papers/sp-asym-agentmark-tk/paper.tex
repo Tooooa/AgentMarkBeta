@@ -534,7 +534,7 @@ Provably secure steganography formalizes indistinguishability between cover and 
 \textbf{Agent benchmarks.}
 ALFWorld aligns text-based embodied environments with interactive learning~\cite{shridhar2021alfworld}. ToolBench evaluates LLM tool-use over real-world APIs~\cite{qin2023toolllm}. OASIS demonstrates large-scale social-agent simulation~\cite{gao2024oasis}. These benchmarks highlight why behavior-level provenance matters: the action trajectory is often more important than the final message.
 
-\section{Threats to Validity}
+\section{Threats to Validity and Ethics}
 \label{sec:validity}
 
 \textbf{Offline postprocessing.}
@@ -552,7 +552,7 @@ Rank decoding assumes that the verifier can map the logged behavior and reconstr
 \textbf{Distribution elicitation.}
 The method assumes that the embedder can elicit or estimate a behavior distribution. If the candidate generator is poor, distribution preservation protects the wrong channel. This is a limitation inherited from behavioral watermarking generally, not a weakness specific to rank-only decoding.
 
-\section*{Ethics considerations}
+\subsection{Ethics Considerations}
 
 This work is intended for provenance, audit, and authorized ownership verification. It should not be used to conceal malicious coordination or bypass platform policy. The construction assumes access to a behavior distribution at embedding time and top-$k$ rank information at verification time. It does not protect against arbitrary rank manipulation, model-level watermark removal, or compromised keys. The evaluation uses offline decoder artifacts; deployment use requires end-to-end RLNC recovery under live logging and cross-model rank reconstruction.
 
