@@ -77,6 +77,8 @@ The weakness is not merely numerical. Many verification interfaces intentionally
 
 This observation is especially natural for agents. Candidate behaviors are usually semantic alternatives produced by a planning prompt: a tool call, a navigation operation, a search/refine step, or a social action. A downstream auditor may be able to ask a model to rank plausible next behaviors from the same logged context even if the exact sampling distribution is hidden. In this sense, behavior-level verification has a useful middle ground that token-level watermarking often lacks: ranks are easier to reproduce than calibrated probabilities, and more informative than the selected action alone.
 
+Table~\ref{tab:positioning} summarizes the resulting distinction. \ours{} is not a replacement for text watermarking; it targets the behavior carrier that remains after plans are compiled into tool calls or environment actions. It is also not a capacity improvement over symmetric AgentMark when exact probabilities are available. Its purpose is to preserve AgentMark's behavior-policy guarantee while weakening the verifier's channel requirement.
+
 \subsection{Weak Asymmetry}
 
 Provably secure steganography traditionally separates symmetric settings, where sender and receiver share channel distributions, from asymmetric settings, where the receiver has no channel oracle~\cite{hopper2002provably,kaptchuk2021meteor}. Weak asymmetry occupies the middle ground: the sender has the full channel, while the receiver has partial but nontrivial channel knowledge~\cite{weakasym2026}. We instantiate this idea for behavioral watermarking. The embedder uses $P_t$ to preserve the agent policy; the verifier uses only $\sigma_t=\operatorname{argsort}_k(P_t)$ to decode.
@@ -204,16 +206,17 @@ Interleaving is important. A top-half/bottom-half split would place most mass in
 
 \begin{table}[t]
 \centering
-\caption{Decoder information requirements.}
-\label{tab:compare}
-\begin{tabular}{lll}
+\caption{Positioning against nearby watermarking settings.}
+\label{tab:positioning}
+\resizebox{\columnwidth}{!}{\begin{tabular}{llll}
 \toprule
-Scheme & Encoder input & Decoder input \\
+Scheme & Carrier & Preserved object & Verifier channel \\
 \midrule
-\agentmark{} & exact $P_t$ & exact $P_t$ \\
-\ours{} & exact $P_t$ & top-$k$ rank $\sigma_t$ \\
+Token watermarks & Text tokens & Text distribution & Generated text/statistic \\
+\agentmark{} & Agent behaviors & Behavior policy $P_t$ & Exact $P_t$ \\
+\ours{} & Agent behaviors & Behavior policy $P_t$ & Top-$k$ rank $\sigma_t$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Rank Decoder}
