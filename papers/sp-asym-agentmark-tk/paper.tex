@@ -397,21 +397,23 @@ Table~\ref{tab:capacity} compares payload recovery and bit match for 8-bit paylo
 
 ToolBench is lower-capacity for both schemes because trajectories are short and many tool choices have low recoverable entropy. Nevertheless, \ours{} remains stable from exact probabilities to top-10 rank-only decoding (0.033 to 0.032), whereas \agentmark{} drops from 0.085 to 0.003.
 
+The selected-only column is the negative control: when the verifier sees only the executed behavior and no candidate ordering, neither scheme recovers coded bits. This validates the weak-asymmetric framing. \ours{} weakens exact probability knowledge to rank knowledge; it does not claim attribution from the action log alone.
+
 \begin{table}[t]
 \centering
 \caption{8-bit recovery under verifier channel knowledge. Cells show payload recovery / bit-match rate.}
 \label{tab:capacity}
-\resizebox{\columnwidth}{!}{\begin{tabular}{llrrrr}
+\resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrr}
 \toprule
-Dataset & Method & Exact & Top-10 & Top-6 & Top-2 \\
+Dataset & Method & Exact & Top-10 & Top-6 & Top-2 & Sel. only \\
 \midrule
 \multirow{2}{*}{ALFWorld}
-& \agentmark{} & .700/.985 & .014/.594 & .004/.498 & .004/.504 \\
-& \ours{} & .532/.942 & .068/.718 & .028/.641 & .006/.566 \\
+& \agentmark{} & .700/.985 & .014/.594 & .004/.498 & .004/.504 & .000/.000 \\
+& \ours{} & .532/.942 & .068/.718 & .028/.641 & .006/.566 & .000/.000 \\
 \midrule
 \multirow{2}{*}{ToolBench}
-& \agentmark{} & .085/.582 & .003/.299 & .000/.292 & .000/.309 \\
-& \ours{} & .033/.502 & .032/.501 & .007/.470 & .000/.357 \\
+& \agentmark{} & .085/.582 & .003/.299 & .000/.292 & .000/.309 & .000/.000 \\
+& \ours{} & .033/.502 & .032/.501 & .007/.470 & .000/.357 & .000/.000 \\
 \bottomrule
 \end{tabular}}
 \end{table}
