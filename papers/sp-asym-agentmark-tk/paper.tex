@@ -109,6 +109,8 @@ We consider three perturbations. First, \emph{step erasure}: some logged steps a
 
 The adversary observes watermarked trajectories and may know the algorithm and public parameters, including $k$, but not $K_{\mathrm{sh}}$. This is the standard secret-key provenance setting: a platform or model owner embeds an identifier, while a later verifier checks a claimed key and payload. We do not rely on security through obscurity of the rank partition or coding scheme.
 
+The adversary has two goals. A \emph{removal} adversary tries to make a genuinely watermarked trajectory verify as inconclusive or negative by deleting steps, perturbing ranks, or changing behavior serialization. A \emph{framing} adversary tries to make an unwatermarked or differently watermarked trajectory verify under another party's claim. Claim binding and false-positive thresholds address framing when the key is secret; arbitrary trajectory rewriting, compromised keys, and compromised logging infrastructure are outside the cryptographic claim and are handled as deployment assumptions.
+
 A scheme should satisfy:
 \begin{itemize}[leftmargin=*]
   \item \textbf{Utility preservation}: $\Pr[\hat b_t=b]=P_t(b)$ per step.
