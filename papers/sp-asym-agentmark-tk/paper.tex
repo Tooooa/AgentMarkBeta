@@ -482,11 +482,11 @@ Method & View & 0.0 & 0.1 & 0.2 & 0.3 & 0.5 \\
 \subsection{False Positives}
 \label{sec:false-positive-results}
 
-Analytic clean-trajectory trials match the expected false-positive probability $2^{-L}$. For payload lengths $L=8,16,32,64$, the expected rates are $3.91\times10^{-3}$, $1.53\times10^{-5}$, $2.33\times10^{-10}$, and $5.42\times10^{-20}$. Operational deployments should use at least 32-bit claims for audit-grade attribution, with longer payloads when enough trajectory length is available.
+False-positive control is analytic for strict payload claims. If a clean or unrelated trajectory yields coded bits that are independent of a pre-registered claimed payload, the chance that it recovers that exact $L$-bit payload is $2^{-L}$. For payload lengths $L=8,16,32,64$, the corresponding single-claim thresholds are $3.91\times10^{-3}$, $1.53\times10^{-5}$, $2.33\times10^{-10}$, and $5.42\times10^{-20}$. Operational deployments should use at least 32-bit claims for audit-grade attribution, with longer payloads when enough trajectory length is available.
 
 The threshold must also account for multiple testing. If an operator tests $N$ independent key/payload claims against the same corpus, a conservative union bound gives a family-wise false-positive rate at most $N2^{-L}$. Thus an 8-bit payload is appropriate for controlled capacity diagnostics but not for open-ended attribution. A 64-bit payload keeps the bound below $10^{-12}$ even for one million tested claims, assuming the verifier also enforces the rank-quality gate described in Section~IV-D.
 
-The binomial confidence curves provide an additional view when a verifier reports a bit-level score rather than a decoded payload. For example, ALFWorld rank trajectories with 50 observed bits have match rates near 0.98 in the logged exact/rank-consistent settings, corresponding to one-sided $p$-values below $10^{-13}$. This is not a replacement for strict payload recovery, but it gives an audit operator a calibrated early-warning statistic before enough equations are available for RLNC decoding.
+Bit-level scores require a different interpretation. When a verifier reports a match rate over $n$ decoded coded bits rather than a recovered payload, the appropriate null is a binomial tail $\Pr[X\geq s; X\sim\mathrm{Binom}(n,1/2)]$ for the observed score $s$. This statistic is useful for channel diagnostics and triage before enough independent RLNC equations are available, but it is not a positive attribution decision unless the pre-registered payload itself is recovered.
 
 \section{Discussion}
 
