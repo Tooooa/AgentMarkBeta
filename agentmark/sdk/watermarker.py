@@ -22,7 +22,7 @@ from agentmark.core.watermark_sampler import (
     sample_behavior_rank,
     rank_based_decoder,
     differential_based_recombination,
-    generate_contextual_key,
+    derive_contextual_watermark_key,
     DRBG,
 )
 
@@ -62,6 +62,7 @@ class AgentWatermarker:
         *,
         mock: bool = False,
         algorithm: str = "rank",
+        watermark_key: Optional[Any] = None,
     ) -> None:
         if payload_bits and payload_text:
             raise ValueError("Specify either payload_bits or payload_text, not both.")
@@ -77,6 +78,7 @@ class AgentWatermarker:
         self._round_num = 0
         self.mock = mock
         self.algorithm = algorithm
+        self._watermark_key = watermark_key
 
     # ------------------------------------------------------------------ #
     # Public API
@@ -139,6 +141,7 @@ class AgentWatermarker:
                 context_for_key=context or None,
                 history_responses=history,
                 round_num=round_used,
+                watermark_key=self._watermark_key,
             )
 
         self._bit_index += bits_cnt
@@ -190,6 +193,7 @@ class AgentWatermarker:
                 context_for_key=context or None,
                 history_responses=history,
                 round_num=round_used,
+                watermark_key=self._watermark_key,
             )
 
     def reset(self) -> None:
@@ -299,7 +303,7 @@ class AgentWatermarker:
 
         prob_new = prob_new / prob_new.sum()
 
-        key = generate_contextual_key([context_used])
+        key = derive_contextual_watermark_key(context_used, self._watermark_key)
         nonce = str(round_used).encode("utf-8")
         prg = DRBG(key, nonce)
 

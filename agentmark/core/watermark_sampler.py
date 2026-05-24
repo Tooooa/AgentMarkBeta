@@ -49,6 +49,22 @@ def generate_contextual_key(history_responses, num_bytes=32):
     return hasher.digest()[:num_bytes]
 
 
+def derive_contextual_watermark_key(context_used, watermark_key=None, num_bytes=32):
+    """
+    Derive the per-step DRBG key.
+
+    If watermark_key is provided, bind the public context to that owner secret.
+    If omitted, preserve the legacy experiment behavior that derives the key
+    from context alone.
+    """
+    context_bytes = (context_used or "").encode("utf-8")
+    if watermark_key is None:
+        return generate_contextual_key([context_used], num_bytes=num_bytes)
+    if isinstance(watermark_key, str):
+        watermark_key = watermark_key.encode("utf-8")
+    return hmac.new(watermark_key, context_bytes, hashlib.sha512).digest()[:num_bytes]
+
+
 # ==============================================================================
 # ================ Differential Scheme Watermark Engine ================
 # ==============================================================================
@@ -1019,6 +1035,7 @@ def sample_behavior_rank(
     history_responses: list = None,
     round_num: int = 0,
     topk: int = None,
+    watermark_key=None,
     sample_seed_prefix: bytes = b'sample',
     input_nonce: bytes = b'\x00' * 16,
 ):
@@ -1043,7 +1060,7 @@ def sample_behavior_rank(
         recent = history_responses[-window_size:] if history_responses else []
         context_used = "||".join(recent) if recent else ""
     
-    key = generate_contextual_key([context_used])
+    key = derive_contextual_watermark_key(context_used, watermark_key)
     # For RankStego, we use the Meteor DRBG seed = prefix + nonce + round
     seed = sample_seed_prefix + input_nonce + str(round_num).encode('utf-8')
     PRG = DRBG(key, seed)
@@ -1103,6 +1120,7 @@ def rank_based_decoder(
     history_responses: list = None,
     round_num: int = 0,
     topk: int = None,
+    watermark_key=None,
     sample_seed_prefix: bytes = b'sample',
     input_nonce: bytes = b'\x00' * 16,
 ) -> str:
@@ -1134,7 +1152,7 @@ def rank_based_decoder(
         recent = history_responses[-window_size:] if history_responses else []
         context_used = "||".join(recent) if recent else ""
     
-    key = generate_contextual_key([context_used])
+    key = derive_contextual_watermark_key(context_used, watermark_key)
     seed = sample_seed_prefix + input_nonce + str(round_num).encode('utf-8')
     PRG = DRBG(key, seed)
 
