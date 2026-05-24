@@ -406,7 +406,7 @@ The selected-only column is the negative control: when the verifier sees only th
 
 \begin{table}[t]
 \centering
-\caption{8-bit recovery under verifier channel knowledge. Cells show payload recovery / bit-match rate.}
+\caption{Offline 8-bit decoder proxy under verifier channel knowledge. Cells show payload recovery / bit-match rate.}
 \label{tab:capacity}
 \resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrr}
 \toprule
@@ -429,7 +429,7 @@ Increasing $k$ raises both the amount of available rank information and the risk
 
 \begin{table}[t]
 \centering
-\caption{Top-$k$ ablation for \ours{}. Cells show bit-match / payload recovery.}
+\caption{Top-$k$ ablation for \ours{} in the offline decoder proxy. Cells show bit-match / payload recovery.}
 \label{tab:topk}
 \resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrr}
 \toprule
@@ -447,7 +447,7 @@ We inject adjacent rank swaps with noise rate $\epsilon$. On ALFWorld, \ours{} m
 
 \begin{table}[t]
 \centering
-\caption{Rank-noise sensitivity for \ours{}. Cells show bit-match / payload recovery.}
+\caption{Rank-noise sensitivity for \ours{} in the offline decoder proxy. Cells show bit-match / payload recovery.}
 \label{tab:noise}
 \resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrr}
 \toprule
@@ -465,7 +465,7 @@ Step erasure models incomplete logs and early termination. Table~\ref{tab:erasur
 
 \begin{table}[t]
 \centering
-\caption{ALFWorld erasure sensitivity. Cells show bit-match / payload recovery.}
+\caption{ALFWorld erasure sensitivity in the offline decoder proxy. Cells show bit-match / payload recovery.}
 \label{tab:erasure}
 \resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrr}
 \toprule
