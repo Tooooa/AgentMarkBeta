@@ -361,6 +361,7 @@ The evaluation answers six questions. \textbf{RQ1}: Does rank-based embedding pr
 \subsection{Metrics}
 
 We report task success rate and average steps for utility. We report Jensen-Shannon divergence (JSD) between empirical action-frequency distributions for a coarse stealth check. For watermark recovery, \emph{payload recovery} is the fraction of trajectories whose decoded payload exactly matches the embedded payload; in the offline proxy tables this is the 8-bit benchmark payload defined in the setup, not an audit-grade deployment identifier. \emph{Bit match} is the average agreement between decoded coded bits and the expected coded stream. When a verifier view recovers no coded bits, both payload recovery and bit match are reported as zero. The latter is not a substitute for attribution, but it is a sensitive diagnostic for channel degradation. For confidence analysis, we use a one-sided binomial tail probability under the null hypothesis that each decoded bit matches the claim with probability $1/2$.
+All recovery tables report cells as bit match / payload recovery.
 
 \subsection{Utility Preservation}
 
@@ -419,19 +420,19 @@ The selected-only column is the negative control: when the verifier sees only th
 
 \begin{table}[t]
 \centering
-\caption{Offline 8-bit decoder proxy under verifier channel knowledge. Cells show payload recovery / bit-match rate; Sel. only is the selected-behavior-only negative control.}
+\caption{Offline 8-bit decoder proxy under verifier channel knowledge. Cells show bit-match / payload recovery; Sel. only is the selected-behavior-only negative control.}
 \label{tab:capacity}
 \resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrr}
 \toprule
 Dataset & Method & Exact & Top-10 & Top-6 & Top-2 & Sel. only \\
 \midrule
 \multirow{2}{*}{ALFWorld}
-& \agentmark{} & .700/.985 & .014/.594 & .004/.498 & .004/.504 & .000/.000 \\
-& \ours{} & .532/.942 & .068/.718 & .028/.641 & .006/.566 & .000/.000 \\
+& \agentmark{} & .985/.700 & .594/.014 & .498/.004 & .504/.004 & .000/.000 \\
+& \ours{} & .942/.532 & .718/.068 & .641/.028 & .566/.006 & .000/.000 \\
 \midrule
 \multirow{2}{*}{ToolBench}
-& \agentmark{} & .085/.582 & .003/.299 & .000/.292 & .000/.309 & .000/.000 \\
-& \ours{} & .033/.502 & .032/.501 & .007/.470 & .000/.357 & .000/.000 \\
+& \agentmark{} & .582/.085 & .299/.003 & .292/.000 & .309/.000 & .000/.000 \\
+& \ours{} & .502/.033 & .501/.032 & .470/.007 & .357/.000 & .000/.000 \\
 \bottomrule
 \end{tabular}}
 \end{table}
