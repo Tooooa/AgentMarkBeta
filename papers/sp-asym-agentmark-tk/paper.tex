@@ -50,6 +50,8 @@ This paper asks whether behavioral provenance can survive with less verifier kno
 
 We present \ours, a top-$k$ rank-based behavioral watermark. The key technical idea is to redesign the encoder and decoder together. The encoder sorts behaviors by probability and recursively partitions the top-$k$ list into even and odd ranks. At each level, a binary distribution-preserving primitive uses probability masses to choose a group without changing the marginal policy. The decoder, by contrast, never uses probability values: the selected behavior's rank determines the path through the same interleaved partition tree, and odd branches reveal embedded bits. A fixed-budget DRBG schedule ensures that encoder and decoder consume the same pseudorandomness even when no bit is embedded at a level.
 
+The claim is intentionally scoped. The paper establishes a channel-knowledge tradeoff: top-$k$ ranks can preserve decoder signal when exact probabilities are unavailable. It does not claim attribution from selected actions alone, nor does it claim production certification from the offline 8-bit proxy tables. Audit-grade attribution still requires a pre-registered key/payload claim, sufficiently long payloads, calibrated rank reconstruction, and end-to-end RLNC recovery under the deployment logging stack.
+
 Our contributions are:
 \begin{itemize}[leftmargin=*]
   \item We formulate weakly asymmetric behavioral watermarking for LLM agents, separating the embedder's full channel access from the verifier's top-$k$ rank-only access.
