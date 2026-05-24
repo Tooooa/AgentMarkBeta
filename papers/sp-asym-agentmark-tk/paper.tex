@@ -414,7 +414,7 @@ ToolBench & 0.174 & 0.140 & 0.181 & 0.162 \\
 
 Table~\ref{tab:capacity} compares payload recovery and bit match for 8-bit payloads under different verifier knowledge. Under exact probabilities on ALFWorld, \agentmark{} has higher payload recovery (0.700) than \ours{} (0.532), reflecting the efficiency cost of rank-only structure. Under top-10 rank-only verification, \agentmark{} collapses to 0.014 payload recovery, while \ours{} remains at 0.068. This is the central tradeoff: \agentmark{} is better when exact probabilities are available; \ours{} is more reliable when the verifier only has rank knowledge.
 
-ToolBench is lower-capacity for both schemes because trajectories are short and many tool choices have low recoverable entropy. Nevertheless, \ours{} remains stable from exact probabilities to top-10 rank-only decoding (0.033 to 0.032), whereas \agentmark{} drops from 0.085 to 0.003.
+ToolBench is lower-capacity for both schemes because trajectories are short and many tool choices have low recoverable entropy. Nevertheless, \ours{} keeps nearly the same payload recovery from exact probabilities to top-10 rank-only decoding (0.033 to 0.032), whereas \agentmark{} drops from 0.085 to 0.003 payload recovery.
 
 The selected-only column is the negative control: when the verifier sees only the executed behavior and no candidate ordering, neither scheme recovers coded bits. This validates the weak-asymmetric framing. \ours{} weakens exact probability knowledge to rank knowledge; it does not claim attribution from the action log alone.
 
