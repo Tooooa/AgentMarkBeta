@@ -18,6 +18,12 @@ make
 
 The default target runs `latexmk -pdf paper.tex` and produces `paper.pdf`.
 
+## Venue Notes
+
+- The LaTeX class uses `\documentclass[conference,compsoc]{IEEEtran}`, matching the IEEE S&P CFP guidance for submissions.
+- The title block intentionally omits placeholder author names for double-blind review.
+- The current compiled PDF is below the 13-page body limit; the draft is still intentionally expandable.
+
 ## Source Material
 
 The draft is based on:
@@ -28,4 +34,3 @@ The draft is based on:
 - `agentmark/core/watermark_sampler.py`
 - `agentmark/core/rlnc_codec.py`
 - `output/asym_agentmark_tk/week2_postprocess/*.csv`
-

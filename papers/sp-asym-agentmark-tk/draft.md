@@ -34,5 +34,6 @@ The main technical hook is a co-designed encoder and decoder. AgentMark-F's diff
 
 ## Notes for Revision
 
-The current LaTeX draft is written as an S&P-style anonymous submission. It is intentionally concise and keeps several proofs in theorem/proposition form to fit the 13-page body constraint. The available capacity artifacts are bit-level offline decoder proxies; the text avoids claiming full end-to-end RLNC recovery beyond what is present in the generated tables.
+The current LaTeX draft is written as an S&P-style anonymous submission using the `conference,compsoc` IEEEtran class and no fake author block. It is intentionally concise and keeps several proofs in theorem/proposition form to fit the 13-page body constraint. The available capacity artifacts are bit-level offline decoder proxies; the text avoids claiming full end-to-end RLNC recovery beyond what is present in the generated tables.
 
+The next strongest improvement would be a real system figure and an end-to-end RLNC recovery table from live trajectories. The present draft now explicitly separates strict payload recovery from bit-level channel diagnostics so reviewers do not mistake proxy results for full-system claims.

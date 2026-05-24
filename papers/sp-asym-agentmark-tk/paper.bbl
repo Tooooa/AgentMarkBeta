@@ -85,6 +85,12 @@ G.~Kaptchuk, T.~M. Jois, M.~Green, and A.~D. Rubin, ``{Meteor}:
   \emph{Proceedings of the ACM SIGSAC Conference on Computer and Communications
   Security}, 2021.
 
+\bibitem{ho2006random}
+T.~Ho, M.~M{\'e}dard, R.~Koetter, D.~R. Karger, M.~Effros, J.~Shi, and
+  B.~Leong, ``A random linear network coding approach to multicast,''
+  \emph{IEEE Transactions on Information Theory}, vol.~52, no.~10, pp.
+  4413--4430, 2006.
+
 \bibitem{deepseek2024}
 {DeepSeek-AI}, ``{DeepSeek} llm: Scaling open-source language models with
   longtermism,'' \emph{arXiv preprint arXiv:2401.02954}, 2024.

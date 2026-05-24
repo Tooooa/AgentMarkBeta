@@ -1,4 +1,4 @@
-\documentclass[conference,10pt]{IEEEtran}
+\documentclass[conference,compsoc]{IEEEtran}
 \IEEEoverridecommandlockouts
 
 \usepackage[T1]{fontenc}
@@ -26,10 +26,7 @@
 
 \title{\ours: Weakly Asymmetric Behavioral Watermarking for LLM Agents}
 
-\author{
-\IEEEauthorblockN{Anonymous Authors}
-\IEEEauthorblockA{Paper under double-blind review}
-}
+\author{}
 
 \begin{document}
 \maketitle
@@ -93,9 +90,21 @@ For a trajectory of length $T$, each step $t$ has a behavior set $\B_t=\{b_{t,1}
 
 The verifier observes a possibly incomplete set of indices $I\subseteq\{1,\ldots,T\}$ and, for each observed step, the selected behavior $\hat b_t$ plus channel side information. In the symmetric setting, the side information is $P_t$ or an exact reconstruction. In our setting, it is the top-$k$ ordering $\sigma_t$.
 
+\textbf{Verifier knowledge.}
+We distinguish three verifier views. In the \emph{exact view}, the verifier receives $P_t$ and can run the same decoder as the embedder. In the \emph{rank view}, the verifier receives only $\sigma_t^k=(b_{(1)},\ldots,b_{(k)})$, the ordered list of the top-$k$ behaviors. In the \emph{selected-only view}, the verifier receives only $\hat b_t$ and no usable channel side information. The exact view is a useful upper bound; the rank view is the deployment target of \ours{}; the selected-only view is a negative control showing that behavioral provenance cannot be recovered from actions alone without some channel side information.
+
+\textbf{Rank consistency.}
+For two distributions $P_t$ and $P'_t$ over the same candidate list, define top-$k$ rank consistency as
+\begin{equation}
+  \operatorname{argsort}_k(P_t)=\operatorname{argsort}_k(P'_t).
+\end{equation}
+This condition permits arbitrary probability-value changes as long as the verifier preserves the ordered top-$k$ set. It covers monotone transformations such as temperature rescaling, but it also covers less structured API changes whose empirical effect is to leave ranks unchanged. When the equality fails, we measure degradation through rank-noise experiments rather than assuming correctness.
+
 \subsection{Adversary and Requirements}
 
 We consider three perturbations. First, \emph{step erasure}: some logged steps are missing due to execution failures, platform deletion, or incomplete telemetry. Second, \emph{distribution perturbation}: a verifier reconstructs $P'_t$ whose numeric values differ from $P_t$. Third, \emph{rank noise}: some adjacent ranks in $\sigma_t$ are swapped, modeling top-$k$ instability or proxy-model disagreement.
+
+The adversary observes watermarked trajectories and may know the algorithm and public parameters, including $k$, but not $K_{\mathrm{sh}}$. This is the standard secret-key provenance setting: a platform or model owner embeds an identifier, while a later verifier checks a claimed key and payload. We do not rely on security through obscurity of the rank partition or coding scheme.
 
 A scheme should satisfy:
 \begin{itemize}[leftmargin=*]
@@ -104,6 +113,9 @@ A scheme should satisfy:
   \item \textbf{Low false positives}: a clean trajectory should match a claimed $L$-bit payload with probability approximately $2^{-L}$ under independent payload trials.
   \item \textbf{Erasure tolerance}: payload recovery should degrade gracefully when only a subset of steps is observed.
 \end{itemize}
+
+\textbf{Detection statistic.}
+For an audited trajectory, the verifier decodes a multiset of coded bits and attempts to recover payload $\hat m$. A strict positive attribution requires $\hat m=m$ for the claimed payload. For bit-level channel diagnostics, we also report the bit match rate between decoded coded bits and the coded stream induced by $m$. Payload recovery is stricter and is used for provenance claims; bit match is useful for comparing noisy channels even when there are too few equations for full RLNC recovery.
 
 \subsection{Non-Goals}
 
@@ -122,6 +134,9 @@ At a tree node, the encoder must choose between two groups with masses $S_0$ and
   r_m=(rS+\tfrac{1}{2}Sm)\bmod S.
 \end{equation}
 \BinEnc{} selects group $0$ if $r_m<S_0$ and group $1$ otherwise. If group $1$ is selected, one bit is embedded; if group $0$ is selected, no bit is consumed and the same bit is retried at the next level. Because $r_m$ is uniform over $[0,S)$ for uniform $r$, the selected group has exactly the desired marginal probabilities $S_0/S$ and $S_1/S$.
+
+\textbf{Why zero-bit branches are intentional.}
+The primitive gives up a bit when the high-mass group is selected because forcing every branch to carry a bit would require reweighting the group probabilities. The deferred-bit design is the same kind of tradeoff used by distribution-preserving steganography: capacity is opportunistic, but the cover distribution is unchanged. In agent settings this is a feature rather than a cosmetic constraint, because utility regressions caused by shifted planning choices are easier for users and downstream systems to notice than small variations in textual style.
 
 \subsection{Rank Encoder}
 
@@ -191,17 +206,23 @@ Whenever $q_\ell$ is odd, the selected path entered the odd group and one bit wa
 
 \subsection{Coding Layer}
 
-Per-step embedding capacity varies with $P_t$, $k$, and trajectory length. To avoid requiring a contiguous bitstream, \ours{} uses deterministic RLNC over GF(2). For payload $m\in\{0,1\}^L$, the $i$-th coded bit is
+Per-step embedding capacity varies with $P_t$, $k$, and trajectory length. To avoid requiring a contiguous bitstream, \ours{} uses deterministic RLNC over GF(2), following the standard random linear network coding principle~\cite{ho2006random}. For payload $m\in\{0,1\}^L$, the $i$-th coded bit is
 \begin{equation}
   c_i = \langle a_i, m\rangle \bmod 2,
 \end{equation}
 where coefficient vector $a_i$ is generated deterministically from a stream key and index $i$. The verifier collects decoded coded bits and solves the resulting linear system by Gaussian elimination over GF(2). This layer is inherited from AgentMark's erasure-resilience design but is independent of whether the step decoder is symmetric or rank-only.
+
+The coding layer also cleanly separates two questions that are often conflated. The step decoder asks whether an observed behavior can yield a reliable coded bit under the verifier's channel view. RLNC asks whether enough independent coded bits have survived to solve for the payload. This separation is useful for weak asymmetry: a rank-only decoder may produce fewer bits than an exact-probability decoder, but the coding layer can still recover when the trajectory is long enough or the audit window spans enough steps.
 
 \subsection{Implementation Notes}
 
 The implementation follows the repository's production path. The public SDK exposes an \texttt{AgentWatermarker} wrapper with \texttt{algorithm="rank"} as the default. Internally, \texttt{Dist} stores probability tensors and stable indices, \texttt{RankEncStep} applies the interleaved split, and \texttt{RankDecStep} reconstructs bits from sorted indices. The DRBG is an HMAC-SHA512 reseed construction inspired by Meteor~\cite{kaptchuk2021meteor}. A synchronization counter, \texttt{rt\_sync}, forces both sides to advance exactly $\lceil\log_2 n\rceil$ random draws per step. This detail is small but critical: without it, a zero-bit level would shift all later decoding.
 
 Tie handling uses stable sorting after probability normalization. Ties are rare in model-scored behavior sets but can occur after rounding or prompt templates that assign equal fallback scores. Stable sorting makes the order deterministic when both sides see the same candidate list. If the verifier obtains a tied but differently ordered top-$k$ list, this is treated as rank noise and measured through the adjacent-swap experiment.
+
+\subsection{Parameter Selection}
+
+The top-$k$ parameter controls a reliability--capacity tradeoff. Larger $k$ exposes more leaves in the partition tree and can increase decoded length, but it also includes lower-probability tail behaviors whose relative ranks are less stable across models and serving conditions. Smaller $k$ is more conservative and better aligned with restricted APIs, but it leaves less room for embedding. In our experiments we report $k\in\{2,4,6,8,10,20\}$ rather than tuning to a single best value. A deployment can choose $k$ from a calibration set by maximizing expected payload recovery subject to a minimum top-$k$ rank agreement threshold.
 
 \section{Security Analysis}
 
@@ -225,6 +246,12 @@ Let $P_t$ and $P'_t$ satisfy $\operatorname{argsort}_k(P_t)=\operatorname{argsor
 \textbf{False positives.}
 For an unwatermarked trajectory, a claimed $L$-bit payload matches by chance with probability $2^{-L}$ under the standard assumption that decoded clean bits are independent of the claimed payload. In practice the verifier can tune $L$ to the desired audit threshold; $L=32$ yields $2.33\times10^{-10}$ and $L=64$ yields $5.42\times10^{-20}$.
 
+\textbf{Why symmetric decoding fails under rank-only views.}
+Differential recombination constructs bins from probability gaps. Two distributions with the same rank ordering can have different gaps and therefore different bins. A behavior selected from the embedder's bin can land in a different verifier bin, causing both bit errors and variable-length desynchronization. Theorem~1 avoids this failure mode by making the decoder's sufficient statistic exactly the rank path, not the probability mass assigned to that path.
+
+\textbf{Key privacy.}
+The watermark key is used only to derive context-specific pseudorandomness. The public trajectory and rank list do not reveal the key under the pseudorandom function assumption for HMAC-SHA512. Reusing the same key across many trajectories is therefore acceptable for provenance verification, though operational deployments should still rotate keys across tenants or products to limit blast radius if a key is disclosed.
+
 \textbf{Limits.}
 \ours{} is robust to value perturbations that preserve top-$k$ order, not to arbitrary rank manipulation. If an adversary can force targeted rank swaps in the top-$k$ list, it can corrupt decoded paths. This is the expected boundary of any rank-only weakly asymmetric scheme. The evaluation therefore includes adjacent rank-noise injection.
 
@@ -240,6 +267,10 @@ Unless otherwise stated, recovery rates in this draft are computed from the avai
 
 The evaluation answers five questions. \textbf{RQ1}: Does rank-based embedding preserve task utility compared with clean and symmetric AgentMark pipelines? \textbf{RQ2}: Does it leave behavior-frequency distributions close to clean trajectories? \textbf{RQ3}: What is the tradeoff between exact-probability capacity and rank-only robustness? \textbf{RQ4}: How sensitive is the method to the top-$k$ parameter? \textbf{RQ5}: How quickly does decoding degrade when the verifier's rank order is noisy?
 
+\subsection{Metrics}
+
+We report task success rate and average steps for utility. We report Jensen-Shannon divergence (JSD) between empirical action-frequency distributions for a coarse stealth check. For watermark recovery, \emph{payload recovery} is the fraction of trajectories whose decoded payload exactly matches the embedded payload; \emph{bit match} is the average agreement between decoded coded bits and the expected coded stream. The latter is not a substitute for attribution, but it is a sensitive diagnostic for channel degradation. For confidence analysis, we use a one-sided binomial tail probability under the null hypothesis that each decoded bit matches the claim with probability $1/2$.
+
 \subsection{Utility Preservation}
 
 Table~\ref{tab:utility} reports average task success and steps. On ALFWorld, \ours{} reaches 78.6\% success versus 80.0\% for clean and 79.4\% for \agentmark{}. On ToolBench, \ours{} reaches 77.1\%, slightly above the clean pipeline's 75.7\%. The result supports the distribution-preservation goal: rank encoding does not introduce the large utility tax associated with naive behavior bias.
@@ -248,7 +279,7 @@ Table~\ref{tab:utility} reports average task success and steps. On ALFWorld, \ou
 \centering
 \caption{Task utility averaged over available model/split groups.}
 \label{tab:utility}
-\begin{tabular}{lrrrr}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrr}
 \toprule
 Dataset & Method & Success & Steps & Groups \\
 \midrule
@@ -266,7 +297,7 @@ Dataset & Method & Success & Steps & Groups \\
 & \agentmark{} & 74.7 & 4.54 & 2 \\
 & \ours{} & 77.1 & 5.07 & 2 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Behavioral Stealth}
@@ -277,14 +308,14 @@ We compare empirical action distributions against clean trajectories using Jense
 \centering
 \caption{Mean JSD to clean behavior frequency. Lower is closer to clean.}
 \label{tab:jsd}
-\begin{tabular}{lrrrr}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrr}
 \toprule
 Dataset & \agentmark{} & \ours{} & RG & Vanilla \\
 \midrule
 ALFWorld & 0.122 & 0.121 & 0.134 & 0.564 \\
 ToolBench & 0.174 & 0.140 & 0.181 & 0.162 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Rank-Only Verification}
@@ -348,9 +379,31 @@ ToolBench & .502/.033 & .489/.025 & .454/.017 & .413/.003 & .375/.003 \\
 \end{tabular}}
 \end{table}
 
+\subsection{Step Erasure}
+
+Step erasure models incomplete logs and early termination. Table~\ref{tab:erasure} summarizes ALFWorld because it has enough trajectory length to expose the effect cleanly. Under exact probabilities, \ours{} degrades smoothly from 0.532 payload recovery with no erasure to 0.338 at 50\% erasure. Under the harder top-6 rank view, bit match remains above chance and declines from 0.641 to 0.567, while strict payload recovery is low because the rank-only proxy produces too few equations. This separates the two bottlenecks: the rank channel still carries signal, but full payload recovery needs either longer traces, larger $k$, or stronger aggregation.
+
+\begin{table}[t]
+\centering
+\caption{ALFWorld erasure sensitivity. Cells show bit-match / payload recovery.}
+\label{tab:erasure}
+\resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrr}
+\toprule
+Method & View & 0.0 & 0.1 & 0.2 & 0.3 & 0.5 \\
+\midrule
+\agentmark{} & Exact & .985/.700 & .976/.691 & .969/.650 & .944/.608 & .915/.522 \\
+\agentmark{} & Top-6 & .498/.004 & .488/.003 & .484/.004 & .486/.001 & .466/.002 \\
+\ours{} & Exact & .942/.532 & .935/.506 & .921/.482 & .910/.431 & .842/.338 \\
+\ours{} & Top-6 & .641/.028 & .631/.021 & .614/.020 & .602/.020 & .567/.016 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \subsection{False Positives}
 
 Analytic clean-trajectory trials match the expected false-positive probability $2^{-L}$. For payload lengths $L=8,16,32,64$, the expected rates are $3.91\times10^{-3}$, $1.53\times10^{-5}$, $2.33\times10^{-10}$, and $5.42\times10^{-20}$. Operational deployments should use at least 32-bit claims for audit-grade attribution, with longer payloads when enough trajectory length is available.
+
+The binomial confidence curves provide an additional view when a verifier reports a bit-level score rather than a decoded payload. For example, ALFWorld rank trajectories with 50 observed bits have match rates near 0.98 in the logged exact/rank-consistent settings, corresponding to one-sided $p$-values below $10^{-13}$. This is not a replacement for strict payload recovery, but it gives an audit operator a calibrated early-warning statistic before enough equations are available for RLNC decoding.
 
 \section{Discussion}
 
@@ -366,6 +419,9 @@ Unlike exact probability equality, rank consistency can be measured directly dur
 \textbf{Adaptive adversaries.}
 An adversary aware of the watermark could try to perturb ranks while preserving task success. This attack is outside pure distribution perturbation and should be treated as an active removal attack. Defenses include randomized $k$, context-dependent rank partitions, and cross-step consistency checks.
 
+\textbf{Operational audit flow.}
+A practical verifier should not treat every low-confidence trajectory as a negative attribution. Instead, it should first check whether the top-$k$ rank reconstruction is itself reliable. If the reconstructed rank agreement is poor, the correct conclusion is an inconclusive audit rather than a clean verdict. This distinction matters in legal or compliance settings, where absence of recoverable watermark evidence is not the same as evidence of absence.
+
 \section{Related Work}
 
 \textbf{LLM and agent watermarking.}
@@ -377,9 +433,22 @@ Provably secure steganography formalizes indistinguishability between cover and 
 \textbf{Agent benchmarks.}
 ALFWorld aligns text-based embodied environments with interactive learning~\cite{shridhar2021alfworld}. ToolBench evaluates LLM tool-use over real-world APIs~\cite{qin2023toolllm}. OASIS demonstrates large-scale social-agent simulation~\cite{gao2024oasis}. These benchmarks highlight why behavior-level provenance matters: the action trajectory is often more important than the final message.
 
-\section{Limitations and Ethics}
+\section{Threats to Validity}
+
+\textbf{Offline postprocessing.}
+The current capacity and robustness experiments are computed from logged trajectories and offline decoder proxies. This is appropriate for isolating the channel-knowledge question, but it is weaker than a complete live deployment study with end-to-end RLNC recovery under production logging. The paper therefore labels proxy capacity claims explicitly and avoids treating them as full-system recovery guarantees.
+
+\textbf{Benchmark coverage.}
+ALFWorld and ToolBench cover embodied planning and tool-use, but they do not exhaust the space of agentic workflows. Social simulation, GUI control, multi-agent collaboration, and long-running enterprise agents may have different rank stability and trajectory length. The construction is domain-agnostic, but the best $k$ and payload length should be calibrated per environment.
+
+\textbf{Distribution elicitation.}
+The method assumes that the embedder can elicit or estimate a behavior distribution. If the candidate generator is poor, distribution preservation protects the wrong channel. This is a limitation inherited from behavioral watermarking generally, not a weakness specific to rank-only decoding.
+
+\section*{Ethics considerations}
 
 This work is intended for provenance, audit, and authorized ownership verification. It should not be used to conceal malicious coordination or bypass platform policy. The construction assumes access to a behavior distribution at embedding time and top-$k$ rank information at verification time. It does not protect against arbitrary rank manipulation, model-level watermark removal, or compromised keys. The current evaluation uses offline decoder artifacts; a final deployment study should include end-to-end RLNC recovery under live logging and cross-model rank reconstruction.
+
+Watermarking creates governance risks as well as benefits. A false or overconfident attribution can harm users, developers, or organizations. Deployments should therefore publish the verification threshold, report inconclusive outcomes, retain audit logs, and separate watermark evidence from broader incident investigation. The method should not be used for covert monitoring of users without notice; its appropriate role is provenance for agents or services controlled by the embedding party.
 
 \section{Conclusion}
 
