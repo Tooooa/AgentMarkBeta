@@ -125,7 +125,44 @@ For an audited trajectory, the verifier decodes a multiset of coded bits and att
 
 \subsection{Overview}
 
-\ours{} has four components. First, the agent elicits or estimates $P_t$ over candidate behaviors, following AgentMark's black-box-compatible behavior-distribution interface~\cite{agentmark2026}. Second, the encoder sorts behaviors by descending probability and restricts embedding to the top-$k$ region. Third, recursive interleaved binary splitting embeds bits while preserving the behavior distribution. Fourth, deterministic RLNC maps the payload into a stream of coded bits so that the verifier can solve for the payload after observing enough independent coded bits.
+\ours{} has four components, summarized in Fig.~\ref{fig:system}. First, the agent elicits or estimates $P_t$ over candidate behaviors, following AgentMark's black-box-compatible behavior-distribution interface~\cite{agentmark2026}. Second, the encoder sorts behaviors by descending probability and restricts embedding to the top-$k$ region. Third, recursive interleaved binary splitting embeds bits while preserving the behavior distribution. Fourth, deterministic RLNC maps the payload into a stream of coded bits so that the verifier can solve for the payload after observing enough independent coded bits.
+
+\begin{figure*}[t]
+\centering
+\fbox{\begin{minipage}{0.92\textwidth}
+\footnotesize
+\begin{tabular}{@{}p{0.27\textwidth}p{0.025\textwidth}p{0.27\textwidth}p{0.025\textwidth}p{0.25\textwidth}@{}}
+\textbf{Embedder: full channel}
+&
+$\rightarrow$
+&
+\textbf{Trajectory log}
+&
+$\rightarrow$
+&
+\textbf{Verifier: partial channel}
+\\
+\midrule
+Agent context $h_t$ and candidate behaviors $\B_t$.
+
+Elicit probabilities $P_t$ and sort top-$k$ order $\sigma_t$.
+
+Use $P_t$ to sample a watermarked behavior with the same marginal distribution.
+&
+&
+Logged behavior $\hat b_t$, step context, claimed payload identifier, and audit metadata.
+
+The log may omit steps or be checked after model/API changes.
+&
+&
+Reconstruct only the top-$k$ order $\sigma'_t$ from a restricted API or proxy model.
+
+Decode bits from the rank of $\hat b_t$; solve RLNC equations for the payload.
+\end{tabular}
+\end{minipage}}
+\caption{System view of weakly asymmetric behavioral watermarking. The embedder needs calibrated probabilities to preserve utility; the verifier needs only rank order for decoding, plus enough observed coded bits for RLNC recovery.}
+\label{fig:system}
+\end{figure*}
 
 \subsection{Binary Distribution-Preserving Primitive}
 
