@@ -115,7 +115,7 @@ A scheme should satisfy:
 \begin{itemize}[leftmargin=*]
   \item \textbf{Utility preservation}: $\Pr[\hat b_t=b]=P_t(b)$ per step.
   \item \textbf{Weak-asymmetric correctness}: if $\operatorname{argsort}_k(P'_t)=\operatorname{argsort}_k(P_t)$, decoding from $P'_t$'s order returns the same bits as decoding from $P_t$'s order.
-  \item \textbf{Low false positives}: a clean trajectory should match a claimed $L$-bit payload with probability approximately $2^{-L}$ under independent payload trials.
+  \item \textbf{Low false positives}: a clean or unrelated trajectory should recover a pre-registered claimed $L$-bit payload with probability approximately $2^{-L}$ when decoded bits are independent of the claim.
   \item \textbf{Erasure tolerance}: payload recovery should degrade gracefully when only a subset of steps is observed.
 \end{itemize}
 
@@ -295,7 +295,7 @@ Let $P_t$ and $P'_t$ satisfy $\operatorname{argsort}_k(P_t)=\operatorname{argsor
 \RankDec{} accesses channel information only through the rank position of $\hat b_t$ in the top-$k$ order. If the two orders are equal, this rank is identical. The DRBG stream depends on the secret key and context, not probability values. Therefore the decoded path and bit values are identical. \hfill$\square$
 
 \textbf{False positives.}
-For an unwatermarked trajectory, a claimed $L$-bit payload matches by chance with probability $2^{-L}$ under the standard assumption that decoded clean bits are independent of the claimed payload. In practice the verifier can tune $L$ to the desired audit threshold; $L=32$ yields $2.33\times10^{-10}$ and $L=64$ yields $5.42\times10^{-20}$.
+For an unwatermarked or unrelated trajectory, strict attribution requires recovery of a pre-registered claimed payload. Under the standard assumption that decoded clean bits are independent of that claim, an $L$-bit payload match occurs with probability $2^{-L}$. In practice the verifier can tune $L$ to the desired audit threshold; $L=32$ yields $2.33\times10^{-10}$ and $L=64$ yields $5.42\times10^{-20}$.
 
 \textbf{Why symmetric decoding fails under rank-only views.}
 Differential recombination constructs bins from probability gaps. Two distributions with the same rank ordering can have different gaps and therefore different bins. A behavior selected from the embedder's bin can land in a different verifier bin, causing both bit errors and variable-length desynchronization. Theorem~1 avoids this failure mode by making the decoder's sufficient statistic exactly the rank path, not the probability mass assigned to that path.
