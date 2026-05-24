@@ -506,7 +506,7 @@ An adversary aware of the watermark could try to perturb ranks while preserving 
 A practical verifier should not treat every low-confidence trajectory as a negative attribution. Instead, it should first check whether the top-$k$ rank reconstruction is itself reliable. If the reconstructed rank agreement is poor, the correct conclusion is an inconclusive audit rather than a clean verdict. This distinction matters in legal or compliance settings, where absence of recoverable watermark evidence is not the same as evidence of absence.
 
 \textbf{From feasibility to deployment.}
-The present artifact establishes the channel-knowledge tradeoff: rank-only verification can preserve useful signal when exact-probability verification is unavailable. A production deployment should add three engineering checks before relying on decoded payloads for attribution: live end-to-end RLNC recovery, calibrated rank reconstruction for the deployed verifier model or API, and pre-registered decision thresholds for positive, inconclusive, and negative outcomes. These checks are operational rather than conceptual, but they are important for turning weak-asymmetric provenance into an audit procedure.
+The evaluation establishes the channel-knowledge tradeoff: rank-only verification can preserve useful signal when exact-probability verification is unavailable. A production deployment should add three engineering checks before relying on decoded payloads for attribution: live end-to-end RLNC recovery, calibrated rank reconstruction for the deployed verifier model or API, and pre-registered decision thresholds for positive, inconclusive, and negative outcomes. These checks are operational rather than conceptual, but they are important for turning weak-asymmetric provenance into an audit procedure.
 
 \section{Related Work}
 
@@ -522,7 +522,7 @@ ALFWorld aligns text-based embodied environments with interactive learning~\cite
 \section{Threats to Validity}
 
 \textbf{Offline postprocessing.}
-The current capacity and robustness experiments are computed from logged trajectories and offline decoder proxies. This is appropriate for isolating the channel-knowledge question, but it is weaker than a complete live deployment study with end-to-end RLNC recovery under production logging. The paper therefore labels proxy capacity claims explicitly and avoids treating them as full-system recovery guarantees.
+Capacity and robustness experiments are computed from logged trajectories and offline decoder proxies. This is appropriate for isolating the channel-knowledge question, but it is weaker than a complete live deployment study with end-to-end RLNC recovery under production logging. The paper therefore labels proxy capacity claims explicitly and avoids treating them as full-system recovery guarantees.
 
 \textbf{Benchmark coverage.}
 ALFWorld and ToolBench cover embodied planning and tool-use, but they do not exhaust the space of agentic workflows. Social simulation, GUI control, multi-agent collaboration, and long-running enterprise agents may have different rank stability and trajectory length. The construction is domain-agnostic, but the best $k$ and payload length should be calibrated per environment.
@@ -543,7 +543,7 @@ Watermarking creates governance risks as well as benefits. A false or overconfid
 
 Behavioral provenance for LLM agents should not depend on a verifier reproducing exact per-step probabilities. \ours{} shows that top-$k$ rank order is enough to recover useful watermark signal while preserving the agent's marginal behavior policy. By replacing probability-dependent bins with a rank-decodable binary partition tree, the scheme trades some exact-channel capacity for robustness under realistic partial-channel verification. This weakly asymmetric view makes behavioral watermarking better aligned with how agents are actually audited.
 
-The current results should be read as evidence for partial-channel feasibility rather than as a final production certification. Exact-channel \agentmark{} remains attractive when the original behavior probabilities are available; \ours{} targets the common audit setting where only ranks can be reconstructed reliably. Future work should close the remaining deployment gap with longer live trajectories, end-to-end coded-payload recovery, and cross-model rank calibration.
+These results should be read as evidence for partial-channel feasibility rather than as a final production certification. Exact-channel \agentmark{} remains attractive when the original behavior probabilities are available; \ours{} targets the common audit setting where only ranks can be reconstructed reliably. Future work should close the remaining deployment gap with longer live trajectories, end-to-end coded-payload recovery, and cross-model rank calibration.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
