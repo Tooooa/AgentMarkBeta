@@ -525,6 +525,9 @@ The current capacity and robustness experiments are computed from logged traject
 \textbf{Benchmark coverage.}
 ALFWorld and ToolBench cover embodied planning and tool-use, but they do not exhaust the space of agentic workflows. Social simulation, GUI control, multi-agent collaboration, and long-running enterprise agents may have different rank stability and trajectory length. The construction is domain-agnostic, but the best $k$ and payload length should be calibrated per environment.
 
+\textbf{Candidate canonicalization.}
+Rank decoding assumes that the verifier can map the logged behavior and reconstructed candidates into the same canonical behavior set. This is straightforward for enumerated actions and structured tool calls, but less automatic for free-form plans, GUI operations, or APIs whose schemas evolve over time. A deployment should canonicalize tool names, arguments, and environment actions before ranking; otherwise a semantically correct but differently serialized behavior may appear outside the verifier's top-$k$ list and become an erasure.
+
 \textbf{Distribution elicitation.}
 The method assumes that the embedder can elicit or estimate a behavior distribution. If the candidate generator is poor, distribution preservation protects the wrong channel. This is a limitation inherited from behavioral watermarking generally, not a weakness specific to rank-only decoding.
 
