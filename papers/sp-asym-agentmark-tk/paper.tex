@@ -316,6 +316,8 @@ The evaluation pipeline starts from logged trajectories containing the selected 
 
 For each decode-capable trajectory, we run the same verifier under several channel views. The \emph{exact} view uses the logged probabilities as an upper bound. The \emph{top-$k$} views discard numeric probabilities and retain only the ordered candidate list. The selected-only view is used as a negative control when available. Rank-noise experiments perturb the top-$k$ order by adjacent swaps before decoding, and erasure experiments remove a random fraction of observed steps before RLNC solving. All tables aggregate over the available model/split groups rather than selecting the best configuration per task.
 
+The paper package keeps the LaTeX source, bibliography, build file, algorithm implementation pointers, and postprocessed CSV sources together so that reported tables can be audited against the repository artifacts. The current submission text treats these artifacts as a reproducibility trail, while reserving a full live end-to-end rerun for future artifact evaluation.
+
 \subsection{Research Questions}
 
 The evaluation answers five questions. \textbf{RQ1}: Does rank-based embedding preserve task utility compared with clean and symmetric AgentMark pipelines? \textbf{RQ2}: Does it leave behavior-frequency distributions close to clean trajectories? \textbf{RQ3}: What is the tradeoff between exact-probability capacity and rank-only robustness? \textbf{RQ4}: How sensitive is the method to the top-$k$ parameter? \textbf{RQ5}: How quickly does decoding degrade when the verifier's rank order is noisy?
