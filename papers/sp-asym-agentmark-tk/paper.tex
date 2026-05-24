@@ -307,6 +307,12 @@ We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023t
 
 Unless otherwise stated, recovery rates in this draft are computed from the available offline decoder artifacts. Capacity tables are bit-level channel proxies over logged trajectories and should not be conflated with a separate end-to-end RLNC recovery run.
 
+\subsection{Evaluation Protocol}
+
+The evaluation pipeline starts from logged trajectories containing the selected behavior, candidate list, behavior probabilities when available, and watermark metadata. Utility and JSD are computed over all valid task trajectories. Watermark recovery is computed on the decode-capable subset: trajectories with a recorded watermark configuration, a recoverable candidate ordering, and enough logged context to replay the deterministic DRBG schedule. This distinction is reported explicitly in the corpus counts above.
+
+For each decode-capable trajectory, we run the same verifier under several channel views. The \emph{exact} view uses the logged probabilities as an upper bound. The \emph{top-$k$} views discard numeric probabilities and retain only the ordered candidate list. The selected-only view is used as a negative control when available. Rank-noise experiments perturb the top-$k$ order by adjacent swaps before decoding, and erasure experiments remove a random fraction of observed steps before RLNC solving. All tables aggregate over the available model/split groups rather than selecting the best configuration per task.
+
 \subsection{Research Questions}
 
 The evaluation answers five questions. \textbf{RQ1}: Does rank-based embedding preserve task utility compared with clean and symmetric AgentMark pipelines? \textbf{RQ2}: Does it leave behavior-frequency distributions close to clean trajectories? \textbf{RQ3}: What is the tradeoff between exact-probability capacity and rank-only robustness? \textbf{RQ4}: How sensitive is the method to the top-$k$ parameter? \textbf{RQ5}: How quickly does decoding degrade when the verifier's rank order is noisy?
