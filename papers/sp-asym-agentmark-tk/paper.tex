@@ -365,7 +365,7 @@ All recovery tables report cells as bit match / payload recovery.
 
 \subsection{Utility Preservation}
 
-Table~\ref{tab:utility} reports average task success and steps. On ALFWorld, \ours{} reaches 78.6\% success versus 80.0\% for clean and 79.4\% for \agentmark{}. On ToolBench, \ours{} reaches 77.1\% versus 75.7\% for the clean pipeline. We interpret these descriptive aggregates conservatively: rank encoding stays close to the clean and symmetric pipelines and does not exhibit the large utility tax associated with naive behavior bias.
+Table~\ref{tab:utility} reports average task success and steps. On ALFWorld, \ours{} reaches 78.6\% success versus 80.0\% for clean and 79.4\% for \agentmark{}. On ToolBench, \ours{} reaches 77.1\% versus 75.7\% for the clean pipeline. The source utility artifact records run-level variation: ALFWorld rank groups have standard deviations up to 2.89 percentage points, while ToolBench rank entries are about 11 percentage points because they aggregate six heterogeneous splits. We therefore interpret these aggregates conservatively: rank encoding stays close to the clean and symmetric pipelines and does not exhibit the large utility tax associated with naive behavior bias, but small one- or two-point differences are not treated as significant.
 
 \begin{table}[t]
 \centering
