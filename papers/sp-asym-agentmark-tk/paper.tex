@@ -271,7 +271,7 @@ For short trajectories, the verifier may not obtain enough independent RLNC equa
 
 The implementation is integrated through an \texttt{AgentWatermarker} SDK wrapper with \texttt{algorithm="rank"} as the default. Internally, \texttt{Dist} stores probability tensors and stable indices, \texttt{RankEncStep} applies the interleaved split, and \texttt{RankDecStep} reconstructs bits from sorted indices. The DRBG is an HMAC-SHA512 reseed construction inspired by Meteor~\cite{kaptchuk2021meteor}. A synchronization counter, \texttt{rt\_sync}, forces both sides to advance exactly $\lceil\log_2 n\rceil$ random draws per decoded top-$k$ step. This detail is small but critical: without it, a zero-bit level would shift all later decoding.
 
-Tie handling uses stable sorting after probability normalization. Ties are rare in model-scored behavior sets but can occur after rounding or prompt templates that assign equal fallback scores. Stable sorting makes the order deterministic when both sides see the same candidate list. If the verifier obtains a tied but differently ordered top-$k$ list, this is treated as rank noise and measured through the adjacent-swap experiment.
+Tie handling uses stable sorting after probability normalization. Ties are rare in model-scored behavior sets but can occur after rounding or prompt templates that assign equal fallback scores. Stable sorting makes the order deterministic when both sides see the same candidate list. If the verifier obtains a tied but differently ordered top-$k$ list, this is treated as rank disagreement and measured through the bit-disagreement proxy in Section~\ref{sec:evaluation}.
 
 \subsection{Parameter Selection}
 
@@ -297,7 +297,7 @@ Let $P_t$ and $P'_t$ satisfy $\operatorname{argsort}_k(P_t)=\operatorname{argsor
 \RankDec{} accesses channel information only through the rank position of $\hat b_t$ in the top-$k$ order. If the two orders are equal, this rank is identical. The DRBG stream depends on the secret key and context, not probability values. Therefore the decoded path and bit values are identical. \hfill$\square$
 
 \textbf{False positives.}
-For an unwatermarked or unrelated trajectory, strict attribution requires recovery of a pre-registered claimed payload. Under the standard assumption that decoded clean bits are independent of that claim, an $L$-bit payload match occurs with probability $2^{-L}$. In practice the verifier can tune $L$ to the desired audit threshold; $L=32$ yields $2.33\times10^{-10}$ and $L=64$ yields $5.42\times10^{-20}$.
+For an unwatermarked or unrelated trajectory, strict attribution requires recovery of a key and payload claim that was registered before the trajectory is inspected. Under the standard null that decoded clean bits are independent of this fixed claim and that no adaptive post-hoc key or payload search is counted as a single test, an $L$-bit payload match occurs with probability $2^{-L}$. In practice the verifier can tune $L$ to the desired audit threshold; $L=32$ yields $2.33\times10^{-10}$ and $L=64$ yields $5.42\times10^{-20}$.
 
 \textbf{Why symmetric decoding fails under rank-only views.}
 Differential recombination constructs bins from probability gaps. Two distributions with the same rank ordering can have different gaps and therefore different bins. A behavior selected from the embedder's bin can land in a different verifier bin, causing both bit errors and variable-length desynchronization. Theorem~1 avoids this failure mode by making the decoder's sufficient statistic exactly the rank path, not the probability mass assigned to that path.
@@ -309,9 +309,10 @@ The watermark key is used only to derive context-specific pseudorandomness. The 
 A watermark match is meaningful only for a claimed key and payload that were bound to an owner before the audit. Otherwise, an operator could test many keys or payloads after observing a trajectory and inflate the effective false-positive rate. Deployments should therefore register a key identifier, payload namespace, and issuance time in an append-only registry or signed manifest. The verifier can then count only pre-registered claims and apply the multiple-testing correction in Section~\ref{sec:false-positive-results}.
 
 \textbf{Limits.}
-\ours{} is robust to value perturbations that preserve top-$k$ order, not to arbitrary rank manipulation. If an adversary can force targeted rank swaps in the top-$k$ list, it can corrupt decoded paths. This is the expected boundary of any rank-only weakly asymmetric scheme. The evaluation therefore includes adjacent rank-noise injection.
+\ours{} is robust to value perturbations that preserve top-$k$ order, not to arbitrary rank manipulation. If an adversary can force targeted rank swaps in the top-$k$ list, it can corrupt decoded paths. This is the expected boundary of any rank-only weakly asymmetric scheme. The evaluation therefore includes a rank-disagreement proxy and treats live cross-model rank reconstruction as deployment work.
 
 \section{Evaluation}
+\label{sec:evaluation}
 
 \subsection{Setup}
 
