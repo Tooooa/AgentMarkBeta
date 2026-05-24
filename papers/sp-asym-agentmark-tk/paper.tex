@@ -122,7 +122,7 @@ A scheme should satisfy:
 \begin{itemize}[leftmargin=*]
   \item \textbf{Utility preservation}: $\Pr[\hat b_t=b]=P_t(b)$ per step.
   \item \textbf{Weak-asymmetric correctness}: if $\operatorname{argsort}_k(P'_t)=\operatorname{argsort}_k(P_t)$, decoding from $P'_t$'s order returns the same bits as decoding from $P_t$'s order.
-  \item \textbf{Low false positives}: a clean or unrelated trajectory should recover a pre-registered claimed $L$-bit payload with probability approximately $2^{-L}$ when decoded bits are independent of the claim.
+  \item \textbf{Low false positives}: for a fixed pre-registered $L$-bit claim, a clean or unrelated trajectory should recover that exact payload with probability $2^{-L}$ when decoded bits are independent of the claim.
   \item \textbf{Erasure tolerance}: payload recovery should degrade gracefully when only a subset of steps is observed.
 \end{itemize}
 
@@ -496,7 +496,7 @@ Method & View & 0.0 & 0.1 & 0.2 & 0.3 & 0.5 \\
 \subsection{False Positives}
 \label{sec:false-positive-results}
 
-False-positive control is analytic for strict payload claims. If a clean or unrelated trajectory yields coded bits that are independent of a pre-registered claimed payload, the chance that it recovers that exact $L$-bit payload is $2^{-L}$. For payload lengths $L=8,16,32,64$, the corresponding single-claim thresholds are $3.91\times10^{-3}$, $1.53\times10^{-5}$, $2.33\times10^{-10}$, and $5.42\times10^{-20}$. Operational deployments should use at least 32-bit claims for audit-grade attribution, with longer payloads when enough trajectory length is available.
+False-positive control is analytic for strict payload claims. If a clean or unrelated trajectory yields coded bits that are independent of a fixed pre-registered payload claim, and no adaptive post-hoc key or payload search is counted as the same test, the chance that it recovers that exact $L$-bit payload is $2^{-L}$. For payload lengths $L=8,16,32,64$, the corresponding single-claim thresholds are $3.91\times10^{-3}$, $1.53\times10^{-5}$, $2.33\times10^{-10}$, and $5.42\times10^{-20}$. Operational deployments should use at least 32-bit claims for audit-grade attribution, with longer payloads when enough trajectory length is available.
 
 The threshold must also account for multiple testing. If an operator tests $N$ independent key/payload claims against the same corpus, a conservative union bound gives a family-wise false-positive rate at most $N2^{-L}$. Thus an 8-bit payload is appropriate for controlled capacity diagnostics but not for open-ended attribution. A 64-bit payload keeps the bound below $10^{-12}$ even for one million tested claims, assuming the verifier also enforces the rank-quality gate described in Section~\ref{sec:verification-protocol}.
 
