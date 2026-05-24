@@ -12,7 +12,6 @@
 \usepackage{url}
 \usepackage[hidelinks]{hyperref}
 \usepackage{enumitem}
-\usepackage{balance}
 
 \newcommand{\ours}{AsymAgentMark-TK}
 \newcommand{\agentmark}{AgentMark-F}
@@ -250,6 +249,14 @@ Per-step embedding capacity varies with $P_t$, $k$, and trajectory length. To av
 where coefficient vector $a_i$ is generated deterministically from a stream key and index $i$. The verifier collects decoded coded bits and solves the resulting linear system by Gaussian elimination over GF(2). This layer is inherited from AgentMark's erasure-resilience design but is independent of whether the step decoder is symmetric or rank-only.
 
 The coding layer also cleanly separates two questions that are often conflated. The step decoder asks whether an observed behavior can yield a reliable coded bit under the verifier's channel view. RLNC asks whether enough independent coded bits have survived to solve for the payload. This separation is useful for weak asymmetry: a rank-only decoder may produce fewer bits than an exact-probability decoder, but the coding layer can still recover when the trajectory is long enough or the audit window spans enough steps.
+
+\subsection{Verification Protocol}
+
+An audit takes as input a claimed key/payload pair, a trajectory log, and a verifier-side procedure for reconstructing top-$k$ candidate orders. The verifier first derives the per-step DRBG streams from logged contexts and decodes all observed steps using \RankDec{}. It then runs RLNC elimination over the recovered coded equations. If the system recovers the claimed payload and the reconstructed ranks pass a deployment-specific quality gate, the audit reports a positive attribution. If the payload does not recover but the rank-quality gate fails or too few independent equations are available, the audit reports \emph{inconclusive}. A negative attribution is reserved for the case where the verifier has enough rank-consistent evidence to decode but the recovered payload contradicts the claim.
+
+The rank-quality gate is intentionally separate from the watermark statistic. A verifier can estimate it using held-out calibration contexts, duplicate model queries, or agreement between independent rankers. This prevents a common operational error: treating a failed rank-only decode as evidence that a trajectory is clean when the verifier's channel reconstruction is itself unreliable.
+
+For short trajectories, the verifier may not obtain enough independent RLNC equations for strict payload recovery. In that case, the bit-match statistic is reported only as supporting evidence with a binomial tail probability under the null model of random agreement. This diagnostic can trigger further collection or manual review, but it is not by itself a positive attribution decision.
 
 \subsection{Implementation Notes}
 
@@ -491,7 +498,6 @@ Watermarking creates governance risks as well as benefits. A false or overconfid
 
 Behavioral provenance for LLM agents should not depend on a verifier reproducing exact per-step probabilities. \ours{} shows that top-$k$ rank order is enough to recover useful watermark signal while preserving the agent's marginal behavior policy. By replacing probability-dependent bins with a rank-decodable binary partition tree, the scheme trades some exact-channel capacity for robustness under realistic partial-channel verification. This weakly asymmetric view makes behavioral watermarking better aligned with how agents are actually audited.
 
-\balance
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
