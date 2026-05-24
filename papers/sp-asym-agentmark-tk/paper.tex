@@ -55,7 +55,7 @@ Our contributions are:
   \item We formulate weakly asymmetric behavioral watermarking for LLM agents, separating the embedder's full channel access from the verifier's top-$k$ rank-only access.
   \item We design \ours, a distribution-preserving rank encoder/decoder that decodes from top-$k$ ordering rather than exact probabilities.
   \item We integrate the construction with deterministic random linear network coding (RLNC), enabling payload recovery from variable-bit and partially observed trajectories.
-  \item We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023toolllm} across DeepSeek and Gemini Flash models, measuring utility, stealth, rank-only decoding, top-$k$ sensitivity, rank noise, and false-positive rates.
+  \item We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023toolllm} across DeepSeek and Gemini Flash models, measuring utility, stealth, rank-only decoding, top-$k$ sensitivity, rank noise, and false-positive accounting.
 \end{itemize}
 
 The rest of the paper proceeds as follows. Section~II motivates behavioral watermarking and weak asymmetry. Section~III defines the agent behavior channel, adversary, and verifier knowledge. Section~IV presents the rank encoder, decoder, synchronization, and coding layer. Sections~V and VI analyze security and evaluate utility, stealth, and rank-only recovery. Section~VII discusses operational limits, Section~VIII covers related work, Section~IX covers validity and ethics, and Section~X concludes.

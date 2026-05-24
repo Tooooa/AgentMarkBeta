@@ -19,7 +19,7 @@ The main technical hook is a co-designed encoder and decoder. AgentMark-F's diff
 1. A weakly asymmetric threat model for behavioral watermarking in which verification sees partial channel knowledge rather than exact per-step behavior distributions.
 2. AsymAgentMark-TK, a top-k rank-based distribution-preserving encoder/decoder for planning behaviors.
 3. A synchronization and coding layer combining fixed-budget HMAC-SHA512 DRBG calls with deterministic RLNC for partial logs.
-4. An empirical evaluation over ALFWorld and ToolBench, covering utility, distributional stealth, rank-only decoding, top-k ablations, rank noise, and analytic false-positive rates.
+4. An empirical evaluation over ALFWorld and ToolBench, covering utility, distributional stealth, rank-only decoding, top-k ablations, rank noise, and analytic false-positive accounting.
 
 ## Section Plan
 
