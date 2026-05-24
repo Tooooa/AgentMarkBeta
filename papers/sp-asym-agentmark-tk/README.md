@@ -35,13 +35,9 @@ The default target runs `latexmk -pdf paper.tex` and produces `paper.pdf`.
 - The compiled PDF is below the 13-page body limit for the main text.
 - For an anonymous artifact release, include only sanitized relative paths and remove local drafting-material references below.
 
-## Internal Source Material
+## Anonymous Bundle Checklist
 
-The draft is based on the following local materials, which are for internal drafting traceability and are not part of the anonymous submission bundle:
-
-- `论文写作经验/Huang_等_-_2026_-_AgentMark_Utility-Preserving_Behavioral_Watermarking_for_Agents.pdf`
-- `论文写作经验/From_Symmetry_toward_Weak_Asymmetry__Secure_Steganography_under_the_Receiver_s_Partial_Channel_Knowledge.pdf`
-- `docs/drafts/method-section-draft.md`
-- `agentmark/core/watermark_sampler.py`
-- `agentmark/core/rlnc_codec.py`
-- `output/asym_agentmark_tk/week2_postprocess/*.csv`
+For an anonymous paper or artifact bundle, include only sanitized manuscript,
+bibliography, build, and result artifacts. Do not include local drafting
+materials, absolute-path summaries, private notes, or source PDFs copied from
+the internal reference directory.
