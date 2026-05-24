@@ -301,6 +301,9 @@ Differential recombination constructs bins from probability gaps. Two distributi
 \textbf{Key privacy.}
 The watermark key is used only to derive context-specific pseudorandomness. The public trajectory and rank list do not reveal the key under the pseudorandom function assumption for HMAC-SHA512. Reusing the same key across many trajectories is therefore acceptable for provenance verification, though operational deployments should still rotate keys across tenants or products to limit blast radius if a key is disclosed.
 
+\textbf{Claim binding.}
+A watermark match is meaningful only for a claimed key and payload that were bound to an owner before the audit. Otherwise, an operator could test many keys or payloads after observing a trajectory and inflate the effective false-positive rate. Deployments should therefore register a key identifier, payload namespace, and issuance time in an append-only registry or signed manifest. The verifier can then count only pre-registered claims and apply the multiple-testing correction in Section~\ref{sec:false-positive-results}.
+
 \textbf{Limits.}
 \ours{} is robust to value perturbations that preserve top-$k$ order, not to arbitrary rank manipulation. If an adversary can force targeted rank swaps in the top-$k$ list, it can corrupt decoded paths. This is the expected boundary of any rank-only weakly asymmetric scheme. The evaluation therefore includes adjacent rank-noise injection.
 
