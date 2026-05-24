@@ -125,7 +125,7 @@ A scheme should satisfy:
 \end{itemize}
 
 \textbf{Detection statistic.}
-For an audited trajectory, the verifier decodes a multiset of coded bits and attempts to recover payload $\hat m$. A strict positive attribution requires $\hat m=m$ for a pre-registered claimed payload. For bit-level channel diagnostics, we also report the bit match rate between decoded coded bits and the coded stream induced by $m$. Payload recovery is stricter and is used for provenance claims; bit match is useful for comparing noisy channels even when there are too few equations for full RLNC recovery.
+For an audited trajectory, the verifier decodes a multiset of coded bits and attempts to recover payload $\hat m$. A strict positive attribution requires $\hat m=m$ for a pre-registered claimed payload. A failed recovery is treated as negative only when the verifier has enough rank-consistent evidence and independent equations; otherwise it is inconclusive. For bit-level channel diagnostics, we also report the bit match rate between decoded coded bits and the coded stream induced by $m$. Payload recovery is stricter and is used for provenance claims; bit match is useful for comparing noisy channels even when there are too few equations for full RLNC recovery.
 
 \subsection{Non-Goals}
 
