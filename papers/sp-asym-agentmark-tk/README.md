@@ -40,4 +40,5 @@ The default target runs `latexmk -pdf paper.tex` and produces `paper.pdf`.
 For an anonymous paper or artifact bundle, include only sanitized manuscript,
 bibliography, build, and result artifacts. Do not include local drafting
 materials, absolute-path summaries, private notes, or source PDFs copied from
-the internal reference directory.
+the internal reference directory. Keep unpublished related manuscripts
+anonymized unless they are already public.
