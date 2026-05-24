@@ -504,6 +504,8 @@ The postprocessed false-positive artifact instantiates this calculation across d
 
 Bit-level scores require a different interpretation. When a verifier reports a match rate over $n$ decoded coded bits rather than a recovered payload, the appropriate null is a binomial tail $\Pr[X\geq s; X\sim\mathrm{Binom}(n,1/2)]$ for the observed score $s$. This statistic is useful for channel diagnostics and triage before enough independent RLNC equations are available, but it is not a positive attribution decision unless the pre-registered payload itself is recovered.
 
+The confidence-curve artifact illustrates this distinction. For rank decoding groups with enough observed bits, 10 matched bits correspond only to $\log_{10}p$ between $-3.01$ and $-1.97$, while 50 observed bits push the diagnostic tail to between $-15.05$ and $-11.95$. These values quantify channel evidence, not ownership by themselves: they become attribution evidence only when the same audit also satisfies claim binding, rank-quality gating, and strict payload recovery.
+
 \section{Discussion}
 \label{sec:discussion}
 
