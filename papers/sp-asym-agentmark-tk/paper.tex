@@ -339,7 +339,7 @@ The evaluation pipeline starts from logged trajectories containing the selected 
 
 For each decode-capable trajectory, we run the same verifier under several channel views. The \emph{exact} view uses the logged probabilities as an upper bound. The \emph{top-$k$} views discard numeric probabilities and retain only the ordered candidate list. The selected-only view is used as a negative control when available. Rank-noise experiments perturb the top-$k$ order by adjacent swaps before decoding, and erasure experiments remove a random fraction of observed steps before RLNC solving. All tables aggregate over the available model/split groups rather than selecting the best configuration per task.
 
-The artifact bundle keeps the manuscript source, bibliography, build file, algorithm implementation pointers, and postprocessed CSV sources together so that reported tables can be audited against the released materials. We treat these artifacts as a reproducibility trail, while reserving a full live end-to-end rerun for future artifact evaluation.
+The artifact bundle keeps the manuscript source, bibliography, build file, algorithm implementation pointers, and postprocessed CSV sources together so that reported tables can be audited against the released materials. We treat these artifacts as a reproducibility trail for the reported postprocessed results; a live end-to-end rerun is a separate deployment study rather than evidence used for the present capacity tables.
 
 \subsection{Research Questions}
 
@@ -494,7 +494,7 @@ Bit-level scores require a different interpretation. When a verifier reports a m
 The evaluation supports a pragmatic conclusion: if exact $P_t$ is available, symmetric \agentmark{} can be more capacity-efficient. If the verifier has only top-$k$ ranks, symmetric decoding becomes unreliable and weak asymmetry becomes necessary.
 
 \textbf{ToolBench exposes a low-entropy regime.}
-Tool-use traces are shorter and often contain fewer semantically viable actions than embodied planning. \ours{} preserves utility in this setting, but the current offline payload recovery is low. This suggests combining rank encoding with adaptive step selection, longer audit windows, or higher-level tool-plan aggregation.
+Tool-use traces are shorter and often contain fewer semantically viable actions than embodied planning. \ours{} preserves utility in this setting, but the offline payload recovery remains low. This suggests combining rank encoding with adaptive step selection, longer audit windows, or higher-level tool-plan aggregation.
 
 \textbf{Rank consistency is observable.}
 Unlike exact probability equality, rank consistency can be measured directly during verification. A verifier can report top-$k$ agreement, Kendall tau distance, or adjacent-swap rates to calibrate confidence.
@@ -535,7 +535,7 @@ The method assumes that the embedder can elicit or estimate a behavior distribut
 
 \section*{Ethics considerations}
 
-This work is intended for provenance, audit, and authorized ownership verification. It should not be used to conceal malicious coordination or bypass platform policy. The construction assumes access to a behavior distribution at embedding time and top-$k$ rank information at verification time. It does not protect against arbitrary rank manipulation, model-level watermark removal, or compromised keys. The current evaluation uses offline decoder artifacts; a final deployment study should include end-to-end RLNC recovery under live logging and cross-model rank reconstruction.
+This work is intended for provenance, audit, and authorized ownership verification. It should not be used to conceal malicious coordination or bypass platform policy. The construction assumes access to a behavior distribution at embedding time and top-$k$ rank information at verification time. It does not protect against arbitrary rank manipulation, model-level watermark removal, or compromised keys. The evaluation uses offline decoder artifacts; deployment use requires end-to-end RLNC recovery under live logging and cross-model rank reconstruction.
 
 Watermarking creates governance risks as well as benefits. A false or overconfident attribution can harm users, developers, or organizations. Deployments should therefore publish the verification threshold, report inconclusive outcomes, retain audit logs, and separate watermark evidence from broader incident investigation. The method should not be used for covert monitoring of users without notice; its appropriate role is provenance for agents or services controlled by the embedding party.
 
@@ -543,7 +543,7 @@ Watermarking creates governance risks as well as benefits. A false or overconfid
 
 Behavioral provenance for LLM agents should not depend on a verifier reproducing exact per-step probabilities. \ours{} shows that top-$k$ rank order is enough to recover useful watermark signal while preserving the agent's marginal behavior policy. By replacing probability-dependent bins with a rank-decodable binary partition tree, the scheme trades some exact-channel capacity for robustness under realistic partial-channel verification. This weakly asymmetric view makes behavioral watermarking better aligned with how agents are actually audited.
 
-These results should be read as evidence for partial-channel feasibility rather than as a final production certification. Exact-channel \agentmark{} remains attractive when the original behavior probabilities are available; \ours{} targets the common audit setting where only ranks can be reconstructed reliably. Future work should close the remaining deployment gap with longer live trajectories, end-to-end coded-payload recovery, and cross-model rank calibration.
+These results should be read as evidence for partial-channel feasibility rather than as a final production certification. Exact-channel \agentmark{} remains attractive when the original behavior probabilities are available; \ours{} targets the common audit setting where only ranks can be reconstructed reliably. Closing the remaining deployment gap requires longer live trajectories, end-to-end coded-payload recovery, and cross-model rank calibration.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
