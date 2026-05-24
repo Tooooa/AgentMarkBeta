@@ -294,7 +294,7 @@ For each step $t$ and behavior $b\in\B_t$, \ours{} outputs $b$ with probability 
 The top/tail gate selects the top-$k$ region with probability equal to its total mass and otherwise samples the tail proportionally. Tail samples emit no coded bits, so the verifier need not reproduce the gate randomness. Conditioned on entering top-$k$, each binary split uses \BinEnc{}, whose selected group probability equals its normalized mass because $r_m$ is uniform. Induction over the partition tree gives each leaf its normalized probability within top-$k$. Multiplying by the top-$k$ mass recovers $P_t(b)$. \hfill$\square$
 
 \textbf{Theorem 1 (weak asymmetry).}
-Let $P_t$ and $P'_t$ satisfy $\operatorname{argsort}_k(P_t)=\operatorname{argsort}_k(P'_t)$. For any selected behavior $\hat b_t$ and shared context-derived DRBG stream,
+Let $P_t$ and $P'_t$ satisfy $\operatorname{argsort}_k(P_t)=\operatorname{argsort}_k(P'_t)$. For any selected behavior $\hat b_t$ and shared key/context-derived DRBG stream,
 \begin{equation}
   \RankDec(\hat b_t,\operatorname{argsort}_k(P_t))
   =
