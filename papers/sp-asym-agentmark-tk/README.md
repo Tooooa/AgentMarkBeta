@@ -33,10 +33,11 @@ The default target runs `latexmk -pdf paper.tex` and produces `paper.pdf`.
 - The LaTeX class uses `\documentclass[conference,compsoc]{IEEEtran}`, matching the IEEE S&P CFP guidance for submissions.
 - The title block intentionally omits placeholder author names for double-blind review.
 - The compiled PDF is below the 13-page body limit for the main text.
+- For an anonymous artifact release, include only sanitized relative paths and remove local drafting-material references below.
 
-## Source Material
+## Internal Source Material
 
-The draft is based on:
+The draft is based on the following local materials, which are for internal drafting traceability and are not part of the anonymous submission bundle:
 
 - `论文写作经验/Huang_等_-_2026_-_AgentMark_Utility-Preserving_Behavioral_Watermarking_for_Agents.pdf`
 - `论文写作经验/From_Symmetry_toward_Weak_Asymmetry__Secure_Steganography_under_the_Receiver_s_Partial_Channel_Knowledge.pdf`
