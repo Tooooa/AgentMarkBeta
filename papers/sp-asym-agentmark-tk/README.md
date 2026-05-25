@@ -20,7 +20,7 @@ make
 
 The default target runs `latexmk -pdf paper.tex` and produces `paper.pdf`.
 
-## Reproducibility Trail
+## Repository Audit Trail
 
 - Paper build: `paper.tex`, `references.bib`, `paper.bbl`, and `Makefile` are sufficient to rebuild or audit the PDF.
 - Algorithm implementation: `agentmark/core/watermark_sampler.py` contains the rank encoder/decoder path and owner-key derivation hook; `agentmark/core/rlnc_codec.py` contains the deterministic RLNC layer.
@@ -37,8 +37,12 @@ The default target runs `latexmk -pdf paper.tex` and produces `paper.pdf`.
 
 ## Anonymous Bundle Checklist
 
-For an anonymous paper or artifact bundle, include only sanitized manuscript,
-bibliography, build, and result artifacts. Do not include local drafting
-materials, absolute-path summaries, private notes, or source PDFs copied from
-the internal reference directory. Keep unpublished related manuscripts
-anonymized unless they are already public.
+For an anonymous paper or artifact bundle, include only:
+
+- `paper.tex`, `references.bib`, `paper.bbl`, `Makefile`, and the compiled `paper.pdf`.
+- Sanitized result tables needed to reproduce the reported postprocessed diagnostics.
+- A short artifact README that describes commands and relative paths without referring to internal drafting notes.
+
+Do not include local drafting materials, absolute-path summaries, private notes,
+or source PDFs copied from the internal reference directory. Keep unpublished
+related manuscripts anonymized unless they are already public.
