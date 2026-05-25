@@ -13,6 +13,7 @@
 - Use `topk_ablation_main.csv` for the Top-k ablation figure/table.
 - Use `evidence_confidence_n50.csv` and `evidence_threshold_payload32_alpha01.csv` for evidence-strength claims.
 - Treat `capacity_proxy_payload8_logged_channels.csv` as a logged offline proxy. The logged L5/L6 labels are not the original design's cross-model/noisy-rank channels.
+- Read `DATA_AUDIT.md` before updating paper claims; it separates strict RLNC recovery from proxy diagnostics and lists experiments that still need rerun/completion.
 
 ## Generated tables
 
@@ -95,4 +96,3 @@
 | ToolBench | 8 | 12 | 2.08 | 48.85 | 0.032 |
 | ToolBench | 10 | 12 | 3.19 | 49.52 | 0.053 |
 | ToolBench | 20 | 12 | 3.47 | 50.46 | 0.056 |
-
