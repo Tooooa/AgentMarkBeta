@@ -1,0 +1,22 @@
+{
+  "source_root": "/Users/local/AgentMarkBeta/output-0510",
+  "output_dir": "/Users/local/AgentMarkBeta/papers/sp-asym-agentmark-tk/results/non_robust_0510",
+  "tables": {
+    "utility_main": 10,
+    "utility_by_cell": 30,
+    "behavior_jsd_clean": 8,
+    "strict_rlnc_recovery_main": 4,
+    "strict_rlnc_recovery_by_cell": 32,
+    "topk_ablation_main": 12,
+    "capacity_proxy_payload8_logged_channels": 28,
+    "evidence_confidence_n50": 4,
+    "evidence_threshold_payload32_alpha01": 10
+  },
+  "robustness_excluded": [
+    "3.1 ranking-noise decode-success curves",
+    "3.2 erasure plus channel-degradation payload-recovery heatmaps",
+    "3.3 semantic rewriting",
+    "3.4 empirical false-positive stress test"
+  ],
+  "capacity_proxy_caveat": "capacity_proxy_payload8_logged_channels uses logged offline channel labels; do not present logged L5/L6 as cross-model/noisy-rank evidence."
+}

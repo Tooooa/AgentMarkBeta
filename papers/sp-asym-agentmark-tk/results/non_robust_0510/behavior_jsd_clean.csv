@@ -1,0 +1,9 @@
+Dataset,Method,Cells,JSD vs Clean,JSD Cell Std
+ALFWorld,AgentMark-F,4,0.1215,0.0787
+ALFWorld,AsymAgentMark-TK,4,0.1209,0.0704
+ALFWorld,Red-Green,4,0.1337,0.0605
+ALFWorld,Vanilla,4,0.5640,0.3572
+ToolBench,AgentMark-F,12,0.1740,0.0770
+ToolBench,AsymAgentMark-TK,12,0.1395,0.0580
+ToolBench,Red-Green,12,0.1810,0.0685
+ToolBench,Vanilla,12,0.1624,0.0615

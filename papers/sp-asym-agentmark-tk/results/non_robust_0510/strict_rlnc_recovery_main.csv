@@ -1,0 +1,5 @@
+Dataset,Method,Cells,Payload Recovery (%),Recovery Cell Std (%),Dedup Packets
+ALFWorld,AgentMark-F,4,75.75,7.69,29.21
+ALFWorld,AsymAgentMark-TK,4,34.81,13.39,11.31
+ToolBench,AgentMark-F,12,9.58,6.48,2.78
+ToolBench,AsymAgentMark-TK,12,1.94,1.72,1.47

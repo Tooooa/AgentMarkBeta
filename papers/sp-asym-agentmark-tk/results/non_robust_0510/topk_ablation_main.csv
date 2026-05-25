@@ -1,0 +1,13 @@
+Dataset,Top-k,Cells,Payload Recovery (%),Bit Match (%),Proxy C_eff
+ALFWorld,2,4,0.55,55.76,0.046
+ALFWorld,4,4,1.34,60.05,0.164
+ALFWorld,6,4,2.84,64.17,0.372
+ALFWorld,8,4,4.85,67.03,0.690
+ALFWorld,10,4,6.42,70.73,0.954
+ALFWorld,20,4,31.30,86.28,4.511
+ToolBench,2,12,0.00,35.12,0.000
+ToolBench,4,12,0.56,42.62,0.009
+ToolBench,6,12,0.97,46.96,0.016
+ToolBench,8,12,2.08,48.85,0.032
+ToolBench,10,12,3.19,49.52,0.053
+ToolBench,20,12,3.47,50.46,0.056

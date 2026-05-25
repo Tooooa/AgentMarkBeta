@@ -1,0 +1,11 @@
+Dataset,Method,Config,Payload,Alpha,Attained,N_min
+ALFWorld,AgentMark-F,L0_exact_probs,32,0.01,12/12,50.0
+ALFWorld,AsymAgentMark-TK,top10,32,0.01,12/12,62.5
+ALFWorld,AsymAgentMark-TK,top2,32,0.01,12/12,55.0
+ALFWorld,AsymAgentMark-TK,top3,32,0.01,12/12,62.5
+ALFWorld,AsymAgentMark-TK,top5,32,0.01,12/12,67.5
+ToolBench,AgentMark-F,L0_exact_probs,32,0.01,35/35,50.0
+ToolBench,AsymAgentMark-TK,top10,32,0.01,35/35,50.0
+ToolBench,AsymAgentMark-TK,top2,32,0.01,10/10,50.0
+ToolBench,AsymAgentMark-TK,top3,32,0.01,23/23,50.0
+ToolBench,AsymAgentMark-TK,top5,32,0.01,34/34,50.0

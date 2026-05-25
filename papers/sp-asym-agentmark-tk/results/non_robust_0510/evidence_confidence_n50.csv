@@ -1,0 +1,5 @@
+Dataset,Method,Config,Cells,Match Rate (%),Mean log10 p
+ALFWorld,AgentMark-F,L0_exact_probs,4,100.00,-15.051
+ALFWorld,AsymAgentMark-TK,top10,4,95.50,-11.850
+ToolBench,AgentMark-F,L0_exact_probs,12,100.00,-7.743
+ToolBench,AsymAgentMark-TK,top10,12,100.00,-6.556
