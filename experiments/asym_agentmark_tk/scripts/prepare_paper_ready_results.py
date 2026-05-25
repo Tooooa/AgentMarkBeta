@@ -228,6 +228,41 @@ def build_strict_recovery_table(input_root: Path) -> tuple[list[dict[str, Any]],
     return summary, detailed
 
 
+def build_strict_recovery_global_table(input_root: Path) -> list[dict[str, Any]]:
+    rows = read_csv(input_root / "rlnc_recovery_a3_a4/rlnc_recovery_by_task.csv")
+
+    def is_ok(row: dict[str, str]) -> bool:
+        return row["decode_ok"].lower() == "true"
+
+    specs: list[tuple[str, tuple[str, ...]]] = [
+        ("overall", ()),
+        ("by_method", ("method",)),
+        ("by_dataset", ("dataset",)),
+        ("by_dataset_method", ("dataset", "method")),
+        ("by_method_model", ("method", "model")),
+        ("by_dataset_method_model", ("dataset", "method", "model")),
+    ]
+    out: list[dict[str, Any]] = []
+    for scope, keys in specs:
+        groups = grouped(rows, keys) if keys else {("ALL",): rows}
+        for key, items in sorted(groups.items()):
+            parts = dict(zip(keys, key)) if keys else {}
+            ok_count = sum(1 for row in items if is_ok(row))
+            task_count = len(items)
+            out.append(
+                {
+                    "Scope": scope,
+                    "Dataset": label_dataset(parts.get("dataset", "ALL")),
+                    "Method": label_method(parts.get("method", "ALL")),
+                    "Model": parts.get("model", "ALL"),
+                    "OK": ok_count,
+                    "Tasks": task_count,
+                    "Global Recovery (%)": pct(ok_count / task_count, 4) if task_count else "0.0000",
+                }
+            )
+    return out
+
+
 def build_topk_table(input_root: Path) -> list[dict[str, Any]]:
     rows = read_csv(input_root / "asym_agentmark_tk/topk_ablation.csv")
     out: list[dict[str, Any]] = []
@@ -337,6 +372,7 @@ def write_readme(output_dir: Path, input_root: Path, tables: dict[str, list[dict
         "",
         "- Use `utility_main.csv` and `utility_by_cell.csv` for the utility-retention table.",
         "- Use `strict_rlnc_recovery_main.csv` as the main bit-exact payload recovery result.",
+        "- Use `strict_rlnc_recovery_global.csv` when reporting sample-weighted global recovery rates.",
         "- Use `topk_ablation_main.csv` for the Top-k ablation figure/table.",
         "- Use `evidence_confidence_n50.csv` and `evidence_threshold_payload32_alpha01.csv` for evidence-strength claims.",
         "- Treat `capacity_proxy_payload8_logged_channels.csv` as a logged offline proxy. The logged L5/L6 labels are not the original design's cross-model/noisy-rank channels.",
@@ -358,6 +394,10 @@ def write_readme(output_dir: Path, input_root: Path, tables: dict[str, list[dict
             "### Strict RLNC recovery main",
             "",
             markdown_table(tables["strict_rlnc_recovery_main"], list(tables["strict_rlnc_recovery_main"][0].keys())),
+            "",
+            "### Strict RLNC global recovery",
+            "",
+            markdown_table(tables["strict_rlnc_recovery_global"], list(tables["strict_rlnc_recovery_global"][0].keys())),
             "",
             "### Top-k ablation main",
             "",
@@ -381,6 +421,7 @@ def main() -> None:
     utility_main, utility_by_cell = build_utility_tables(input_root)
     behavior_jsd_clean = build_jsd_table(input_root)
     strict_main, strict_by_cell = build_strict_recovery_table(input_root)
+    strict_global = build_strict_recovery_global_table(input_root)
     topk_main = build_topk_table(input_root)
     capacity_proxy = build_capacity_proxy_payload8(input_root)
     evidence_conf, evidence_thresh = build_evidence_tables(input_root)
@@ -391,6 +432,7 @@ def main() -> None:
         "behavior_jsd_clean": behavior_jsd_clean,
         "strict_rlnc_recovery_main": strict_main,
         "strict_rlnc_recovery_by_cell": strict_by_cell,
+        "strict_rlnc_recovery_global": strict_global,
         "topk_ablation_main": topk_main,
         "capacity_proxy_payload8_logged_channels": capacity_proxy,
         "evidence_confidence_n50": evidence_conf,

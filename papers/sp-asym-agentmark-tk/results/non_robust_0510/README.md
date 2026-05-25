@@ -9,6 +9,7 @@
 
 - Use `utility_main.csv` and `utility_by_cell.csv` for the utility-retention table.
 - Use `strict_rlnc_recovery_main.csv` as the main bit-exact payload recovery result.
+- Use `strict_rlnc_recovery_global.csv` when reporting sample-weighted global recovery rates.
 - Use `topk_ablation_main.csv` for the Top-k ablation figure/table.
 - Use `evidence_confidence_n50.csv` and `evidence_threshold_payload32_alpha01.csv` for evidence-strength claims.
 - Treat `capacity_proxy_payload8_logged_channels.csv` as a logged offline proxy. The logged L5/L6 labels are not the original design's cross-model/noisy-rank channels.
@@ -20,6 +21,7 @@
 - `behavior_jsd_clean.csv`: 8 rows
 - `strict_rlnc_recovery_main.csv`: 4 rows
 - `strict_rlnc_recovery_by_cell.csv`: 32 rows
+- `strict_rlnc_recovery_global.csv`: 21 rows
 - `topk_ablation_main.csv`: 12 rows
 - `capacity_proxy_payload8_logged_channels.csv`: 28 rows
 - `evidence_confidence_n50.csv`: 4 rows
@@ -50,6 +52,32 @@
 | ALFWorld | AsymAgentMark-TK | 4 | 34.81 | 13.39 | 11.31 |
 | ToolBench | AgentMark-F | 12 | 9.58 | 6.48 | 2.78 |
 | ToolBench | AsymAgentMark-TK | 12 | 1.94 | 1.72 | 1.47 |
+
+### Strict RLNC global recovery
+
+| Scope | Dataset | Method | Model | OK | Tasks | Global Recovery (%) |
+| --- | --- | --- | --- | --- | --- | --- |
+| overall | ALL | ALL | ALL | 1901 | 4728 | 40.2073 |
+| by_method | ALL | AgentMark-F | ALL | 1314 | 2364 | 55.5838 |
+| by_method | ALL | AsymAgentMark-TK | ALL | 587 | 2364 | 24.8308 |
+| by_dataset | ALFWorld | ALL | ALL | 1818 | 3288 | 55.2920 |
+| by_dataset | ToolBench | ALL | ALL | 83 | 1440 | 5.7639 |
+| by_dataset_method | ALFWorld | AgentMark-F | ALL | 1245 | 1644 | 75.7299 |
+| by_dataset_method | ALFWorld | AsymAgentMark-TK | ALL | 573 | 1644 | 34.8540 |
+| by_dataset_method | ToolBench | AgentMark-F | ALL | 69 | 720 | 9.5833 |
+| by_dataset_method | ToolBench | AsymAgentMark-TK | ALL | 14 | 720 | 1.9444 |
+| by_method_model | ALL | AgentMark-F | deepseek | 613 | 1182 | 51.8613 |
+| by_method_model | ALL | AgentMark-F | gemini-flash | 701 | 1182 | 59.3063 |
+| by_method_model | ALL | AsymAgentMark-TK | deepseek | 205 | 1182 | 17.3435 |
+| by_method_model | ALL | AsymAgentMark-TK | gemini-flash | 382 | 1182 | 32.3181 |
+| by_dataset_method_model | ALFWorld | AgentMark-F | deepseek | 570 | 822 | 69.3431 |
+| by_dataset_method_model | ALFWorld | AgentMark-F | gemini-flash | 675 | 822 | 82.1168 |
+| by_dataset_method_model | ALFWorld | AsymAgentMark-TK | deepseek | 195 | 822 | 23.7226 |
+| by_dataset_method_model | ALFWorld | AsymAgentMark-TK | gemini-flash | 378 | 822 | 45.9854 |
+| by_dataset_method_model | ToolBench | AgentMark-F | deepseek | 43 | 360 | 11.9444 |
+| by_dataset_method_model | ToolBench | AgentMark-F | gemini-flash | 26 | 360 | 7.2222 |
+| by_dataset_method_model | ToolBench | AsymAgentMark-TK | deepseek | 10 | 360 | 2.7778 |
+| by_dataset_method_model | ToolBench | AsymAgentMark-TK | gemini-flash | 4 | 360 | 1.1111 |
 
 ### Top-k ablation main
 

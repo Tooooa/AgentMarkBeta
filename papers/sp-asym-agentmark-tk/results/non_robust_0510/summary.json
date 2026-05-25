@@ -7,6 +7,7 @@
     "behavior_jsd_clean": 8,
     "strict_rlnc_recovery_main": 4,
     "strict_rlnc_recovery_by_cell": 32,
+    "strict_rlnc_recovery_global": 21,
     "topk_ablation_main": 12,
     "capacity_proxy_payload8_logged_channels": 28,
     "evidence_confidence_n50": 4,
