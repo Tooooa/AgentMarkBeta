@@ -61,7 +61,7 @@ Our contributions are:
   \item We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023toolllm} across DeepSeek and Gemini Flash models, measuring utility, stealth, rank-only decoding, selected-only negative controls, top-$k$ sensitivity, rank noise, and false-positive accounting.
 \end{itemize}
 
-The rest of the paper proceeds as follows. Section~\ref{sec:background} motivates behavioral watermarking and weak asymmetry. Section~\ref{sec:formulation} defines the agent behavior channel, adversary, and verifier knowledge. Section~\ref{sec:design} presents the rank encoder, decoder, synchronization, and coding layer. Sections~\ref{sec:security} and~\ref{sec:evaluation} analyze security and evaluate utility, stealth, and rank-only recovery. Section~\ref{sec:discussion} discusses operational limits, Section~\ref{sec:related-work} covers related work, Section~\ref{sec:validity} covers validity and ethics, and Section~\ref{sec:conclusion} concludes.
+The rest of the paper proceeds as follows. Section~\ref{sec:background} motivates behavioral watermarking and weak asymmetry. Section~\ref{sec:formulation} defines the agent behavior channel, adversary, and verifier knowledge. Section~\ref{sec:design} presents the rank encoder, decoder, synchronization, and coding layer. Sections~\ref{sec:security} and~\ref{sec:evaluation} analyze security and evaluate utility, stealth, and rank-only recovery. Section~\ref{sec:discussion} discusses operational limits, Section~\ref{sec:related-work} covers related work, Section~\ref{sec:validity} covers validity and ethics, and Section~\ref{sec:conclusion} concludes. The appendices provide the optional depth behind the main claims: distribution preservation, DRBG synchronization, RLNC recovery, rank stability, and artifact mapping.
 
 \section{Background and Motivation}
 \label{sec:background}
@@ -278,6 +278,8 @@ For short trajectories, the verifier may not obtain enough independent RLNC equa
 
 The implementation is integrated through an \texttt{AgentWatermarker} SDK wrapper with \texttt{algorithm="rank"} as the default and an optional owner secret for deployment. Internally, \texttt{Dist} stores probability tensors and stable indices, \texttt{RankEncStep} applies the interleaved split, and \texttt{RankDecStep} reconstructs bits from sorted indices. The DRBG is an HMAC-SHA512 reseed construction inspired by Meteor~\cite{kaptchuk2021meteor}; its per-step seed is derived from the owner secret and logged context. For backward-compatible experiment replay, the prototype also supports a context-derived legacy mode, which is useful for channel measurements but is not a deployment secrecy boundary. A synchronization counter, \texttt{rt\_sync}, forces both sides to advance exactly $\lceil\log_2 n\rceil$ random draws per decoded top-$k$ step. The top/tail gate is outside this shared schedule because tail selections emit no bits and are treated as erasures by the verifier. This detail is small but critical: without fixed top-$k$ consumption, a zero-bit level would shift all later decoding.
 
+Appendix~\ref{app:dist-preservation} expands the distribution-preservation proof, Appendix~\ref{app:drbg-sync} details the fixed-budget synchronization rule, and Appendix~\ref{app:rlnc} summarizes how decoded bits become payload equations. These appendices are not separate claims; they make the construction auditable without interrupting the main channel-knowledge argument.
+
 Tie handling uses stable sorting after probability normalization. Ties are rare in model-scored behavior sets but can occur after rounding or prompt templates that assign equal fallback scores. Stable sorting makes the order deterministic when both sides see the same candidate list. If the verifier obtains a tied but differently ordered top-$k$ list, this is treated as rank disagreement and measured through the bit-disagreement proxy in Section~\ref{sec:evaluation}.
 
 \subsection{Parameter Selection}
@@ -317,7 +319,7 @@ The deployment watermark key is used only to derive context-specific pseudorando
 A watermark match is meaningful only for a claimed key and payload that were bound to an owner before the audit. Otherwise, an operator could test many keys or payloads after observing a trajectory and inflate the effective false-positive rate. Deployments should therefore register a key identifier, payload namespace, and issuance time in an append-only registry or signed manifest. The verifier can then count only pre-registered claims and apply the multiple-testing correction in Section~\ref{sec:false-positive-results}.
 
 \textbf{Limits.}
-\ours{} is robust to value perturbations that preserve top-$k$ order, not to arbitrary rank manipulation. If an adversary can force targeted rank swaps in the top-$k$ list, it can corrupt decoded paths. This is the expected boundary of any rank-only weakly asymmetric scheme. The evaluation therefore includes a rank-disagreement proxy and treats live cross-model rank reconstruction as deployment work.
+\ours{} is robust to value perturbations that preserve top-$k$ order, not to arbitrary rank manipulation. If an adversary can force targeted rank swaps in the top-$k$ list, it can corrupt decoded paths. This is the expected boundary of any rank-only weakly asymmetric scheme. The evaluation therefore includes a rank-disagreement proxy and treats live cross-model rank reconstruction as deployment work. Appendix~\ref{app:rank-stability} states the corresponding rank-stability intuition and the resulting top-$k$ choice rule.
 
 \section{Evaluation}
 \label{sec:evaluation}
@@ -356,7 +358,7 @@ The evaluation package is organized so that each reported number has a concrete 
 
 \subsection{Research Questions}
 
-The evaluation answers six questions. \textbf{RQ1}: Does rank-based embedding preserve task utility compared with clean and symmetric AgentMark pipelines? \textbf{RQ2}: Does it leave behavior-frequency distributions close to clean trajectories? \textbf{RQ3}: What is the tradeoff between exact-probability capacity, rank-only robustness, and selected-only negative controls? \textbf{RQ4}: How sensitive is the method to the top-$k$ parameter? \textbf{RQ5}: How quickly does decoding degrade when the verifier's rank order is noisy? \textbf{RQ6}: How does recovery change when trajectory steps are missing?
+The evaluation answers seven questions. \textbf{RQ1}: Does rank-based embedding preserve task utility compared with clean and symmetric AgentMark pipelines? \textbf{RQ2}: Does it leave behavior-frequency distributions close to clean trajectories? \textbf{RQ3}: What is the tradeoff between exact-probability capacity, rank-only robustness, and selected-only negative controls? \textbf{RQ4}: How sensitive is the method to the top-$k$ parameter? \textbf{RQ5}: How quickly does decoding degrade when the verifier's rank order is noisy? \textbf{RQ6}: How does recovery change when trajectory steps are missing? \textbf{RQ7}: What false-positive threshold and bit-level evidence strength should a verifier use before making an attribution claim?
 
 \subsection{Metrics}
 
@@ -441,6 +443,8 @@ Dataset & Method & Exact & Top-10 & Top-6 & Top-2 & Sel. only \\
 
 Increasing $k$ raises both the amount of available rank information and the risk of rank instability. In ALFWorld, \ours{}'s mean bit-match rate rises from 0.558 at $k=2$ to 0.863 at $k=20$, with payload recovery increasing from 0.006 to 0.313. ToolBench improves more modestly, from 0.351 to 0.505 bit-match, reflecting lower behavior entropy and shorter horizons. These results suggest that $k$ should be selected per environment: larger $k$ helps high-entropy embodied planning, while low-entropy tool tasks require either longer traces, stronger coding, or adaptive gating.
 
+This ablation is a design diagnostic rather than a winner-take-all tuning result. It supports the weak-asymmetry story by showing where rank information becomes useful and where lower-ranked candidates stop paying for their reconstruction risk; Appendix~\ref{app:rank-stability} gives the corresponding stability rationale.
+
 \begin{table}[t]
 \centering
 \caption{Top-$k$ ablation for \ours{} in the offline decoder proxy. Cells show bit-match / payload recovery.}
@@ -500,7 +504,7 @@ False-positive control is analytic for strict payload claims. If a clean or unre
 
 The threshold must also account for multiple testing. If an operator tests $N$ independent key/payload claims against the same corpus, a conservative union bound gives a family-wise false-positive rate at most $N2^{-L}$. Thus an 8-bit payload is appropriate for controlled capacity diagnostics but not for open-ended attribution. A 64-bit payload keeps the bound below $10^{-12}$ even for one million tested claims, assuming the verifier also enforces the rank-quality gate described in Section~\ref{sec:verification-protocol}.
 
-The postprocessed false-positive artifact instantiates this calculation across dataset, model, split, and top-$k$ configurations using 1000 random payload trials per clean trajectory. Because the strict event is exact payload equality for a pre-registered claim, we report the analytic per-claim threshold $2^{-L}$ and use the trials only to size the expected number of accidental matches under the tested trajectory and claim counts. This is why the paper reports false positives as an analytic security threshold rather than as a learned empirical classifier.
+The postprocessed false-positive artifact instantiates this calculation across dataset, model, split, and top-$k$ configurations using 1000 random payload trials per clean trajectory. Because the strict event is exact payload equality for a pre-registered claim, we report the analytic per-claim threshold $2^{-L}$ and use the trials only to size the expected number of accidental matches under the tested trajectory and claim counts. This is why the paper reports false positives as an analytic security threshold rather than as a learned empirical classifier. Appendix~\ref{app:artifacts} maps this and the other reported diagnostics to their source files.
 
 Bit-level scores require a different interpretation. When a verifier reports a match rate over $n$ decoded coded bits rather than a recovered payload, the appropriate null is a binomial tail $\Pr[X\geq s; X\sim\mathrm{Binom}(n,1/2)]$ for the observed score $s$. This statistic is useful for channel diagnostics and triage before enough independent RLNC equations are available, but it is not a positive attribution decision unless the pre-registered payload itself is recovered.
 
@@ -553,6 +557,9 @@ ALFWorld aligns text-based embodied environments with interactive learning~\cite
 
 \textbf{Offline postprocessing.}
 Capacity and robustness experiments are computed from logged trajectories and offline decoder proxies. This is appropriate for isolating the channel-knowledge question, but it is weaker than a complete live deployment study with end-to-end RLNC recovery under production logging. The paper therefore labels proxy capacity claims explicitly and avoids treating them as full-system recovery guarantees.
+
+\textbf{Unreported verifier perturbations.}
+The current artifact package does not include live cross-model re-querying, semantic prompt rewriting, or Kendall-tau-constrained alternate rank lists for every step. These perturbations are important for deployment calibration, but they would test the verifier's rank-reconstruction pipeline rather than the probability-versus-rank decoder boundary isolated here. We therefore report rank-noise and erasure proxies as controlled channel diagnostics and leave live cross-model and rewrite studies as follow-up evidence.
 
 \textbf{Benchmark coverage.}
 ALFWorld and ToolBench cover embodied planning and tool-use, but they do not exhaust the space of agentic workflows. Social simulation, GUI control, multi-agent collaboration, and long-running enterprise agents may have different rank stability and trajectory length. The construction is domain-agnostic, but the best $k$ and payload length should be calibrated per environment.
