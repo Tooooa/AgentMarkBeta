@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-05-10T14:26:46",
+  "purpose": "clean canonical experiment directory; non-compliant original records replaced by compliant supplement records",
+  "alfworld_records": 8220,
+  "toolbench_records": 3600,
+  "alfworld_source_counts": {
+    "supplement_0426_fix": 1995,
+    "root_output_0425": 4967,
+    "agentmark_output": 1258
+  },
+  "alfworld_expected_per_run": {
+    "ID": 140,
+    "OOD": 134
+  },
+  "toolbench_expected_per_method_model": "6 splits x 20 tasks x 3 runs = 360 records",
+  "source_audit_root": "/root/autodl-tmp/AgentMark3/AgentMark/output_supplement_0426_fix/audit",
+  "source_final_summary": "/root/autodl-tmp/AgentMark3/AgentMark/output_supplement_0426_fix/final/unified_summary.md"
+}

@@ -1,0 +1,43 @@
+# Utility Summary With Steps
+
+Success Rate/Solve Rate and average steps under the clean canonical output-0510 records.
+
+## ALFWorld
+
+|dataset|method|model|split|complete_runs|mean_success_rate|std_success_rate|mean_steps|std_steps|
+|---|---|---|---|---|---|---|---|---|
+|ALFWorld|vanilla|gemini-flash|ID|3/3|60.9524|1.0911|18.4476|0.0719|
+|ALFWorld|vanilla|gemini-flash|OOD|3/3|66.6667|1.5535|17.6742|0.4928|
+|ALFWorld|vanilla|deepseek|ID|3/3|71.6667|1.6495|15.5881|0.5572|
+|ALFWorld|vanilla|deepseek|OOD|3/3|77.1144|0.8617|14.4627|0.386|
+|ALFWorld|clean|gemini-flash|ID|3/3|72.6191|0.8247|17.3381|0.0757|
+|ALFWorld|clean|gemini-flash|OOD|3/3|69.403|0.0|18.7612|0.0|
+|ALFWorld|clean|deepseek|ID|3/3|88.5714|0.0|14.6357|0.0124|
+|ALFWorld|clean|deepseek|OOD|3/3|89.5522|0.0|14.1866|0.0259|
+|ALFWorld|rg|gemini-flash|ID|3/3|63.3333|2.8868|19.9595|0.3622|
+|ALFWorld|rg|gemini-flash|OOD|3/3|63.9303|3.016|19.9478|0.8963|
+|ALFWorld|rg|deepseek|ID|3/3|84.5238|0.4124|15.2809|0.043|
+|ALFWorld|rg|deepseek|OOD|3/3|87.811|3.3651|15.1219|0.3685|
+|ALFWorld|agentmark|gemini-flash|ID|3/3|72.1429|3.5715|18.05|0.1037|
+|ALFWorld|agentmark|gemini-flash|OOD|3/3|68.408|1.5535|18.3632|0.3851|
+|ALFWorld|agentmark|deepseek|ID|3/3|87.3809|2.8868|14.6953|0.7341|
+|ALFWorld|agentmark|deepseek|OOD|3/3|89.801|0.8617|15.2114|0.0524|
+|ALFWorld|rank|gemini-flash|ID|3/3|70.9524|2.8868|18.4738|0.5269|
+|ALFWorld|rank|gemini-flash|OOD|3/3|68.9055|2.3989|17.9428|0.9122|
+|ALFWorld|rank|deepseek|ID|3/3|87.1429|1.4286|14.3333|0.2761|
+|ALFWorld|rank|deepseek|OOD|3/3|87.3134|2.5851|14.8532|0.256|
+
+## ToolBench
+
+|dataset|method|model|split|complete_runs|mean_success_rate|std_success_rate|mean_steps|std_steps|
+|---|---|---|---|---|---|---|---|---|
+|ToolBench|vanilla|gemini-flash|all_6_splits|18/18|83.5185|7.7941|4.1444|0.489|
+|ToolBench|vanilla|deepseek|all_6_splits|18/18|84.6759|9.6725|3.9667|0.479|
+|ToolBench|clean|gemini-flash|all_6_splits|18/18|73.9352|8.6262|4.7639|0.7083|
+|ToolBench|clean|deepseek|all_6_splits|18/18|77.3611|11.265|5.8694|1.078|
+|ToolBench|rg|gemini-flash|all_6_splits|18/18|72.8704|7.6067|4.7722|0.5961|
+|ToolBench|rg|deepseek|all_6_splits|18/18|77.4074|14.9315|4.7889|0.7235|
+|ToolBench|agentmark|gemini-flash|all_6_splits|18/18|74.8611|10.9896|4.5667|0.6624|
+|ToolBench|agentmark|deepseek|all_6_splits|18/18|74.537|13.7533|4.5056|1.052|
+|ToolBench|rank|gemini-flash|all_6_splits|18/18|76.713|11.1675|4.5222|0.445|
+|ToolBench|rank|deepseek|all_6_splits|18/18|77.4074|11.0402|5.6111|1.0546|

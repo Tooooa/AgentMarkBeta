@@ -1,0 +1,31 @@
+{
+  "data_root": "/root/autodl-tmp/datasets/ToolBench/data",
+  "toolenv_root": "/root/autodl-tmp/datasets/ToolBench/data/toolenv/tools",
+  "cache_root": "/root/autodl-tmp/AgentMark3/AgentMark/experiments/toolbench/data/fake_response_cache",
+  "use_local_model": false,
+  "api_key": "sk-dEzx6C60jp1tNEyz2cDb59De4e94435d91Ad202370Bc4284",
+  "base_url": "https://aihubmix.com/v1",
+  "model": "gemini-2.0-flash",
+  "splits": [
+    "G1_instruction"
+  ],
+  "task_limit": 10,
+  "filter_failed_reference": false,
+  "max_steps": 10,
+  "verbose": true,
+  "seed": 2027,
+  "shuffle": false,
+  "temperature": 0.7,
+  "max_concurrency": 100,
+  "mode": "watermark",
+  "run_name": "/root/autodl-tmp/AgentMarkcg/AgentMarkBeta/output/toolbench/rank/gemini-flash/run_3/exp_rank_toolbench_gemini_r3",
+  "sampling_strategy": "rank",
+  "bit_stream_path": "/root/autodl-tmp/AgentMarkcg/AgentMarkBeta/agentmark/data/bit_stream.txt",
+  "watermark_config": {
+    "sampling_strategy": "rank",
+    "embedding_strategy": "cyclic",
+    "payload_bit_length": 8,
+    "use_rlnc": true
+  },
+  "split": "G1_instruction"
+}

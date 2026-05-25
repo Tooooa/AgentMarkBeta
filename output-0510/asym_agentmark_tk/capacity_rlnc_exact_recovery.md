@@ -1,0 +1,36 @@
+# Capacity 1.1 Strict RLNC Payload Recovery
+
+| dataset | method | model | split | runs | payload_len | decode_success_rate_mean | decode_success_rate_std | dedup_packet_mean |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| alfworld | agentmark | deepseek | ID | 3 | 8 | 0.6666666666666666 | 0.014869042853329512 | 19.55952380952381 |
+| alfworld | agentmark | deepseek | OOD | 3 | 8 | 0.7213930348258707 | 0.02398918099749492 | 21.902985074626866 |
+| alfworld | agentmark | gemini-flash | ID | 3 | 8 | 0.8285714285714286 | 0.01428571428571429 | 37.528571428571425 |
+| alfworld | agentmark | gemini-flash | OOD | 3 | 8 | 0.8134328358208955 | 0.014925373134328346 | 37.84577114427861 |
+| alfworld | rank | deepseek | ID | 3 | 8 | 0.2333333333333333 | 0.041239304942116105 | 7.154761904761905 |
+| alfworld | rank | deepseek | OOD | 3 | 8 | 0.24129353233830844 | 0.004308584098430039 | 7.718905472636816 |
+| alfworld | rank | gemini-flash | ID | 3 | 8 | 0.5071428571428571 | 0.05846680551337463 | 15.695238095238096 |
+| alfworld | rank | gemini-flash | OOD | 3 | 8 | 0.4104477611940298 | 0.01974441276913873 | 14.686567164179104 |
+| toolbench | agentmark | deepseek | G1_category | 3 | 8 | 0.03333333333333333 | 0.02886751345948129 | 1.1833333333333333 |
+| toolbench | agentmark | deepseek | G1_instruction | 3 | 8 | 0.15 | 0.0 | 3.4166666666666665 |
+| toolbench | agentmark | deepseek | G1_tool | 3 | 8 | 0.0 | 0.0 | 1.4166666666666667 |
+| toolbench | agentmark | deepseek | G2_category | 3 | 8 | 0.2 | 0.09999999999999999 | 3.9333333333333336 |
+| toolbench | agentmark | deepseek | G2_instruction | 3 | 8 | 0.15 | 0.0 | 3.216666666666667 |
+| toolbench | agentmark | deepseek | G3_instruction | 3 | 8 | 0.18333333333333335 | 0.07637626158259733 | 3.1 |
+| toolbench | agentmark | gemini-flash | G1_category | 3 | 8 | 0.03333333333333333 | 0.05773502691896258 | 1.9 |
+| toolbench | agentmark | gemini-flash | G1_instruction | 3 | 8 | 0.08333333333333334 | 0.02886751345948129 | 2.8833333333333333 |
+| toolbench | agentmark | gemini-flash | G1_tool | 3 | 8 | 0.11666666666666667 | 0.07637626158259733 | 3.3833333333333333 |
+| toolbench | agentmark | gemini-flash | G2_category | 3 | 8 | 0.1 | 0.049999999999999996 | 3.5166666666666666 |
+| toolbench | agentmark | gemini-flash | G2_instruction | 3 | 8 | 0.05 | 0.05 | 2.65 |
+| toolbench | agentmark | gemini-flash | G3_instruction | 3 | 8 | 0.05 | 0.05 | 2.716666666666667 |
+| toolbench | rank | deepseek | G1_category | 3 | 8 | 0.05 | 0.05 | 1.1666666666666667 |
+| toolbench | rank | deepseek | G1_instruction | 3 | 8 | 0.03333333333333333 | 0.02886751345948129 | 2.2666666666666666 |
+| toolbench | rank | deepseek | G1_tool | 3 | 8 | 0.016666666666666666 | 0.02886751345948129 | 1.8666666666666667 |
+| toolbench | rank | deepseek | G2_category | 3 | 8 | 0.03333333333333333 | 0.05773502691896258 | 2.216666666666667 |
+| toolbench | rank | deepseek | G2_instruction | 3 | 8 | 0.0 | 0.0 | 1.45 |
+| toolbench | rank | deepseek | G3_instruction | 3 | 8 | 0.03333333333333333 | 0.02886751345948129 | 1.5833333333333333 |
+| toolbench | rank | gemini-flash | G1_category | 3 | 8 | 0.016666666666666666 | 0.02886751345948129 | 1.0833333333333333 |
+| toolbench | rank | gemini-flash | G1_instruction | 3 | 8 | 0.0 | 0.0 | 1.3 |
+| toolbench | rank | gemini-flash | G1_tool | 3 | 8 | 0.016666666666666666 | 0.02886751345948129 | 1.0833333333333335 |
+| toolbench | rank | gemini-flash | G2_category | 3 | 8 | 0.03333333333333333 | 0.02886751345948129 | 1.2833333333333334 |
+| toolbench | rank | gemini-flash | G2_instruction | 3 | 8 | 0.0 | 0.0 | 1.0333333333333334 |
+| toolbench | rank | gemini-flash | G3_instruction | 3 | 8 | 0.0 | 0.0 | 1.2833333333333334 |

@@ -8,6 +8,7 @@
 |-------|------|--------|
 | [current-refactor-plan.md](./current-refactor-plan.md) | 第三轮执行中的 Agent-first 重构计划 | 2026-03-28 |
 | [rank-stego-integration.md](./rank-stego-integration.md) | 弱非对称 RankStego 集成计划 | 2026-03-31 |
+| [asym-agentmark-tk-experiments.md](./asym-agentmark-tk-experiments.md) | AsymAgentMark-TK 后续实验执行、覆盖率与统一后处理计划 | 2026-05-10 |
 
 ## 相关链接
 - [../completed/index.md](../completed/index.md): 已完成计划归档。

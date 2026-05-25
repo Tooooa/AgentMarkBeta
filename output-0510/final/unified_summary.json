@@ -1,0 +1,696 @@
+{
+  "alfworld": [
+    {
+      "dataset": "alfworld",
+      "method": "vanilla",
+      "model": "gemini-flash",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 60.9524,
+      "std_success_rate": 1.0911,
+      "round_success_rates": [
+        62.1429,
+        60.0,
+        60.7143
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "vanilla",
+      "model": "gemini-flash",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 66.6667,
+      "std_success_rate": 1.5535,
+      "round_success_rates": [
+        67.9104,
+        64.9254,
+        67.1642
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "vanilla",
+      "model": "deepseek",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 71.6667,
+      "std_success_rate": 1.6495,
+      "round_success_rates": [
+        70.7143,
+        73.5714,
+        70.7143
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "vanilla",
+      "model": "deepseek",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 77.1144,
+      "std_success_rate": 0.8617,
+      "round_success_rates": [
+        77.6119,
+        77.6119,
+        76.1194
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "clean",
+      "model": "gemini-flash",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 72.6191,
+      "std_success_rate": 0.8247,
+      "round_success_rates": [
+        72.1429,
+        72.1429,
+        73.5714
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "clean",
+      "model": "gemini-flash",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 69.403,
+      "std_success_rate": 0.0,
+      "round_success_rates": [
+        69.403,
+        69.403,
+        69.403
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "clean",
+      "model": "deepseek",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 88.5714,
+      "std_success_rate": 0.0,
+      "round_success_rates": [
+        88.5714,
+        88.5714,
+        88.5714
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "clean",
+      "model": "deepseek",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 89.5522,
+      "std_success_rate": 0.0,
+      "round_success_rates": [
+        89.5522,
+        89.5522,
+        89.5522
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "rg",
+      "model": "gemini-flash",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 63.3333,
+      "std_success_rate": 2.8868,
+      "round_success_rates": [
+        62.8571,
+        66.4286,
+        60.7143
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "rg",
+      "model": "gemini-flash",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 63.9303,
+      "std_success_rate": 3.016,
+      "round_success_rates": [
+        65.6716,
+        65.6716,
+        60.4478
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "rg",
+      "model": "deepseek",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 84.5238,
+      "std_success_rate": 0.4124,
+      "round_success_rates": [
+        84.2857,
+        84.2857,
+        85.0
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "rg",
+      "model": "deepseek",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 87.811,
+      "std_success_rate": 3.3651,
+      "round_success_rates": [
+        88.0597,
+        84.3284,
+        91.0448
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "agentmark",
+      "model": "gemini-flash",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 72.1429,
+      "std_success_rate": 3.5715,
+      "round_success_rates": [
+        75.7143,
+        72.1429,
+        68.5714
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "agentmark",
+      "model": "gemini-flash",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 68.408,
+      "std_success_rate": 1.5535,
+      "round_success_rates": [
+        67.1642,
+        67.9104,
+        70.1493
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "agentmark",
+      "model": "deepseek",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 87.3809,
+      "std_success_rate": 2.8868,
+      "round_success_rates": [
+        90.0,
+        84.2857,
+        87.8571
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "agentmark",
+      "model": "deepseek",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 89.801,
+      "std_success_rate": 0.8617,
+      "round_success_rates": [
+        88.806,
+        90.2985,
+        90.2985
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "rank",
+      "model": "gemini-flash",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 70.9524,
+      "std_success_rate": 2.8868,
+      "round_success_rates": [
+        71.4286,
+        67.8571,
+        73.5714
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "rank",
+      "model": "gemini-flash",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 68.9055,
+      "std_success_rate": 2.3989,
+      "round_success_rates": [
+        67.1642,
+        71.6418,
+        67.9104
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "rank",
+      "model": "deepseek",
+      "split": "ID",
+      "complete_runs": 3,
+      "mean_success_rate": 87.1429,
+      "std_success_rate": 1.4286,
+      "round_success_rates": [
+        85.7143,
+        88.5714,
+        87.1429
+      ]
+    },
+    {
+      "dataset": "alfworld",
+      "method": "rank",
+      "model": "deepseek",
+      "split": "OOD",
+      "complete_runs": 3,
+      "mean_success_rate": 87.3134,
+      "std_success_rate": 2.5851,
+      "round_success_rates": [
+        90.2985,
+        85.8209,
+        85.8209
+      ]
+    }
+  ],
+  "toolbench": [
+    {
+      "dataset": "toolbench",
+      "method": "vanilla",
+      "model": "gemini-flash",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 83.5185,
+      "std_solve_rate": 7.7941,
+      "by_split": {
+        "G1_category": {
+          "mean": 83.3333,
+          "std": 4.4096,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 77.2222,
+          "std": 8.5527,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 83.8889,
+          "std": 5.8532,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 92.2222,
+          "std": 5.0917,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 76.1111,
+          "std": 5.3576,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 88.3333,
+          "std": 6.6667,
+          "runs": 3
+        }
+      }
+    },
+    {
+      "dataset": "toolbench",
+      "method": "vanilla",
+      "model": "deepseek",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 84.6759,
+      "std_solve_rate": 9.6725,
+      "by_split": {
+        "G1_category": {
+          "mean": 76.6667,
+          "std": 4.4096,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 90.8333,
+          "std": 4.6398,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 85.5556,
+          "std": 3.4694,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 97.7778,
+          "std": 2.5459,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 72.7778,
+          "std": 7.743,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 84.4444,
+          "std": 7.1847,
+          "runs": 3
+        }
+      }
+    },
+    {
+      "dataset": "toolbench",
+      "method": "clean",
+      "model": "gemini-flash",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 73.9352,
+      "std_solve_rate": 8.6262,
+      "by_split": {
+        "G1_category": {
+          "mean": 76.6667,
+          "std": 2.8868,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 76.3889,
+          "std": 4.5896,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 75.5556,
+          "std": 3.4694,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 84.4445,
+          "std": 7.5154,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 59.7222,
+          "std": 0.4811,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 70.8334,
+          "std": 5.2042,
+          "runs": 3
+        }
+      }
+    },
+    {
+      "dataset": "toolbench",
+      "method": "clean",
+      "model": "deepseek",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 77.3611,
+      "std_solve_rate": 11.265,
+      "by_split": {
+        "G1_category": {
+          "mean": 75.5556,
+          "std": 8.3887,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 83.8889,
+          "std": 3.4695,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 81.3889,
+          "std": 9.9419,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 87.2222,
+          "std": 5.8531,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 58.8889,
+          "std": 7.8764,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 77.2222,
+          "std": 7.0874,
+          "runs": 3
+        }
+      }
+    },
+    {
+      "dataset": "toolbench",
+      "method": "rg",
+      "model": "gemini-flash",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 72.8704,
+      "std_solve_rate": 7.6067,
+      "by_split": {
+        "G1_category": {
+          "mean": 77.7778,
+          "std": 3.4695,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 79.4444,
+          "std": 4.1943,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 69.7222,
+          "std": 3.1549,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 78.8889,
+          "std": 6.7357,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 66.9445,
+          "std": 2.0972,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 64.4445,
+          "std": 8.5527,
+          "runs": 3
+        }
+      }
+    },
+    {
+      "dataset": "toolbench",
+      "method": "rg",
+      "model": "deepseek",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 77.4074,
+      "std_solve_rate": 14.9315,
+      "by_split": {
+        "G1_category": {
+          "mean": 75.2778,
+          "std": 1.2729,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 89.4445,
+          "std": 3.849,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 81.6667,
+          "std": 5.069,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 89.4444,
+          "std": 5.8532,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 49.1667,
+          "std": 9.3912,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 79.4444,
+          "std": 7.698,
+          "runs": 3
+        }
+      }
+    },
+    {
+      "dataset": "toolbench",
+      "method": "agentmark",
+      "model": "gemini-flash",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 74.8611,
+      "std_solve_rate": 10.9896,
+      "by_split": {
+        "G1_category": {
+          "mean": 81.6667,
+          "std": 4.4096,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 78.0556,
+          "std": 4.7385,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 79.4445,
+          "std": 2.5459,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 81.6667,
+          "std": 9.2796,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 56.6667,
+          "std": 7.6376,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 71.6667,
+          "std": 11.6667,
+          "runs": 3
+        }
+      }
+    },
+    {
+      "dataset": "toolbench",
+      "method": "agentmark",
+      "model": "deepseek",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 74.537,
+      "std_solve_rate": 13.7533,
+      "by_split": {
+        "G1_category": {
+          "mean": 71.3889,
+          "std": 4.2763,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 88.0556,
+          "std": 3.155,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 77.7778,
+          "std": 8.5527,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 86.9444,
+          "std": 3.3679,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 50.2778,
+          "std": 7.743,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 72.7778,
+          "std": 3.4695,
+          "runs": 3
+        }
+      }
+    },
+    {
+      "dataset": "toolbench",
+      "method": "rank",
+      "model": "gemini-flash",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 76.713,
+      "std_solve_rate": 11.1675,
+      "by_split": {
+        "G1_category": {
+          "mean": 85.8333,
+          "std": 3.8188,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 75.5556,
+          "std": 10.844,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 83.8889,
+          "std": 4.8113,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 80.5556,
+          "std": 6.7357,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 63.8889,
+          "std": 10.0462,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 70.5556,
+          "std": 15.123,
+          "runs": 3
+        }
+      }
+    },
+    {
+      "dataset": "toolbench",
+      "method": "rank",
+      "model": "deepseek",
+      "complete_split_runs": 18,
+      "expected_split_runs": 18,
+      "mean_solve_rate": 77.4074,
+      "std_solve_rate": 11.0402,
+      "by_split": {
+        "G1_category": {
+          "mean": 73.3333,
+          "std": 2.2048,
+          "runs": 3
+        },
+        "G1_instruction": {
+          "mean": 88.6111,
+          "std": 5.6724,
+          "runs": 3
+        },
+        "G1_tool": {
+          "mean": 83.3333,
+          "std": 4.4096,
+          "runs": 3
+        },
+        "G2_category": {
+          "mean": 85.8333,
+          "std": 5.069,
+          "runs": 3
+        },
+        "G2_instruction": {
+          "mean": 58.8889,
+          "std": 6.9389,
+          "runs": 3
+        },
+        "G3_instruction": {
+          "mean": 74.4444,
+          "std": 2.4056,
+          "runs": 3
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,1622 @@
+[
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 66.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 91.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 87.5
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 56.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 70.0
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 72.5
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 85.8333
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 90.0
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 41.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 68.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 83.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 52.5
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 71.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 83.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 70.0
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 65.0
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 84.1667
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 88.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 81.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 50.0
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 77.5
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 66.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 85.8333
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 93.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 61.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 70.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 75.8333
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 95.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 89.1667
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 66.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 71.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 72.5
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 84.1667
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 78.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 56.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 75.8333
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 71.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 88.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 53.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 75.8333
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 83.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 54.1667
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 91.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 75.8333
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 90.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 38.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 88.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 74.1667
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 91.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 84.1667
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 95.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 55.0
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 71.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 95.0
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 81.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 95.0
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 64.1667
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 85.8333
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 91.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 98.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 90.8333
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 78.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 85.8333
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 88.3333
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 100.0
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 79.1667
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 83.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 90.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 65.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 66.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 83.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 55.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 83.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 74.1667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 81.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 71.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 50.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "agentmark",
+    "n": 20,
+    "solve_rate": 63.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 78.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 60.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 66.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 71.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 71.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 60.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 69.1667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 80.8333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 91.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 59.1667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "clean",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 82.5
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 88.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 65.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 90.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 78.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 73.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 68.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 65.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 53.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "rank",
+    "n": 20,
+    "solve_rate": 56.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 76.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 73.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 85.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 65.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 66.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 81.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 67.5
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 66.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 55.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 83.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 68.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 71.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 69.1667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "rg",
+    "n": 20,
+    "solve_rate": 71.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G1_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 88.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G1_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G1_tool",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 78.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G2_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 86.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G2_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 70.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_1",
+    "split": "G3_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 88.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G1_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G1_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 75.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G1_tool",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 83.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G2_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 96.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G2_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 78.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_2",
+    "split": "G3_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 95.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G1_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 81.6667
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G1_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 70.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G1_tool",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 90.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G2_category",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 93.3333
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G2_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 80.0
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": "run_3",
+    "split": "G3_instruction",
+    "label": "vanilla",
+    "n": 20,
+    "solve_rate": 81.6667
+  }
+]

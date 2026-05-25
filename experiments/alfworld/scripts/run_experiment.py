@@ -356,15 +356,20 @@ def initialize_agent(
         agent: ALFWorld agent controller
     """
     logger = logging.getLogger(__name__)
+    
+    # Extract vanilla mode flag from config
+    alfworld_config = config.get('alfworld_config', {})
+    use_vanilla_mode = alfworld_config.get('use_vanilla_mode', False)
 
-    logger.info(f"Initializing agent: use_watermark={use_watermark}")
+    logger.info(f"Initializing agent: use_watermark={use_watermark}, use_vanilla_mode={use_vanilla_mode}")
 
     agent = ALFWorldAgent(
         client=client,
         config=config,
         env_adapter=env_adapter,
         use_watermark=use_watermark,
-        bit_stream=bit_stream
+        bit_stream=bit_stream,
+        use_vanilla_mode=use_vanilla_mode
     )
 
     logger.info("Agent initialized")

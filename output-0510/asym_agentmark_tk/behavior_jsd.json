@@ -1,0 +1,1282 @@
+[
+  {
+    "dataset": "alfworld",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "ID",
+    "baseline": "clean",
+    "jsd": 0.0766045,
+    "actions": 6172,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "ID",
+    "baseline": "vanilla",
+    "jsd": 0.90281895,
+    "actions": 6172,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "OOD",
+    "baseline": "clean",
+    "jsd": 0.06119859,
+    "actions": 6115,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "OOD",
+    "baseline": "vanilla",
+    "jsd": 0.83290121,
+    "actions": 6115,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "ID",
+    "baseline": "clean",
+    "jsd": 0.11325425,
+    "actions": 7581,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "ID",
+    "baseline": "vanilla",
+    "jsd": 0.18467635,
+    "actions": 7581,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "OOD",
+    "baseline": "clean",
+    "jsd": 0.23497902,
+    "actions": 7382,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "OOD",
+    "baseline": "vanilla",
+    "jsd": 0.17533812,
+    "actions": 7382,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "clean",
+    "model": "deepseek",
+    "split": "ID",
+    "baseline": "vanilla",
+    "jsd": 0.8999712,
+    "actions": 6147,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "clean",
+    "model": "deepseek",
+    "split": "OOD",
+    "baseline": "vanilla",
+    "jsd": 0.84137442,
+    "actions": 5703,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "clean",
+    "model": "gemini-flash",
+    "split": "ID",
+    "baseline": "vanilla",
+    "jsd": 0.20866665,
+    "actions": 7282,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "clean",
+    "model": "gemini-flash",
+    "split": "OOD",
+    "baseline": "vanilla",
+    "jsd": 0.30593214,
+    "actions": 7329,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "ID",
+    "baseline": "clean",
+    "jsd": 0.07858214,
+    "actions": 6020,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "ID",
+    "baseline": "vanilla",
+    "jsd": 0.89929564,
+    "actions": 6020,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "OOD",
+    "baseline": "clean",
+    "jsd": 0.06557171,
+    "actions": 5971,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "OOD",
+    "baseline": "vanilla",
+    "jsd": 0.83420254,
+    "actions": 5971,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "ID",
+    "baseline": "clean",
+    "jsd": 0.11854802,
+    "actions": 7759,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "ID",
+    "baseline": "vanilla",
+    "jsd": 0.21011174,
+    "actions": 7759,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "OOD",
+    "baseline": "clean",
+    "jsd": 0.22086109,
+    "actions": 7213,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "OOD",
+    "baseline": "vanilla",
+    "jsd": 0.16968675,
+    "actions": 7213,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "ID",
+    "baseline": "clean",
+    "jsd": 0.11403278,
+    "actions": 5699,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "ID",
+    "baseline": "vanilla",
+    "jsd": 0.88677774,
+    "actions": 5699,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "OOD",
+    "baseline": "clean",
+    "jsd": 0.08722693,
+    "actions": 4982,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "OOD",
+    "baseline": "vanilla",
+    "jsd": 0.77270469,
+    "actions": 4982,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "ID",
+    "baseline": "clean",
+    "jsd": 0.11095859,
+    "actions": 8383,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "ID",
+    "baseline": "vanilla",
+    "jsd": 0.21017819,
+    "actions": 8383,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "OOD",
+    "baseline": "clean",
+    "jsd": 0.22265671,
+    "actions": 8019,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "OOD",
+    "baseline": "vanilla",
+    "jsd": 0.17953346,
+    "actions": 8019,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "vanilla",
+    "model": "deepseek",
+    "split": "ID",
+    "baseline": "clean",
+    "jsd": 0.8999712,
+    "actions": 1826,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "vanilla",
+    "model": "deepseek",
+    "split": "OOD",
+    "baseline": "clean",
+    "jsd": 0.84137442,
+    "actions": 1882,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "vanilla",
+    "model": "gemini-flash",
+    "split": "ID",
+    "baseline": "clean",
+    "jsd": 0.20866665,
+    "actions": 7748,
+    "runs": 3
+  },
+  {
+    "dataset": "alfworld",
+    "method": "vanilla",
+    "model": "gemini-flash",
+    "split": "OOD",
+    "baseline": "clean",
+    "jsd": 0.30593214,
+    "actions": 7105,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G1_category",
+    "baseline": "clean",
+    "jsd": 0.13766458,
+    "actions": 128,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G1_category",
+    "baseline": "vanilla",
+    "jsd": 0.06091261,
+    "actions": 128,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G1_instruction",
+    "baseline": "clean",
+    "jsd": 0.18851926,
+    "actions": 196,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G1_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.18645745,
+    "actions": 196,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G1_tool",
+    "baseline": "clean",
+    "jsd": 0.32646394,
+    "actions": 125,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G1_tool",
+    "baseline": "vanilla",
+    "jsd": 0.20256888,
+    "actions": 125,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G2_category",
+    "baseline": "clean",
+    "jsd": 0.20214575,
+    "actions": 182,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G2_category",
+    "baseline": "vanilla",
+    "jsd": 0.19880199,
+    "actions": 182,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G2_instruction",
+    "baseline": "clean",
+    "jsd": 0.18236878,
+    "actions": 170,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G2_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.21503804,
+    "actions": 170,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G3_instruction",
+    "baseline": "clean",
+    "jsd": 0.04815862,
+    "actions": 188,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "deepseek",
+    "split": "G3_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.09033859,
+    "actions": 188,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G1_category",
+    "baseline": "clean",
+    "jsd": 0.16022346,
+    "actions": 155,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G1_category",
+    "baseline": "vanilla",
+    "jsd": 0.12386934,
+    "actions": 155,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G1_instruction",
+    "baseline": "clean",
+    "jsd": 0.17841919,
+    "actions": 172,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G1_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.19535987,
+    "actions": 172,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G1_tool",
+    "baseline": "clean",
+    "jsd": 0.27444634,
+    "actions": 172,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G1_tool",
+    "baseline": "vanilla",
+    "jsd": 0.2657026,
+    "actions": 172,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G2_category",
+    "baseline": "clean",
+    "jsd": 0.14547929,
+    "actions": 175,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G2_category",
+    "baseline": "vanilla",
+    "jsd": 0.16352787,
+    "actions": 175,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G2_instruction",
+    "baseline": "clean",
+    "jsd": 0.18250285,
+    "actions": 155,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G2_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.16926488,
+    "actions": 155,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G3_instruction",
+    "baseline": "clean",
+    "jsd": 0.06191393,
+    "actions": 171,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "agentmark",
+    "model": "gemini-flash",
+    "split": "G3_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.06294357,
+    "actions": 171,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "deepseek",
+    "split": "G1_category",
+    "baseline": "vanilla",
+    "jsd": 0.16382369,
+    "actions": 161,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "deepseek",
+    "split": "G1_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.2595881,
+    "actions": 235,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "deepseek",
+    "split": "G1_tool",
+    "baseline": "vanilla",
+    "jsd": 0.23230952,
+    "actions": 219,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "deepseek",
+    "split": "G2_category",
+    "baseline": "vanilla",
+    "jsd": 0.19779994,
+    "actions": 223,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "deepseek",
+    "split": "G2_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.20784192,
+    "actions": 199,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "deepseek",
+    "split": "G3_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.0804317,
+    "actions": 195,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "gemini-flash",
+    "split": "G1_category",
+    "baseline": "vanilla",
+    "jsd": 0.10974336,
+    "actions": 162,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "gemini-flash",
+    "split": "G1_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.21315833,
+    "actions": 174,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "gemini-flash",
+    "split": "G1_tool",
+    "baseline": "vanilla",
+    "jsd": 0.15981288,
+    "actions": 174,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "gemini-flash",
+    "split": "G2_category",
+    "baseline": "vanilla",
+    "jsd": 0.10438749,
+    "actions": 173,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "gemini-flash",
+    "split": "G2_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.14840924,
+    "actions": 151,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "clean",
+    "model": "gemini-flash",
+    "split": "G3_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.07157196,
+    "actions": 202,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G1_category",
+    "baseline": "clean",
+    "jsd": 0.12962623,
+    "actions": 158,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G1_category",
+    "baseline": "vanilla",
+    "jsd": 0.16630107,
+    "actions": 158,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G1_instruction",
+    "baseline": "clean",
+    "jsd": 0.18377561,
+    "actions": 229,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G1_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.26190333,
+    "actions": 229,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G1_tool",
+    "baseline": "clean",
+    "jsd": 0.15070196,
+    "actions": 211,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G1_tool",
+    "baseline": "vanilla",
+    "jsd": 0.19896947,
+    "actions": 211,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G2_category",
+    "baseline": "clean",
+    "jsd": 0.09074065,
+    "actions": 223,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G2_category",
+    "baseline": "vanilla",
+    "jsd": 0.1705195,
+    "actions": 223,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G2_instruction",
+    "baseline": "clean",
+    "jsd": 0.1915946,
+    "actions": 175,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G2_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.18087213,
+    "actions": 175,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G3_instruction",
+    "baseline": "clean",
+    "jsd": 0.05675269,
+    "actions": 190,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "deepseek",
+    "split": "G3_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.08525554,
+    "actions": 190,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G1_category",
+    "baseline": "clean",
+    "jsd": 0.13095926,
+    "actions": 160,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G1_category",
+    "baseline": "vanilla",
+    "jsd": 0.13321713,
+    "actions": 160,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G1_instruction",
+    "baseline": "clean",
+    "jsd": 0.23317455,
+    "actions": 169,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G1_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.23273485,
+    "actions": 169,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G1_tool",
+    "baseline": "clean",
+    "jsd": 0.18752349,
+    "actions": 165,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G1_tool",
+    "baseline": "vanilla",
+    "jsd": 0.18741658,
+    "actions": 165,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G2_category",
+    "baseline": "clean",
+    "jsd": 0.11437855,
+    "actions": 165,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G2_category",
+    "baseline": "vanilla",
+    "jsd": 0.09273456,
+    "actions": 165,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G2_instruction",
+    "baseline": "clean",
+    "jsd": 0.16708669,
+    "actions": 156,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G2_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.13125516,
+    "actions": 156,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G3_instruction",
+    "baseline": "clean",
+    "jsd": 0.03804606,
+    "actions": 178,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rank",
+    "model": "gemini-flash",
+    "split": "G3_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.05146343,
+    "actions": 178,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G1_category",
+    "baseline": "clean",
+    "jsd": 0.11269708,
+    "actions": 149,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G1_category",
+    "baseline": "vanilla",
+    "jsd": 0.18698771,
+    "actions": 149,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G1_instruction",
+    "baseline": "clean",
+    "jsd": 0.20588118,
+    "actions": 195,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G1_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.20752281,
+    "actions": 195,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G1_tool",
+    "baseline": "clean",
+    "jsd": 0.31294155,
+    "actions": 153,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G1_tool",
+    "baseline": "vanilla",
+    "jsd": 0.2269919,
+    "actions": 153,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G2_category",
+    "baseline": "clean",
+    "jsd": 0.18241494,
+    "actions": 183,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G2_category",
+    "baseline": "vanilla",
+    "jsd": 0.1615663,
+    "actions": 183,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G2_instruction",
+    "baseline": "clean",
+    "jsd": 0.20614778,
+    "actions": 175,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G2_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.17223879,
+    "actions": 175,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G3_instruction",
+    "baseline": "clean",
+    "jsd": 0.09112502,
+    "actions": 187,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "deepseek",
+    "split": "G3_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.12248043,
+    "actions": 187,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G1_category",
+    "baseline": "clean",
+    "jsd": 0.13785197,
+    "actions": 170,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G1_category",
+    "baseline": "vanilla",
+    "jsd": 0.15086127,
+    "actions": 170,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G1_instruction",
+    "baseline": "clean",
+    "jsd": 0.21621962,
+    "actions": 159,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G1_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.22200631,
+    "actions": 159,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G1_tool",
+    "baseline": "clean",
+    "jsd": 0.27147276,
+    "actions": 190,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G1_tool",
+    "baseline": "vanilla",
+    "jsd": 0.28172531,
+    "actions": 190,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G2_category",
+    "baseline": "clean",
+    "jsd": 0.1296194,
+    "actions": 173,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G2_category",
+    "baseline": "vanilla",
+    "jsd": 0.13614973,
+    "actions": 173,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G2_instruction",
+    "baseline": "clean",
+    "jsd": 0.20174684,
+    "actions": 157,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G2_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.19226146,
+    "actions": 157,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G3_instruction",
+    "baseline": "clean",
+    "jsd": 0.10435632,
+    "actions": 189,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "rg",
+    "model": "gemini-flash",
+    "split": "G3_instruction",
+    "baseline": "vanilla",
+    "jsd": 0.0664152,
+    "actions": 189,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "deepseek",
+    "split": "G1_category",
+    "baseline": "clean",
+    "jsd": 0.16382369,
+    "actions": 128,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "deepseek",
+    "split": "G1_instruction",
+    "baseline": "clean",
+    "jsd": 0.2595881,
+    "actions": 166,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "deepseek",
+    "split": "G1_tool",
+    "baseline": "clean",
+    "jsd": 0.23230952,
+    "actions": 138,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "deepseek",
+    "split": "G2_category",
+    "baseline": "clean",
+    "jsd": 0.19779994,
+    "actions": 163,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "deepseek",
+    "split": "G2_instruction",
+    "baseline": "clean",
+    "jsd": 0.20784192,
+    "actions": 153,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "deepseek",
+    "split": "G3_instruction",
+    "baseline": "clean",
+    "jsd": 0.0804317,
+    "actions": 146,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "gemini-flash",
+    "split": "G1_category",
+    "baseline": "clean",
+    "jsd": 0.10974336,
+    "actions": 140,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "gemini-flash",
+    "split": "G1_instruction",
+    "baseline": "clean",
+    "jsd": 0.21315833,
+    "actions": 174,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "gemini-flash",
+    "split": "G1_tool",
+    "baseline": "clean",
+    "jsd": 0.15981288,
+    "actions": 139,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "gemini-flash",
+    "split": "G2_category",
+    "baseline": "clean",
+    "jsd": 0.10438749,
+    "actions": 159,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "gemini-flash",
+    "split": "G2_instruction",
+    "baseline": "clean",
+    "jsd": 0.14840924,
+    "actions": 147,
+    "runs": 3
+  },
+  {
+    "dataset": "toolbench",
+    "method": "vanilla",
+    "model": "gemini-flash",
+    "split": "G3_instruction",
+    "baseline": "clean",
+    "jsd": 0.07157196,
+    "actions": 167,
+    "runs": 3
+  }
+]

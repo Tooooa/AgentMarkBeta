@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 
 from agentmark.core.parser_utils import extract_and_normalize_probabilities
-from agentmark.core.watermark_sampler import sample_behavior, sample_behavior_differential, sample_behavior_red_green
+from agentmark.core.watermark_sampler import sample_behavior, sample_behavior_differential, sample_behavior_red_green, sample_behavior_rank
 from agentmark.environments.toolbench.adapter import ToolBenchAdapter
 from agentmark.environments.toolbench.data_loader import ToolBenchDataLoader
 from agentmark.environments.toolbench.output import build_answer_record, save_prediction
@@ -70,6 +70,17 @@ def get_client(api_key: str, base_url: Optional[str]) -> Optional[OpenAI]:
 def uniform_prob(commands: List[str]) -> Dict[str, float]:
     p = 1.0 / len(commands)
     return {c: p for c in commands}
+
+
+def extract_usage(response_obj) -> Dict[str, int]:
+    usage = getattr(response_obj, "usage", None)
+    if usage is None:
+        return {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+    return {
+        "prompt_tokens": int(getattr(usage, "prompt_tokens", 0) or 0),
+        "completion_tokens": int(getattr(usage, "completion_tokens", 0) or 0),
+        "total_tokens": int(getattr(usage, "total_tokens", 0) or 0),
+    }
 
 
 def parse_action_args(model_output: str, chosen: str) -> Dict:
@@ -149,6 +160,13 @@ def build_effective_bit_stream(
     return effective_stream
 
 
+def as_int(value, default: int) -> int:
+    try:
+        return int(value)
+    except Exception:
+        return default
+
+
 def main():
     print("[DEBUG] main() started")
     parser = argparse.ArgumentParser()
@@ -198,9 +216,10 @@ def main():
     seed = args.seed if args.seed is not None else cfg.get("seed", 42)
     run_name = args.run_name if args.run_name else cfg.get("run_name", f"{cfg.get('mode', 'baseline')}_run")
     
-    task_limit = cfg.get("task_limit")
+    task_limit_raw = cfg.get("task_limit")
+    task_limit = as_int(task_limit_raw, 0) if task_limit_raw is not None else None
     mode = cfg.get("mode", "baseline")
-    max_steps = cfg.get("max_steps", 6)
+    max_steps = as_int(cfg.get("max_steps", 6), 6)
     temperature = cfg.get("temperature", 0)
     verbose = cfg.get("verbose", False)
     
@@ -281,7 +300,7 @@ def main():
         answer_dir_name = f"{prefix}_answer"
         ref_dir = data_root / "answer" / answer_dir_name
         
-        solved_limit = cfg.get("task_limit", 1000)
+        solved_limit = as_int(cfg.get("task_limit", 1000), 1000)
         solved_tasks = set()
         
         if ref_dir.exists():
@@ -319,7 +338,7 @@ def main():
         print(f"[INFO] Precision Selection: Running specific task query_id={args.query_id}")
     elif args.task_index is not None:
         if args.task_index < len(loader):
-            loader = [loader[args.task_index]]
+            loader = [list(loader)[args.task_index]]
             print(f"[INFO] Precision Selection: Running specific task index={args.task_index} (QueryID={loader[0].get('query_id')})")
         else:
             print(f"[WARN] Task index {args.task_index} out of range (Total {len(loader)}). Exiting.")
@@ -327,7 +346,7 @@ def main():
 
     # Final Limit Check (if not single task mode)
     if not args.query_id and args.task_index is None and task_limit is not None:
-         loader = loader[:task_limit]
+         loader = list(loader)[:task_limit]
          print(f"[INFO] Limited to {len(loader)} tasks (config limit).") 
 
     use_rlnc = watermark_config.get("use_rlnc", True) # Default Enabled as requested
@@ -364,6 +383,13 @@ def main():
     print(f"[INFO] Watermark Config: {watermark_config}")
 
     for idx, task in enumerate(loader):
+        # [方案 B] 断点续跑检查
+        query_id = str(task.get("query_id", f"task_{idx}"))
+        target_out_path = run_dir / split / f"{query_id}.json"
+        if target_out_path.exists():
+            print(f"[INFO] Skipping already completed task {query_id} (found {target_out_path})")
+            continue
+
         episode = adapter.prepare_episode(task)
         admissible = episode["admissible_commands"]
         messages = build_messages(
@@ -382,25 +408,43 @@ def main():
         final_answer = ""
         chosen_history = []
         trace = [] if mode == "watermark" else None
+        detailed_trajectory = []
+        llm_time_seconds = 0.0
+        token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
         while not done and step_count < max_steps:
             # === Model call ===
             model_output = None
+            llm_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+            llm_duration_seconds = 0.0
+            llm_prompt = json.dumps(messages, ensure_ascii=False)
             if client and model:
-                try:
-                    resp = client.chat.completions.create(
-                        model=model,
-                        messages=messages,
-                        temperature=temperature,
-                    )
-                    model_output = resp.choices[0].message.content
-                except Exception as e:  # pragma: no cover
-                    print(f"[WARN] model call failed: {e}")
-
+                max_retries = 15
+                for attempt in range(max_retries):
+                    try:
+                        llm_start = time.time()
+                        resp = client.chat.completions.create(
+                            model=model,
+                            messages=messages,
+                            temperature=temperature,
+                        )
+                        llm_duration_seconds = time.time() - llm_start
+                        model_output = resp.choices[0].message.content
+                        llm_usage = extract_usage(resp)
+                        break # Success, exit retry loop
+                    except Exception as e:
+                        print(f"[WARN] model call failed on attempt {attempt+1}/{max_retries}: {str(e)[:150]}...")
+                        time.sleep(2) # Sleep to distribute hits across load balancer nodes
+                
             if not model_output:
                 model_output = json.dumps(
                     {"action_weights": uniform_prob(admissible), "action_args": {cmd: {} for cmd in admissible}}
                 )
+
+            llm_time_seconds += llm_duration_seconds
+            token_usage["prompt_tokens"] += llm_usage.get("prompt_tokens", 0)
+            token_usage["completion_tokens"] += llm_usage.get("completion_tokens", 0)
+            token_usage["total_tokens"] += llm_usage.get("total_tokens", 0)
 
             probs = extract_and_normalize_probabilities(model_output, admissible)
             if not probs:
@@ -439,7 +483,17 @@ def main():
                         )
                         # Red-Green doesn't consume bits usually, but interface returns 0
                         # trace extra info?
-                        
+
+                    elif strategy == "rank":
+                        # Rank-based Sampling (RankStego 弱非对称方案)
+                        chosen, target_list, consumed_bits, _ = sample_behavior_rank(
+                            probabilities=effective_probs,
+                            bit_stream=bit_stream,
+                            bit_index=bit_index,
+                            context_for_key=episode["observation"],
+                            round_num=idx + step_count,
+                        )
+
                     else:
                         # Differential Sampling (Default)
                         chosen, _, consumed_bits, _ = sample_behavior_differential(
@@ -474,7 +528,23 @@ def main():
 
             action_args = parse_action_args(model_output, chosen)
             action = {"tool": chosen, "arguments": action_args}
-            trajectory.append({"role": "assistant", "message": model_output, "next": []})
+            assistant_msg = {"role": "assistant", "message": model_output, "next": []}
+            trajectory.append(assistant_msg)
+
+            step_entry = {
+                "step_num": step_count + 1,
+                "observation": last_observation,
+                "admissible_commands": admissible,
+                "probabilities": probs,
+                "selected_action": chosen,
+                "action_args": action_args,
+                "prompt": llm_prompt,
+                "llm_response": model_output,
+                "llm_usage": llm_usage,
+                "llm_duration_seconds": llm_duration_seconds,
+                "done": False,
+                "tool_observation": "",
+            }
 
             # Finish ends the episode
             if chosen == "Finish":
@@ -483,13 +553,19 @@ def main():
                 elif isinstance(action_args, str):
                     final_answer = action_args
                 done = True
+                step_entry["done"] = True
+                detailed_trajectory.append(step_entry)
                 break
 
             # Tool execution
             step_result = adapter.step(action, episode["tool_summaries"], state=task)
-            trajectory.append({"role": "tool", "message": step_result["observation"], "next": []})
+            tool_msg = {"role": "tool", "message": step_result["observation"], "next": []}
+            trajectory.append(tool_msg)
             last_observation = step_result["observation"]
             done = step_result.get("done", False)
+            step_entry["tool_observation"] = last_observation
+            step_entry["done"] = done
+            detailed_trajectory.append(step_entry)
             step_count += 1
             if done:
                 if not final_answer:
@@ -523,16 +599,25 @@ def main():
         task_end_time = time.time()
         duration = task_end_time - task_start_time
 
+        success = bool(final_answer)
+
         record = build_answer_record(
             method=mode,
             final_answer=wrapped_answer,
-            trajectory=trajectory,
-            total_steps=len(trajectory),
+            trajectory=detailed_trajectory,
+            total_steps=len(detailed_trajectory),
             query=task.get("query", ""),
             available_tools=episode.get("tool_summaries", []),
             duration=duration,
+            llm_time_seconds=llm_time_seconds,
+            token_usage=token_usage,
+            action_sequence=chosen_history,
+            success=success,
             watermark_trace=trace if mode == "watermark" else None,
         )
+
+        # Keep a ToolEval-compatible linear chain in answer_details.
+        record["answer_details"] = trajectory
         query_id = str(task.get("query_id", f"task_{idx}"))
         out_path = save_prediction(run_dir, split, query_id, record)
         print(f"[INFO] saved prediction -> {out_path}")

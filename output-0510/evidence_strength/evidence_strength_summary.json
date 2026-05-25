@@ -1,0 +1,32 @@
+{
+  "input_root": "/root/autodl-tmp/output-0510",
+  "output_dir": "/root/autodl-tmp/output-0510/evidence_strength",
+  "step_observations": 55475,
+  "audit_rows": 14184,
+  "artifacts": {
+    "observations_json": "/root/autodl-tmp/output-0510/evidence_strength/evidence_step_observations.json",
+    "observations_csv": "/root/autodl-tmp/output-0510/evidence_strength/evidence_step_observations.csv",
+    "audit_json": "/root/autodl-tmp/output-0510/evidence_strength/evidence_decode_audit.json",
+    "audit_csv": "/root/autodl-tmp/output-0510/evidence_strength/evidence_decode_audit.csv",
+    "stage_d_4_1_per_run_json": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_1_confidence_per_run.json",
+    "stage_d_4_1_per_run_csv": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_1_confidence_per_run.csv",
+    "stage_d_4_1_summary_json": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_1_confidence_summary.json",
+    "stage_d_4_1_summary_csv": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_1_confidence_summary.csv",
+    "stage_d_4_2_per_run_json": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_2_thresholds_per_run.json",
+    "stage_d_4_2_per_run_csv": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_2_thresholds_per_run.csv",
+    "stage_d_4_2_summary_json": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_2_thresholds_summary.json",
+    "stage_d_4_2_summary_csv": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_2_thresholds_summary.csv",
+    "stage_d_4_3_compensation_json": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_3_compensation.json",
+    "stage_d_4_3_compensation_csv": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_3_compensation.csv",
+    "stage_d_4_3_compensation_summary_json": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_3_compensation_summary.json",
+    "stage_d_4_3_compensation_summary_csv": "/root/autodl-tmp/output-0510/evidence_strength/stage_d_4_3_compensation_summary.csv"
+  },
+  "plots": [
+    "/root/autodl-tmp/output-0510/evidence_strength/plots/stage_d_4_1_confidence_alfworld.png",
+    "/root/autodl-tmp/output-0510/evidence_strength/plots/stage_d_4_1_confidence_toolbench.png",
+    "/root/autodl-tmp/output-0510/evidence_strength/plots/stage_d_4_2_threshold_alfworld_deepseek_ID.png",
+    "/root/autodl-tmp/output-0510/evidence_strength/plots/stage_d_4_2_threshold_alfworld_deepseek_OOD.png",
+    "/root/autodl-tmp/output-0510/evidence_strength/plots/stage_d_4_2_threshold_alfworld_gemini-flash_ID.png",
+    "/root/autodl-tmp/output-0510/evidence_strength/plots/stage_d_4_2_threshold_alfworld_gemini-flash_OOD.png"
+  ]
+}

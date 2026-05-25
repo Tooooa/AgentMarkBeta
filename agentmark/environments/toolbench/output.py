@@ -17,15 +17,30 @@ def build_answer_record(
     query: str,
     available_tools: List[Dict],
     duration: float = 0.0,
+    llm_time_seconds: float = 0.0,
+    token_usage: Optional[Dict] = None,
+    action_sequence: Optional[List[str]] = None,
+    success: Optional[bool] = None,
     watermark_trace: Optional[List[Dict]] = None,
 ) -> Dict:
+    if token_usage is None:
+        token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+    if action_sequence is None:
+        action_sequence = []
+
     record = {
         "method": method,
+        "success": success,
         "total_steps": total_steps,
         "final_answer": final_answer,
         "query": query,
         "available_tools": available_tools,
         "duration": duration,
+        "duration_seconds": duration,
+        "llm_time_seconds": llm_time_seconds,
+        "token_usage": token_usage,
+        "action_sequence": action_sequence,
+        "trajectory": trajectory,
         "answer_details": trajectory,
     }
     if watermark_trace:

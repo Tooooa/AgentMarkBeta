@@ -112,6 +112,33 @@ def run_baseline_experiment(
             duration = (datetime.now() - task_start).total_seconds()
 
             # Convert to dict
+            trajectory_data = [
+                {
+                    'step_num': step.step_num,
+                    'observation': step.observation,
+                    'admissible_commands': step.admissible_commands,
+                    'probabilities': step.probabilities,
+                    'selected_action': step.selected_action,
+                    'reward': step.reward,
+                    'done': step.done,
+                    'prompt': step.prompt,
+                    'llm_response': step.llm_response,
+                    'llm_usage': step.llm_usage,
+                    'llm_duration_seconds': step.llm_duration_seconds
+                }
+                for step in result.trajectory
+            ] if result.trajectory else None
+
+            token_usage = {'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0}
+            llm_time_seconds = 0.0
+            if trajectory_data:
+                for step in trajectory_data:
+                    usage = step.get('llm_usage') or {}
+                    token_usage['prompt_tokens'] += int(usage.get('prompt_tokens', 0) or 0)
+                    token_usage['completion_tokens'] += int(usage.get('completion_tokens', 0) or 0)
+                    token_usage['total_tokens'] += int(usage.get('total_tokens', 0) or 0)
+                    llm_time_seconds += float(step.get('llm_duration_seconds', 0.0) or 0.0)
+
             result_dict = {
                 'task_id': result.task_id,
                 'task_type': result.task_type,
@@ -120,20 +147,11 @@ def run_baseline_experiment(
                 'final_reward': result.final_reward,
                 'use_watermark': result.use_watermark,
                 'duration_seconds': duration,
+                'llm_time_seconds': llm_time_seconds,
+                'token_usage': token_usage,
                 'step_prompts': result.step_prompts,
                 'action_sequence': result.action_sequence,
-                'trajectory': [
-                    {
-                        'step_num': step.step_num,
-                        'observation': step.observation,
-                        'admissible_commands': step.admissible_commands,
-                        'probabilities': step.probabilities,
-                        'selected_action': step.selected_action,
-                        'reward': step.reward,
-                        'done': step.done
-                    }
-                    for step in result.trajectory
-                ] if result.trajectory else None
+                'trajectory': trajectory_data
             }
 
             # Save prompts separately and remove from result payload
@@ -261,6 +279,36 @@ def run_watermarked_experiment(
             }
 
             # Convert to dict
+            trajectory_data = [
+                {
+                    'step_num': step.step_num,
+                    'observation': step.observation,
+                    'admissible_commands': step.admissible_commands,
+                    'probabilities': step.probabilities,
+                    'selected_action': step.selected_action,
+                    'reward': step.reward,
+                    'done': step.done,
+                    'prompt': step.prompt,
+                    'llm_response': step.llm_response,
+                    'llm_usage': step.llm_usage,
+                    'llm_duration_seconds': step.llm_duration_seconds,
+                    'num_bits_embedded': step.num_bits_embedded,
+                    'target_behavior_list': step.target_behavior_list,
+                    'context_for_key': step.context_for_key
+                }
+                for step in result.trajectory
+            ] if result.trajectory else None
+
+            token_usage = {'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0}
+            llm_time_seconds = 0.0
+            if trajectory_data:
+                for step in trajectory_data:
+                    usage = step.get('llm_usage') or {}
+                    token_usage['prompt_tokens'] += int(usage.get('prompt_tokens', 0) or 0)
+                    token_usage['completion_tokens'] += int(usage.get('completion_tokens', 0) or 0)
+                    token_usage['total_tokens'] += int(usage.get('total_tokens', 0) or 0)
+                    llm_time_seconds += float(step.get('llm_duration_seconds', 0.0) or 0.0)
+
             result_dict = {
                 'task_id': result.task_id,
                 'task_type': result.task_type,
@@ -270,23 +318,11 @@ def run_watermarked_experiment(
                 'use_watermark': result.use_watermark,
                 'watermark_stats': watermark_stats,
                 'duration_seconds': duration,
+                'llm_time_seconds': llm_time_seconds,
+                'token_usage': token_usage,
                 'step_prompts': result.step_prompts,
                 'action_sequence': result.action_sequence,
-                'trajectory': [
-                    {
-                        'step_num': step.step_num,
-                        'observation': step.observation,
-                        'admissible_commands': step.admissible_commands,
-                        'probabilities': step.probabilities,
-                        'selected_action': step.selected_action,
-                        'reward': step.reward,
-                        'done': step.done,
-                        'num_bits_embedded': step.num_bits_embedded,
-                        'target_behavior_list': step.target_behavior_list,
-                        'context_for_key': step.context_for_key
-                    }
-                    for step in result.trajectory
-                ] if result.trajectory else None
+                'trajectory': trajectory_data
             }
 
             # Save prompts separately and remove from result payload

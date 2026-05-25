@@ -16,7 +16,10 @@ ROOT = Path(__file__).resolve().parents[3]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from agentmark.core.watermark_sampler import differential_based_decoder
+from agentmark.core.watermark_sampler import (
+    differential_based_decoder,
+    rank_based_decoder
+)
 
 
 def load_json(path: Path) -> Dict[str, Any]:
@@ -68,13 +71,22 @@ def decode_trace(trace: List[Dict[str, Any]], full_bit_stream: str = "") -> Dict
         context = entry.get("context_for_key")
         # Encoder uses (task_idx + step_count) as round_num
         round_num = entry.get("task_idx", 0) + entry.get("round", 0)
+        strategy = entry.get("strategy", "differential")
         try:
-            bits = differential_based_decoder(
-                probabilities=probs,
-                selected_behavior=chosen,
-                context_for_key=context,
-                round_num=round_num,
-            )
+            if strategy == "rank":
+                bits = rank_based_decoder(
+                    probabilities=probs,
+                    selected_behavior=chosen,
+                    context_for_key=context,
+                    round_num=round_num,
+                )
+            else:
+                bits = differential_based_decoder(
+                    probabilities=probs,
+                    selected_behavior=chosen,
+                    context_for_key=context,
+                    round_num=round_num,
+                )
         except Exception as exc:  # noqa: BLE001
             errors.append(f"round={round_num} Decoding failed: {exc}")
             segments.append("")

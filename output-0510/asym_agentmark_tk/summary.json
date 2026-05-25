@@ -1,0 +1,68 @@
+{
+  "input_root": "/root/autodl-tmp/output-0510",
+  "output_dir": "/root/autodl-tmp/output-0510/asym_agentmark_tk",
+  "payload_lens": [
+    8,
+    16,
+    32,
+    64
+  ],
+  "topk": [
+    2,
+    4,
+    6,
+    8,
+    10,
+    20
+  ],
+  "counts": {
+    "trajectory_count": 11820,
+    "alfworld_count": 8220,
+    "toolbench_count": 3600,
+    "watermark_decode_capable_count": 4728,
+    "method_counts": {
+      "alfworld|agentmark": 1644,
+      "alfworld|clean": 1644,
+      "alfworld|rank": 1644,
+      "alfworld|rg": 1644,
+      "alfworld|vanilla": 1644,
+      "toolbench|agentmark": 720,
+      "toolbench|clean": 720,
+      "toolbench|rank": 720,
+      "toolbench|rg": 720,
+      "toolbench|vanilla": 720
+    }
+  },
+  "artifacts": {
+    "capacity_l0_l6_proxy": {
+      "json": "/root/autodl-tmp/output-0510/asym_agentmark_tk/capacity_l0_l6_proxy.json",
+      "csv": "/root/autodl-tmp/output-0510/asym_agentmark_tk/capacity_l0_l6_proxy.csv",
+      "md": "/root/autodl-tmp/output-0510/asym_agentmark_tk/capacity_l0_l6_proxy.md"
+    },
+    "capacity_rlnc_exact_recovery": {
+      "json": "/root/autodl-tmp/output-0510/asym_agentmark_tk/capacity_rlnc_exact_recovery.json",
+      "csv": "/root/autodl-tmp/output-0510/asym_agentmark_tk/capacity_rlnc_exact_recovery.csv",
+      "md": "/root/autodl-tmp/output-0510/asym_agentmark_tk/capacity_rlnc_exact_recovery.md"
+    },
+    "topk_ablation": {
+      "json": "/root/autodl-tmp/output-0510/asym_agentmark_tk/topk_ablation.json",
+      "csv": "/root/autodl-tmp/output-0510/asym_agentmark_tk/topk_ablation.csv",
+      "md": "/root/autodl-tmp/output-0510/asym_agentmark_tk/topk_ablation.md"
+    },
+    "utility_retention": {
+      "json": "/root/autodl-tmp/output-0510/asym_agentmark_tk/utility_retention.json",
+      "csv": "/root/autodl-tmp/output-0510/asym_agentmark_tk/utility_retention.csv",
+      "md": "/root/autodl-tmp/output-0510/asym_agentmark_tk/utility_retention.md"
+    },
+    "behavior_jsd": {
+      "json": "/root/autodl-tmp/output-0510/asym_agentmark_tk/behavior_jsd.json",
+      "csv": "/root/autodl-tmp/output-0510/asym_agentmark_tk/behavior_jsd.csv",
+      "md": "/root/autodl-tmp/output-0510/asym_agentmark_tk/behavior_jsd.md"
+    }
+  },
+  "assumptions": [
+    "ALFWorld and ToolBench only; OASIS is excluded.",
+    "No LLM/API calls are made.",
+    "Proxy capacity and exact RLNC payload recovery are reported separately."
+  ]
+}

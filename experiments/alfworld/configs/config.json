@@ -1,6 +1,6 @@
-\{
+{
   "_comment_api": "OpenAI API config - Set via environment variables or update here",
-  "api_key": "${OPENAI_API_KEY}",
+  "api_key": "sk-4bf923694fc744239239301c0b62780e",
   "base_url": "https://api.deepseek.com",
   "model": "deepseek-chat",
   "_comment_alfworld": "ALFWorld environment config",
@@ -14,11 +14,13 @@
     "_comment_num_tasks": "Number of tasks to evaluate (-1 means all tasks)",
     "num_tasks": 1,
     "_comment_max_steps": "Max steps per task",
-    "max_steps_per_task": 20,
+    "max_steps_per_task": 30,
     "_comment_context_window": "Action history window size for context key",
     "context_window_size": 3,
-    "_comment_sampling_strategy": "Sampling strategy: greedy, weighted, temperature",
-    "sampling_strategy": "weighted",
+    "_comment_vanilla_mode": "Vanilla mode: pure LLM ReAct (no AgentMark pipeline, no probability induction)",
+    "use_vanilla_mode": true,
+    "_comment_sampling_strategy": "Sampling strategy: greedy (Vanilla), weighted (Clean), temperature",
+    "sampling_strategy": "greedy",
     "_comment_sampling_temperature": "Temperature value (only for sampling_strategy=temperature)",
     "sampling_temperature": 1.0
   },

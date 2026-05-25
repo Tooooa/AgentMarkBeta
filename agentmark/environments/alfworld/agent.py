@@ -16,8 +16,12 @@ from dataclasses import dataclass, field
 
 from .adapter import ALFWorldAdapter
 from .prompt import generate_alfworld_probability_prompt, generate_alfworld_action_prompt
-from ...core.parser_utils import extract_and_normalize_probabilities
-from ...core.watermark_sampler import sample_behavior, sample_behavior_differential
+from ...core.parser_utils import extract_and_normalize_probabilities, extract_action_from_response
+from ...core.watermark_sampler import (
+    sample_behavior,
+    sample_behavior_differential,
+    sample_behavior_rank,
+)
 from .action_executor import ActionExecutor
 
 
@@ -33,6 +37,8 @@ class StepData:
     done: bool
     prompt: str = ""
     llm_response: str = "" # Capture the raw thought/response from LLM
+    llm_usage: Dict[str, int] = field(default_factory=dict)
+    llm_duration_seconds: float = 0.0
     # Watermark fields (watermarked only)
     num_bits_embedded: int = 0
     target_behavior_list: List[str] = field(default_factory=list)
@@ -81,7 +87,8 @@ class ALFWorldAgent:
         config: Dict,
         env_adapter: ALFWorldAdapter,
         use_watermark: bool = False,
-        bit_stream: str = None
+        bit_stream: str = None,
+        use_vanilla_mode: bool = False
     ):
         """
         Initialize agent.
@@ -95,6 +102,7 @@ class ALFWorldAgent:
             env_adapter: ALFWorld environment adapter
             use_watermark: Whether to use watermarking
             bit_stream: Watermark bit stream (required if use_watermark=True)
+            use_vanilla_mode: If True, bypass AgentMark pipeline completely (pure LLM ReAct)
 
         Requirements: 2.1
         """
@@ -104,6 +112,7 @@ class ALFWorldAgent:
         self.env_adapter = env_adapter
         self.use_watermark = use_watermark
         self.bit_stream = bit_stream
+        self.use_vanilla_mode = use_vanilla_mode
         
         # Pull parameters from config
         self.model = config.get('model', 'deepseek-chat')
@@ -131,6 +140,8 @@ class ALFWorldAgent:
         self.current_commands = None
         self.holding_item = None  # Current held item (e.g., "ladle 1"); None means empty
         self._last_llm_response = ""  # Store last LLM response for logging
+        self._last_llm_usage: Dict[str, int] = {}
+        self._last_llm_duration_seconds: float = 0.0
         self.current_task_description: Optional[str] = None
         self.current_task_type: Optional[str] = None
         self.task_pattern = re.compile(r"Your task is to:\s*(.+)", re.IGNORECASE)
@@ -145,6 +156,7 @@ class ALFWorldAgent:
         self.logger.info(
             f"ALFWorld Agent initialized: "
             f"model={self.model}, use_watermark={use_watermark}, "
+            f"use_vanilla_mode={use_vanilla_mode}, "
             f"bit_stream_length={len(bit_stream) if bit_stream else 0}"
         )
     
@@ -181,6 +193,8 @@ class ALFWorldAgent:
     def _think(self, observation: str, commands: List[str]) -> Dict[str, float]:
         """
         Think: call the LLM to produce an action probability distribution.
+        
+        In vanilla mode, returns a pseudo-distribution with 1.0 for the chosen action.
 
         Args:
             observation: Current observation
@@ -193,7 +207,99 @@ class ALFWorldAgent:
         """
         max_retries = 3
         retry_delay = 1  # seconds
+
+        def _extract_usage(response_obj) -> Dict[str, int]:
+            usage = getattr(response_obj, 'usage', None)
+            if usage is None:
+                return {}
+            return {
+                'prompt_tokens': int(getattr(usage, 'prompt_tokens', 0) or 0),
+                'completion_tokens': int(getattr(usage, 'completion_tokens', 0) or 0),
+                'total_tokens': int(getattr(usage, 'total_tokens', 0) or 0),
+            }
         
+        # Vanilla mode: direct action selection (no probability distribution)
+        if self.use_vanilla_mode:
+            for attempt in range(max_retries):
+                try:
+                    # Generate simple action-selection prompt
+                    task_description = self.current_task_description
+                    if not task_description:
+                        task_description = self._extract_task_from_observation(observation)
+                        if task_description:
+                            self.current_task_description = task_description
+                    
+                    prompt = generate_alfworld_action_prompt(
+                        observation=observation,
+                        admissible_commands=commands,
+                        task_description=task_description
+                    )
+                    self._last_prompt = prompt
+                    
+                    self.logger.debug(f"Vanilla prompt generated (attempt {attempt + 1}/{max_retries})")
+                    
+                    # Call LLM API (temperature=1.0 for diversity as per spec)
+                    llm_start = time.time()
+                    response = self.client.chat.completions.create(
+                        model=self.model,
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": "You are a helpful AI assistant that helps complete household tasks in a text-based environment."
+                            },
+                            {
+                                "role": "user",
+                                "content": prompt
+                            }
+                        ],
+                        temperature=1.0  # Vanilla uses T=1.0 per spec (ALFWorld)
+                    )
+                    llm_duration = time.time() - llm_start
+                    
+                    response_text = response.choices[0].message.content
+                    self.logger.debug(f"Vanilla LLM response: {response_text[:100]}")
+                    
+                    # Save last LLM response for external logging
+                    self._last_llm_response = response_text
+                    self._last_llm_usage = _extract_usage(response)
+                    self._last_llm_duration_seconds = llm_duration
+                    
+                    # Extract action from response
+                    from ...core.parser_utils import extract_action_from_response
+                    selected_action = extract_action_from_response(
+                        response_text,
+                        commands,
+                        logger=self.logger
+                    )
+                    
+                    # Return pseudo-distribution: 1.0 for selected, 0.0 for others
+                    probabilities = {cmd: (1.0 if cmd == selected_action else 0.0) for cmd in commands}
+                    
+                    self.logger.info(f"Vanilla decision - selected action: '{selected_action}'")
+                    self.logger.debug(f"Vanilla thinking complete")
+                    
+                    return probabilities
+                    
+                except Exception as e:
+                    self.logger.warning(
+                        f"Vanilla thinking error (attempt {attempt + 1}/{max_retries}): {e}"
+                    )
+                    
+                    if attempt < max_retries - 1:
+                        time.sleep(retry_delay)
+                        retry_delay *= 2
+                    else:
+                        # Final attempt failed, use uniform distribution fallback
+                        self.logger.error(
+                            "Vanilla thinking failed after max retries; using uniform distribution fallback"
+                        )
+                        uniform_prob = 1.0 / len(commands)
+                        self._last_llm_response = ""
+                        self._last_llm_usage = {}
+                        self._last_llm_duration_seconds = 0.0
+                        return {cmd: uniform_prob for cmd in commands}
+        
+        # Non-vanilla mode: generate probability distribution
         for attempt in range(max_retries):
             try:
                 # Build prompt
@@ -221,6 +327,7 @@ class ALFWorldAgent:
                 self.logger.debug(f"Prompt generated (attempt {attempt + 1}/{max_retries})")
                 
                 # Call LLM API
+                llm_start = time.time()
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=[
@@ -235,12 +342,15 @@ class ALFWorldAgent:
                     ],
                     temperature=0  # deterministic output for consistency
                 )
+                llm_duration = time.time() - llm_start
                 
                 response_text = response.choices[0].message.content
                 self.logger.debug(f"LLM response length: {len(response_text)}")
                 
                 # Save last LLM response for external logging
                 self._last_llm_response = response_text
+                self._last_llm_usage = _extract_usage(response)
+                self._last_llm_duration_seconds = llm_duration
                 
                 # Extract and normalize probabilities
                 probabilities = extract_and_normalize_probabilities(
@@ -273,11 +383,16 @@ class ALFWorldAgent:
                         "Thinking failed after max retries; using uniform distribution fallback"
                     )
                     uniform_prob = 1.0 / len(commands)
+                    self._last_llm_response = ""
+                    self._last_llm_usage = {}
+                    self._last_llm_duration_seconds = 0.0
                     return {cmd: uniform_prob for cmd in commands}
     
     def _decide(self, probabilities: Dict[str, float]) -> Tuple[str, List[str], int, str]:
         """
         Decide: select an action based on probabilities (with/without watermark).
+        
+        In vanilla mode, simply returns the action with probability 1.0.
 
         Args:
             probabilities: Action probability distribution
@@ -291,6 +406,20 @@ class ALFWorldAgent:
         Requirements: 2.3, 3.1, 3.2
         """
         try:
+            # Vanilla mode: action already selected in _think(), just extract it
+            if self.use_vanilla_mode:
+                selected_action = [cmd for cmd, prob in probabilities.items() if prob == 1.0]
+                if selected_action:
+                    selected_action = selected_action[0]
+                else:
+                    # Fallback: shouldn't happen
+                    selected_action = list(probabilities.keys())[0]
+                
+                self.logger.info(f"Vanilla decision [direct] - selected action: '{selected_action}'")
+                self.logger.debug(f"Decision complete (vanilla): action={selected_action}")
+                
+                return selected_action, [], 0, ""
+            
             if self.use_watermark:
                 # Watermark mode: differential sampling
                 if self.bit_stream is None:
@@ -306,6 +435,14 @@ class ALFWorldAgent:
                     selected_action, target_behavior_list, num_bits_embedded = self._select_action_green_red(
                         probabilities=probabilities,
                         context=context_for_key
+                    )
+                elif method == 'rank':
+                    selected_action, target_behavior_list, num_bits_embedded, _ = sample_behavior_rank(
+                        probabilities=probabilities,
+                        bit_stream=self.bit_stream,
+                        bit_index=self.bit_index,
+                        context_for_key=context_for_key,
+                        round_num=len(self.action_history),
                     )
                 else:
                     # Default: differential watermark sampling
@@ -570,6 +707,8 @@ class ALFWorldAgent:
                     done=done,
                     prompt=self._last_prompt,
                     llm_response=self._last_llm_response,
+                    llm_usage=self._last_llm_usage,
+                    llm_duration_seconds=self._last_llm_duration_seconds,
                     num_bits_embedded=num_bits,
                     target_behavior_list=target_list,
                     context_for_key=context
@@ -649,7 +788,13 @@ class ALFWorldAgent:
             step_prompts=[
                 {
                     'step_num': s.step_num,
-                    'prompt': s.prompt
+                    'prompt': s.prompt,
+                    'llm_response': s.llm_response,
+                    'llm_usage': s.llm_usage,
+                    'llm_duration_seconds': s.llm_duration_seconds,
+                    'selected_action': s.selected_action,
+                    'reward': s.reward,
+                    'done': s.done
                 }
                 for s in trajectory
             ]

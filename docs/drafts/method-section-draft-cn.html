@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Method Section Draft v5 — 中英对照</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif; background: #f5f5f5; color: #222; line-height: 1.7; }
+  .container { max-width: 100%; margin: 0 auto; }
+  .header { background: #1a1a2e; color: #e0e0e0; padding: 18px 24px; text-align: center; }
+  .header h1 { font-size: 1.3em; margin-bottom: 4px; }
+  .header p { font-size: 0.8em; opacity: 0.7; }
+  .legend { display: flex; gap: 24px; justify-content: center; padding: 10px 24px; background: #fff; border-bottom: 1px solid #ddd; font-size: 0.78em; color: #555; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .legend .dot.en { background: #e8f4fd; border: 1px solid #b3d8f0; }
+  .legend .dot.cn { background: #fef9e7; border: 1px solid #f0d88a; }
+  .legend .dot.meta { background: #f0e6f6; border: 1px solid #c9a0dc; }
+  .legend .dot.code { background: #f4f4f4; border: 1px solid #ccc; }
+
+  .panel-wrap { display: flex; min-height: 100vh; }
+  .panel { flex: 1; padding: 20px 24px 40px; overflow-x: auto; }
+  .panel.en { background: #f8fafc; border-right: 1px solid #ddd; }
+  .panel.cn { background: #fffdf5; }
+
+  .panel h2 { font-size: 1.15em; margin: 24px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #eee; }
+  .panel h3 { font-size: 1.05em; margin: 18px 0 8px; }
+  .panel h4 { font-size: 0.95em; margin: 14px 0 6px; color: #444; }
+  .panel p, .panel li { font-size: 0.88em; margin: 6px 0; }
+  .panel ul, .panel ol { padding-left: 22px; }
+  .panel blockquote { background: #f0e6f6; border-left: 4px solid #9b59b6; margin: 10px 0; padding: 8px 14px; font-size: 0.84em; color: #4a235a; border-radius: 0 4px 4px 0; }
+  .panel.cn blockquote { background: #fef3e2; border-left-color: #e67e22; color: #6e2c00; }
+
+  .panel code { background: #eee; padding: 1px 5px; border-radius: 3px; font-size: 0.88em; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; }
+  .panel pre { background: #f4f4f4; border: 1px solid #ddd; border-radius: 6px; padding: 12px 16px; margin: 10px 0; overflow-x: auto; font-size: 0.8em; line-height: 1.5; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; white-space: pre; }
+  .panel table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.82em; }
+  .panel th, .panel td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; }
+  .panel th { background: #eee; font-weight: 600; }
+  .panel strong { color: #2c3e50; }
+  .panel hr { border: none; border-top: 1px solid #ddd; margin: 18px 0; }
+
+  .highlight { background: #fffbdd; border-left: 3px solid #f0b400; padding: 6px 12px; margin: 8px 0; font-size: 0.84em; border-radius: 0 4px 4px 0; }
+  .section-anchor { scroll-margin-top: 10px; }
+
+  @media (max-width: 900px) {
+    .panel-wrap { flex-direction: column; }
+    .panel.en { border-right: none; border-bottom: 2px solid #999; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>Method Section Draft v5 — 中英对照</h1>
+  <p>AsymAgentMark: Asymmetric Behavioral Watermarking for LLM Agents &nbsp;|&nbsp; S&amp;P Style</p>
+</div>
+
+<div class="legend">
+  <span><i class="dot en"></i> English (original)</span>
+  <span><i class="dot cn"></i> 中文 (翻译)</span>
+  <span><i class="dot meta"></i> 写作注释 / Meta</span>
+  <span><i class="dot code"></i> 伪代码 / Code block</span>
+</div>
+
+<div class="panel-wrap">
+
+<!-- ======================== LEFT: ENGLISH ======================== -->
+<div class="panel en">
+
+<div class="section-anchor" id="en-meta">
+<blockquote>
+<strong>文件说明</strong>: 第五稿。修正了第四稿中"编码端与 AgentMark-F 相同、只有解码端不同"的错误叙事。实际上 encoder 和 decoder 都是全新设计，encoder 的二叉树结构是 decoder 能做非对称解码的前提。同时修正了 BinEnc 描述（0 或 1 bit）、对比表 PRG sync 等技术细节。<br><br>
+<strong>命名体系</strong>：<br>
+- <strong>AgentMark</strong>: ACL 前作的 general paradigm（Huang et al. 2026）<br>
+- <strong>AgentMark-F</strong>: ACL 的具体实例化（FDPSS-style, 对称方案）<br>
+- <strong>AsymAgentMark</strong>: 本文的 general paradigm（非对称 AgentMark）<br>
+- <strong>AsymAgentMark-T</strong>: 本文的具体实例化（Top-k rank-based binary splitting）<br><br>
+<strong>与 ACL 前作的核心区别</strong>：<br>
+- ACL (AgentMark-F): 对称方案，encoder/decoder 都需要精确概率分布 P<sub>t</sub><br>
+- Ours (AsymAgentMark-T): 弱非对称方案，encoder 需要 P<sub>t</sub>，decoder 仅需 rank ordering σ<sub>t</sub><br>
+- 新的威胁模型：adversary 可以扰动概率值（temperature/quantization/fine-tuning）
+</blockquote>
+</div>
+
+<hr>
+
+<h2 class="section-anchor" id="en-s3">3. Problem Formulation</h2>
+
+<blockquote>写作策略：Section 3 的 notation 和 channel model 直接沿用 ACL，只补充新增的 rank-consistency 假设和扩展的 threat model。</blockquote>
+
+<p>We adopt the planning-time behavior channel formulation of Huang et al. (2026). At each step <em>t</em>, the agent induces a distribution <strong>P<sub>t</sub></strong> over a finite behavior set <strong>B<sub>t</sub></strong> and selects <strong>b̂<sub>t</sub> ← Enc(P<sub>t</sub>, r<sub>t</sub>)</strong>, where <strong>r<sub>t</sub></strong> is keyed pseudorandomness derived from a shared secret <strong>K<sub>sh</sub></strong> and step context. The verifier recovers the payload via <strong>m̂ ← Dec({(b̂<sub>t</sub>, ·)}<sub>t∈I</sub>)</strong>, where <strong>I ⊆ {1, …, T}</strong> is the observed index set.</p>
+
+<p>We retain the distribution-preservation requirement (Eq. 1 of Huang et al., 2026):</p>
+<p><strong>Pr[b̂<sub>t</sub> = b] = P<sub>t</sub>(b), &nbsp; ∀ b ∈ B<sub>t</sub>, ∀ t.</strong></p>
+
+<h3 class="section-anchor" id="en-s31">3.1 Extended Threat Model</h3>
+
+<p>AgentMark-F (Huang et al., 2026) assumes the verifier has access to the <em>exact</em> per-step distribution <strong>P<sub>t</sub></strong> used during encoding. In practice, this assumption is fragile: the verifier may re-query the agent to reconstruct <strong>P<sub>t</sub></strong>, but temperature scaling, quantization, model updates, or API-side post-processing can shift the returned probability values. We formalize this as a <strong>distribution-perturbation adversary</strong>:</p>
+
+<p><strong>Definition 1 (Distribution perturbation).</strong> The adversary applies a per-step transformation <strong>P<sub>t</sub> ↦ P<sub>t</sub>'</strong> such that probability values change but the rank ordering is preserved: <strong>argsort(P<sub>t</sub>) = argsort(P<sub>t</sub>')</strong>.</p>
+
+<p>This is strictly stronger than the erasure/truncation adversary of Huang et al. (2026): step erasure removes entire steps, while distribution perturbation corrupts the <em>content</em> of surviving steps. AgentMark-F's differential recombination relies on exact probability values for bin construction; under distribution perturbation, the encoder and decoder construct different bins, breaking synchronization and causing decoding failure (we verify this empirically in Section 5).</p>
+
+<h3 class="section-anchor" id="en-s32">3.2 Rank-Consistency Assumption</h3>
+
+<p>We introduce the following relaxation of the exact-distribution requirement:</p>
+
+<p><strong>Assumption 1 (Rank consistency).</strong> The decoder observes a distribution <strong>P<sub>t</sub>'</strong> such that <strong>argsort(P<sub>t</sub>') = argsort(P<sub>t</sub>)</strong>, i.e., the relative ordering of behaviors is preserved.</p>
+
+<p>This assumption is empirically well-supported: rank ordering is stable under temperature scaling (<strong>p<sub>i</sub>' = p<sub>i</sub><sup>1/T</sup> / Z</strong> is monotonic), minor fine-tuning, and quantization, all of which predominantly scale magnitudes while preserving relative order (we validate this in Section 5, Table X).</p>
+
+<p><strong>Goal.</strong> Design an encoder <strong>Enc</strong> and decoder <strong>Dec</strong> such that: (1) distribution preservation holds as before, (2) the decoder requires only <strong>argsort(P<sub>t</sub>')</strong>—not the exact values—enabling correct decoding under Assumption 1.</p>
+
+<hr>
+
+<h2 class="section-anchor" id="en-s4">4. AsymAgentMark: Asymmetric Behavioral Watermarking</h2>
+
+<p>We propose <strong>AsymAgentMark</strong>, an <em>asymmetric</em> extension of the AgentMark paradigm. While both AsymAgentMark and AgentMark-F share the distribution-preservation goal, AsymAgentMark <strong>redesigns both the encoder and decoder</strong>: the encoder replaces differential recombination with a binary partition tree over rank-sorted behaviors, and the decoder exploits the tree's structural property to extract bits from rank positions alone, without probability values. This co-design is essential—AgentMark-F's differential recombination encodes bits into probability-dependent bins that cannot be recovered from rank information alone, so asymmetric decoding requires a fundamentally different encoding scheme.</p>
+
+<p>We present a concrete instantiation, <strong>AsymAgentMark-T</strong>, which operates on the top-<strong>k</strong> ranked behaviors via recursive binary splitting. The "-T" denotes top-<strong>k</strong> rank-based encoding: the encoder restricts attention to the <strong>k</strong> highest-probability behaviors, embeds bits within this subset, and falls back to standard sampling for tail behaviors. This top-<strong>k</strong> focus both concentrates embedding capacity on the most informative actions and aligns naturally with common inference-time truncation strategies.</p>
+
+<p><strong>Core insight.</strong> The binary partition tree maps each behavior to a unique leaf via interleaved splitting. The path from root to leaf is fully determined by the behavior's rank in the sorted ordering—the rank expressed in binary <em>is</em> the path. This structural correspondence is what enables asymmetric decoding: the encoder uses probability values to make distribution-preserving group selections (via <strong>BinEnc</strong>), while the decoder reads the same path back from the rank alone.</p>
+
+<h3 class="section-anchor" id="en-s41">4.1 Overview</h3>
+
+<blockquote><strong>[Figure 2 规划]</strong>：与 ACL Figure 2 对称的布局。左侧 Agent Workflow 保持一致（沿用 ACL 的 agent loop 示意）。右侧 AsymAgentMark-T 替换原有的 DiffRecombine + CyclicShift 模块，改为：Sort by rank → Top-k selection → Binary Partition Tree → BinEnc per level。底部新增一个对比框："Decoder requires: AgentMark-F needs P<sub>t</sub> (exact) vs. AsymAgentMark-T needs σ<sub>t</sub> (rank only)"，用颜色区分。</blockquote>
+
+<p>Figure 2 illustrates AsymAgentMark-T within the agent workflow. At each round <em>t</em>:</p>
+<ol>
+  <li>The agent elicits an explicit behavior distribution <strong>P<sub>t</sub></strong> over <strong>B<sub>t</sub></strong> (identical to AgentMark-F).</li>
+  <li>The encoder sorts <strong>B<sub>t</sub></strong> by descending probability, selects the top-<strong>k</strong> behaviors, and embeds bits via recursive binary splitting over this subset (<strong>RankEnc</strong>). If the sampled action falls outside the top-<strong>k</strong>, no bits are embedded for that step.</li>
+  <li>The decoder, given only the selected behavior <strong>b̂<sub>t</sub></strong> and the rank ordering <strong>σ<sub>t</sub></strong>, extracts bits by decomposing the rank of <strong>b̂<sub>t</sub></strong> within the top-<strong>k</strong> set into binary (<strong>RankDec</strong>).</li>
+</ol>
+
+<p>The keyed pseudorandomness mechanism is identical to AgentMark-F (Eq. 9 of Huang et al., 2026): <strong>K<sub>t</sub> ← H(K<sub>sh</sub> ∥ t ∥ h<sub>t</sub>)</strong>, and a DRBG <strong>G</strong> seeded by <strong>K<sub>t</sub></strong> produces the per-step random stream. We adopt the Meteor-style HMAC-SHA512 DRBG [Kaptchuk et al., 2021] (construction details in Appendix A).</p>
+
+<h3 class="section-anchor" id="en-s42">4.2 Rank-Based Distribution-Preserving Encoding</h3>
+
+<p>AsymAgentMark-T replaces AgentMark-F's differential recombination with a binary partition tree over the top-<strong>k</strong> rank-sorted distribution. The construction has two levels: a binary encoding primitive (<strong>BinEnc</strong>) and a recursive wrapper (<strong>RankEnc</strong>).</p>
+
+<h4>Binary Encoding Primitive</h4>
+
+<p>At each tree level, the encoder faces a binary choice between two groups of behaviors. <strong>BinEnc</strong> attempts to embed one message bit into this choice while <em>exactly preserving the marginal distribution</em>. It succeeds (embedding 1 bit) when the low-mass group is selected, and defers (embedding 0 bits) when the high-mass group is selected—in which case the same message bit is retried at the next level.</p>
+
+<p>Given group masses <strong>S<sub>hi</sub> ≥ S<sub>lo</sub></strong> (with <strong>S = S<sub>hi</sub> + S<sub>lo</sub></strong>), a message bit <strong>m</strong>, and pseudorandom <strong>r ← G</strong>:</p>
+<p><strong>r<sub>m</sub> = (r · S + ½ S · m) mod S</strong></p>
+
+<p>The encoder selects the high-mass group if <strong>r<sub>m</sub> &lt; S<sub>hi</sub></strong> (embedding 0 bits), or the low-mass group otherwise (embedding 1 bit). Distribution preservation follows from the uniform distribution of <strong>r</strong> (proof in Appendix B).</p>
+
+<h4>Recursive Encoding with Top-k Selection</h4>
+
+<blockquote><strong>[Figure 3 规划]</strong>：5-action 示例，与 ACL 的 differential recombination 示例并排对比。左列标 "AgentMark-F: DiffRecombine → Bins → CyclicShift"，右列标 "AsymAgentMark-T: Top-k → Sort → Binary Partition Tree"。底部 highlight：同一个 action 被选中后，AgentMark-F 解码需要精确概率重建 bin，AsymAgentMark-T 解码只需 rank 位置。</blockquote>
+
+<p><strong>Algorithm 1: AsymAgentMark-T Encode (one step)</strong></p>
+<pre>Require: P_t over B_t, context (t, h_t), shared secret K_sh,
+         payload M, pointer ℓ, top-k parameter k
+Ensure:  selected behavior b̂_t, embedded bits s_t, updated ℓ
+
+1:  K_t ← H(K_sh ∥ t ∥ h_t);  G ← DRBG(K_t)
+2:  σ ← argsort(P_t, descending)
+3:  S_top ← Σ_{i=1}^{k} P_t(σ(i))                ▷ top-k probability mass
+4:  if Uniform(0,1) ≥ S_top:                       ▷ falls into tail (independent of G)
+5:      b̂_t ← sample from tail {σ(k+1), ...}; return b̂_t, ∅, ℓ
+6:  D ← {(σ(i), P_t(σ(i))/S_top) : i = 1..k}     ▷ top-k normalized dist
+7:  sync ← ⌈log₂ k⌉
+8:  while |D| &gt; 1 and ℓ &lt; |M|:
+9:      D_even ← {D[i] : i even};  D_odd ← {D[i] : i odd}
+10:     (group, b) ← BinEnc(M[ℓ], (Σ D_even, Σ D_odd), G.next())
+11:     ℓ ← ℓ + b;  sync ← sync − 1;  D ← D_group
+12: for i = 1 to sync: G.next()                    ▷ PRG synchronization
+13: b̂_t ← D[0];  s_t ← M[ℓ_old : ℓ]
+14: return b̂_t, s_t, ℓ</pre>
+
+<p><strong>Top-k selection (lines 3–6).</strong> Rather than encoding over the full behavior set, AsymAgentMark-T restricts to the <strong>k</strong> highest-probability behaviors. This design is motivated by three considerations: (1) <em>rank stability</em>—the top-<strong>k</strong> ranks are the most robust to probability perturbation, since the probability gap between top-ranked behaviors is typically larger than among tail behaviors; (2) <em>inference alignment</em>—many agent deployments already apply top-<strong>k</strong> truncation, making this a natural fit; (3) <em>embedding concentration</em>—the top-<strong>k</strong> behaviors carry the majority of probability mass, so restricting to them sacrifices little capacity while improving robustness. When <strong>k = |B<sub>t</sub>|</strong>, AsymAgentMark-T reduces to full-distribution encoding.</p>
+
+<p><strong>Interleaved partition.</strong> At each level, we partition the sorted distribution into even-indexed and odd-indexed elements. Since the distribution is sorted descending, the even-indexed group (containing ranks 0, 2, 4, ...) always has total mass <strong>≥</strong> the odd-indexed group (ranks 1, 3, 5, ...). This interleaving ensures approximately balanced group masses, maximizing the per-level embedding opportunity. A naive top-half/bottom-half split would create a dominant high-mass group, causing <strong>BinEnc</strong> to almost always select it with near-zero embedding rate.</p>
+
+<p><strong>PRG synchronization (rt_sync).</strong> The DRBG advances by exactly <strong>⌈log₂ k⌉</strong> calls per step regardless of early termination (line 12). This fixed-budget invariant is critical: without it, the decoder cannot determine how many DRBG values were consumed, causing stream desynchronization for all subsequent steps. This mechanism also enables the decoder to operate without knowing the message length—a property not available in AgentMark-F's variable-length cyclic shift encoding.</p>
+
+<h3 class="section-anchor" id="en-s43">4.3 Weakly Asymmetric Decoding</h3>
+
+<p>The central contribution of AsymAgentMark is a <strong>co-designed encoder–decoder pair</strong> where the encoder's binary partition tree structure directly enables a decoder that requires strictly less information. The encoder's tree design is not incidental—it is the structural prerequisite that makes asymmetric decoding possible.</p>
+
+<p><strong>Key observation.</strong> The binary partition tree maps each behavior to a unique leaf. The path from root to a behavior's leaf is fully determined by the behavior's rank within the top-<strong>k</strong> set: at each level, membership in the high-mass or low-mass group corresponds to whether the current index is even or odd—i.e., the parity of the rank at that level. Therefore, the rank in binary <em>is</em> the encoding path. This property is unique to the interleaved binary partition; AgentMark-F's differential bins do not admit such rank-based path recovery.</p>
+
+<p><strong>Algorithm 2: AsymAgentMark-T Decode (one step)</strong></p>
+<pre>Require: b̂_t, rank ordering σ_t, context (t, h_t), shared secret K_sh,
+         top-k parameter k
+Ensure:  extracted bitstring s_t
+
+1:  K_t ← H(K_sh ∥ t ∥ h_t);  G ← DRBG(K_t)
+2:  rank ← position of b̂_t in σ_t[1..k] (0-indexed)
+3:  if b̂_t ∉ top-k of σ_t: return ∅           ▷ tail action, no bits
+4:  sync ← ⌈log₂ k⌉
+5:  R ← [G.next() for _ in range(sync)]
+6:  s_t ← "";  level ← 0
+7:  while rank ≠ 0:
+8:      if rank mod 2 = 1:                      ▷ odd-indexed group → bit embedded
+9:          s_t ← s_t ∥ ('1' if R[level] &lt; 0.5 else '0')
+10:     rank ← ⌊rank / 2⌋;  level ← level + 1
+11: return s_t</pre>
+
+<p><strong>Note the asymmetry</strong>: Algorithm 1 (encoder) accesses the full distribution <strong>P<sub>t</sub></strong> to compute group masses for <strong>BinEnc</strong> (line 10). Algorithm 2 (decoder) accesses only the rank ordering <strong>σ<sub>t</sub></strong> (line 2)—probability values never appear. The decoder only needs to know which position (rank) the selected behavior occupies within the top-<strong>k</strong> set.</p>
+
+<p><strong>Theorem 1 (Weak asymmetry).</strong> Let <strong>P<sub>t</sub></strong> and <strong>P<sub>t</sub>'</strong> be distributions over <strong>B<sub>t</sub></strong> with <strong>argsort<sub>k</sub>(P<sub>t</sub>) = argsort<sub>k</sub>(P<sub>t</sub>')</strong> (i.e., the top-<strong>k</strong> rank ordering is preserved). For any behavior <strong>b̂<sub>t</sub></strong> and DRBG state <strong>G</strong>:</p>
+<p><strong>Decode(b̂<sub>t</sub>, sort(P<sub>t</sub>), G) = Decode(b̂<sub>t</sub>, sort(P<sub>t</sub>'), G)</strong></p>
+
+<p><em>Proof.</em> <strong>Decode</strong> accesses <strong>P<sub>t</sub></strong> solely through the top-<strong>k</strong> ordering <strong>σ<sub>t</sub> = argsort<sub>k</sub>(P<sub>t</sub>)</strong>. Since this ordering is preserved, the rank of <strong>b̂<sub>t</sub></strong> within the top-<strong>k</strong> set is identical under both distributions. The DRBG sequence depends only on <strong>(K<sub>sh</sub>, t, h<sub>t</sub>)</strong>, not on probability values. □</p>
+
+<h3 class="section-anchor" id="en-s44">4.4 Comparison with AgentMark-F</h3>
+
+<p>Both AgentMark-F and AsymAgentMark-T are distribution-preserving instantiations of the AgentMark paradigm. They differ in the decomposition strategy, the decoder information requirement, and the resulting robustness profile:</p>
+
+<table>
+<tr><th></th><th>AgentMark-F (Huang et al., 2026)</th><th>AsymAgentMark-T (Ours)</th></tr>
+<tr><td><strong>Decomposition</strong></td><td>Differential recombination → uniform bins</td><td>Top-k rank-sorted binary partition tree</td></tr>
+<tr><td><strong>Encoder input</strong></td><td>P<sub>t</sub> (exact probabilities)</td><td>P<sub>t</sub> (exact probabilities)</td></tr>
+<tr><td><strong>Decoder input</strong></td><td>P<sub>t</sub> (exact probabilities)</td><td>σ<sub>t</sub> (top-k rank ordering only)</td></tr>
+<tr><td><strong>Bits/step</strong></td><td>Variable, depends on bin sizes</td><td>≤ ⌈log₂ k⌉</td></tr>
+<tr><td><strong>PRG sync</strong></td><td>Fixed 2 calls/step (implicit)</td><td>Explicit fixed budget ⌈log₂ k⌉</td></tr>
+<tr><td><strong>Robustness</strong></td><td>Erasure/truncation (via RLNC)</td><td>Erasure + distribution perturbation</td></tr>
+<tr><td><strong>Vulnerability</strong></td><td>Probability perturbation breaks bin sync</td><td>Rank-swap attacks (within top-k) break rank sync</td></tr>
+</table>
+
+<p><strong>When to prefer which.</strong> AgentMark-F achieves higher embedding rates in controlled environments where exact <strong>P<sub>t</sub></strong> is available at decode time (e.g., the embedder and verifier share the same API and configuration). AsymAgentMark-T is preferred when the verifier cannot guarantee exact <strong>P<sub>t</sub></strong>—the common case in open-world deployments where agents are re-served, fine-tuned, or accessed through different API configurations. The top-<strong>k</strong> restriction further improves robustness by focusing on the most rank-stable behaviors.</p>
+
+<p><strong>Compatibility with RLNC.</strong> AsymAgentMark-T is fully compatible with the RLNC erasure coding layer of AgentMark-F. The per-step embedded bits <strong>s<sub>t</sub></strong> from <strong>Encode</strong> can serve as RLNC coded packets in the same way as AgentMark-F's cyclic-shift output (Section 4.3 of Huang et al., 2026).</p>
+
+<h3 class="section-anchor" id="en-s45">4.5 Security Properties</h3>
+
+<p>AsymAgentMark-T achieves the same security guarantees as AgentMark-F, through a different construction:</p>
+
+<p><strong>Distribution preservation.</strong> <strong>BinEnc</strong> with uniform message bits produces a marginal that exactly matches <strong>P<sub>t</sub></strong> over the top-<strong>k</strong> set (Proposition 1; proof in Appendix B). Combined with the probability-proportional tail fallback (Algorithm 1, line 4–5), the overall marginal matches <strong>P<sub>t</sub></strong> across all behaviors. Both AsymAgentMark-T and AgentMark-F satisfy the same distribution-preservation property (Eq. 1), but through entirely different mechanisms: AgentMark-F via differential recombination over probability-dependent uniform bins, AsymAgentMark-T via recursive <strong>BinEnc</strong> over a rank-sorted binary partition tree.</p>
+
+<p><strong>Undetectability.</strong> Under the PRF assumption on HMAC-SHA512, the DRBG output is computationally indistinguishable from uniform random bits, making the watermarked behavior sequence indistinguishable from unwatermarked sampling. This follows directly from the Meteor DRBG security argument [Kaptchuk et al., 2021] and the FDPSS framework [Liao et al., 2025].</p>
+
+<p><strong>New: Perturbation robustness.</strong> By Theorem 1, AsymAgentMark-T additionally guarantees correct decoding under any distribution perturbation that preserves the top-<strong>k</strong> rank ordering—a property that AgentMark-F does not possess. The top-<strong>k</strong> restriction strengthens this guarantee: the probability gaps among the most dominant behaviors are typically larger, making their ranks more resistant to perturbation. We quantify this boundary (i.e., the minimum probability gap required for top-<strong>k</strong> rank stability under temperature scaling and quantization) in Section 5.</p>
+
+<hr>
+
+<blockquote><strong>附录规划 (Appendix Roadmap):</strong><br>
+- <strong>Appendix A</strong>: Meteor DRBG construction details (HMAC-SHA512 reseed, bit extraction)<br>
+- <strong>Appendix B</strong>: Distribution preservation proof (BinEnc → RankEnc induction, including top-k + tail decomposition)<br>
+- <strong>Appendix C</strong>: Embedding rate analysis — E[bits/step] as function of k and H(P<sub>t</sub>)<br>
+- <strong>Appendix D</strong>: Top-k rank stability analysis — minimum probability gap for rank preservation under temperature scaling, quantization, and fine-tuning<br>
+- <strong>Appendix E</strong>: Formal comparison with AgentMark-F under distribution perturbation (theoretical + empirical)<br>
+- <strong>Appendix F</strong>: RLNC integration details (inherited from AgentMark-F)<br>
+- <strong>Appendix G</strong>: Full-distribution mode (k = |B<sub>t</sub>|) as special case
+</blockquote>
+
+<blockquote><strong>TODO for next revision:</strong><br>
+- [ ] 画 Figure 2 (System Overview, with AgentMark-F vs AsymAgentMark-T decoder comparison)<br>
+- [ ] 画 Figure 3 (Top-k Binary Partition Tree 示例, side-by-side with differential recombination)<br>
+- [ ] 补充 tie-breaking 讨论（概率相等时 rank 不稳定）<br>
+- [ ] 确认 Section 3 与 ACL paper 的 notation 完全一致<br>
+- [ ] 与 Related Work 中的 Meteor, SWEET, DiPmark, FDPSS 做显式区分<br>
+- [ ] 确认 RLNC 整合层的细节是否需要在正文展开<br>
+- [ ] 讨论 k 的选取策略（固定 k vs. 自适应 k based on probability gap）
+</blockquote>
+
+</div>
+
+<!-- ======================== RIGHT: CHINESE ======================== -->
+<div class="panel cn">
+
+<div class="section-anchor" id="cn-meta">
+<blockquote>
+<strong>文件说明</strong>: 第五稿。修正了第四稿中"编码端与 AgentMark-F 相同、只有解码端不同"的错误叙事。实际上编码器和解码器都是全新设计，编码器的二叉树结构是解码器能做非对称解码的前提。同时修正了 BinEnc 描述（0 或 1 bit）、对比表 PRG sync 等技术细节。<br><br>
+<strong>命名体系</strong>：<br>
+- <strong>AgentMark</strong>: ACL 前作中的通用范式（Huang et al. 2026）<br>
+- <strong>AgentMark-F</strong>: ACL 中的具体实例化（FDPSS 风格，对称方案）<br>
+- <strong>AsymAgentMark</strong>: 本文提出的通用范式（非对称 AgentMark）<br>
+- <strong>AsymAgentMark-T</strong>: 本文的具体实例化（基于 Top-k 排名的二叉分割）<br><br>
+<strong>与 ACL 前作的核心区别</strong>：<br>
+- ACL (AgentMark-F): 对称方案，编码器和解码器都需要精确的概率分布 P<sub>t</sub><br>
+- 本文 (AsymAgentMark-T): 弱非对称方案，编码器需要 P<sub>t</sub>，解码器仅需排序信息 σ<sub>t</sub><br>
+- 新的威胁模型：对手可以扰动概率值（温度缩放 / 量化 / 微调）
+</blockquote>
+</div>
+
+<hr>
+
+<h2 class="section-anchor" id="cn-s3">3. 问题建模</h2>
+
+<blockquote>写作策略：第 3 节的符号体系和信道模型直接沿用 ACL 的设定，仅补充新增的排序一致性假设和扩展的威胁模型。</blockquote>
+
+<p>我们沿用 Huang et al. (2026) 的规划时行为信道建模。在每一步 <em>t</em>，Agent 在有限行为集 <strong>B<sub>t</sub></strong> 上导出一个分布 <strong>P<sub>t</sub></strong>，并通过 <strong>b̂<sub>t</sub> ← Enc(P<sub>t</sub>, r<sub>t</sub>)</strong> 选择行为，其中 <strong>r<sub>t</sub></strong> 是由共享秘密 <strong>K<sub>sh</sub></strong> 和步骤上下文派生的带密钥伪随机数。验证者通过 <strong>m̂ ← Dec({(b̂<sub>t</sub>, ·)}<sub>t∈I</sub>)</strong> 恢复载荷，其中 <strong>I ⊆ {1, …, T}</strong> 是观测到的索引集。</p>
+
+<p>我们保留分布保持要求（Huang et al., 2026 的公式 1）：</p>
+<p><strong>Pr[b̂<sub>t</sub> = b] = P<sub>t</sub>(b), &nbsp; ∀ b ∈ B<sub>t</sub>, ∀ t.</strong></p>
+
+<h3 class="section-anchor" id="cn-s31">3.1 扩展的威胁模型</h3>
+
+<p>AgentMark-F（Huang et al., 2026）假设验证者能够获得编码时使用的 <em>精确</em> 每步分布 <strong>P<sub>t</sub></strong>。在实践中，这一假设很脆弱：验证者可能重新查询 Agent 来重建 <strong>P<sub>t</sub></strong>，但温度缩放、量化、模型更新或 API 端的后处理都可能改变返回的概率值。我们将此形式化为 <strong>分布扰动对手</strong>：</p>
+
+<p><strong>定义 1（分布扰动）</strong> 对手对每一步施加变换 <strong>P<sub>t</sub> ↦ P<sub>t</sub>'</strong>，使得概率值发生变化但排序不变：<strong>argsort(P<sub>t</sub>) = argsort(P<sub>t</sub>')</strong>。</p>
+
+<p>这比 Huang et al. (2026) 的擦除/截断对手严格更强：步骤擦除会移除整个步骤，而分布扰动则破坏 <em>幸存步骤的内容</em>。AgentMark-F 的差分重组依赖于精确的概率值来构建 bin；在分布扰动下，编码器和解码器构建出不同的 bin，导致同步失效和解码失败（我们在第 5 节中对此进行了实证验证）。</p>
+
+<h3 class="section-anchor" id="cn-s32">3.2 排序一致性假设</h3>
+
+<p>我们引入以下对精确分布要求的松弛：</p>
+
+<p><strong>假设 1（排序一致性）</strong> 解码器观测到的分布 <strong>P<sub>t</sub>'</strong> 满足 <strong>argsort(P<sub>t</sub>') = argsort(P<sub>t</sub>)</strong>，即行为的相对排序得以保持。</p>
+
+<p>该假设有良好的经验支持：在温度缩放（<strong>p<sub>i</sub>' = p<sub>i</sub><sup>1/T</sup> / Z</strong> 是单调的）、轻度微调和量化下，排序是稳定的，这些操作主要缩放幅度而保持相对顺序（我们在第 5 节表 X 中进行了验证）。</p>
+
+<p><strong>目标。</strong> 设计编码器 <strong>Enc</strong> 和解码器 <strong>Dec</strong>，使得：(1) 分布保持性质如常成立；(2) 解码器仅需 <strong>argsort(P<sub>t</sub>')</strong>——而非精确值——从而在假设 1 下实现正确解码。</p>
+
+<hr>
+
+<h2 class="section-anchor" id="cn-s4">4. AsymAgentMark：非对称行为水印</h2>
+
+<p>我们提出 <strong>AsymAgentMark</strong>，即 AgentMark 范式的 <em>非对称</em> 扩展。虽然 AsymAgentMark 和 AgentMark-F 共享分布保持的目标，但 AsymAgentMark <strong>重新设计了编码器和解码器二者</strong>：编码器用排序行为上的二叉分割树替换了差分重组，解码器则利用该树的结构性质，仅从排名位置中提取比特，无需概率值。这种联合设计至关重要——AgentMark-F 的差分重组将比特编码到依赖概率的 bin 中，而这些 bin 无法仅从排序信息中恢复，因此非对称解码需要一个根本不同的编码方案。</p>
+
+<p>我们给出了一个具体实例化——<strong>AsymAgentMark-T</strong>，它通过递归二叉分割在 top-<strong>k</strong> 排序行为上运作。"-T" 表示基于 top-<strong>k</strong> 排名的编码：编码器将注意力限制在概率最高的 <strong>k</strong> 个行为上，在该子集内嵌入比特，对于尾部行为则回退到标准采样。这种 top-<strong>k</strong> 聚焦既能将嵌入容量集中在信息量最大的动作上，又自然地与常见的推理时截断策略相契合。</p>
+
+<p><strong>核心洞见。</strong> 二叉分割树通过交错分割将每个行为映射到唯一的叶子节点。从根到叶子的路径完全由该行为在排序中的排名决定——排名的二进制表示 <em>就是</em> 这条路径。正是这种结构对应关系使非对称解码成为可能：编码器使用概率值来进行分布保持的组选择（通过 <strong>BinEnc</strong>），而解码器仅从排名中读取同一条路径。</p>
+
+<h3 class="section-anchor" id="cn-s41">4.1 总览</h3>
+
+<blockquote><strong>[图 2 规划]</strong>：与 ACL 图 2 对称的布局。左侧 Agent 工作流保持一致（沿用 ACL 的 Agent 循环示意）。右侧 AsymAgentMark-T 替换原有的差分重组 + 循环移位模块，改为：按排名排序 → Top-k 选择 → 二叉分割树 → 每层 BinEnc。底部新增一个对比框："解码器需求：AgentMark-F 需要 P<sub>t</sub>（精确值）vs. AsymAgentMark-T 需要 σ<sub>t</sub>（仅排序）"，用颜色区分。</blockquote>
+
+<p>图 2 展示了 Agent 工作流中的 AsymAgentMark-T。在每一轮 <em>t</em>：</p>
+<ol>
+  <li>Agent 在 <strong>B<sub>t</sub></strong> 上导出一个显式的行为分布 <strong>P<sub>t</sub></strong>（与 AgentMark-F 相同）。</li>
+  <li>编码器按概率降序对 <strong>B<sub>t</sub></strong> 排序，选择 top-<strong>k</strong> 行为，并在该子集上通过递归二叉分割嵌入比特（<strong>RankEnc</strong>）。若采样到的动作落在 top-<strong>k</strong> 之外，则本步不嵌入任何比特。</li>
+  <li>解码器仅凭选中的行为 <strong>b̂<sub>t</sub></strong> 和排序 <strong>σ<sub>t</sub></strong>，通过将 <strong>b̂<sub>t</sub></strong> 在 top-<strong>k</strong> 集合中的排名分解为二进制来提取比特（<strong>RankDec</strong>）。</li>
+</ol>
+
+<p>带密钥的伪随机机制与 AgentMark-F 完全相同（Huang et al., 2026 公式 9）：<strong>K<sub>t</sub> ← H(K<sub>sh</sub> ∥ t ∥ h<sub>t</sub>)</strong>，以 <strong>K<sub>t</sub></strong> 为种子的 DRBG <strong>G</strong> 产生每步的随机流。我们采用 Meteor 风格的 HMAC-SHA512 DRBG [Kaptchuk et al., 2021]（构造细节见附录 A）。</p>
+
+<h3 class="section-anchor" id="cn-s42">4.2 基于排名的分布保持编码</h3>
+
+<p>AsymAgentMark-T 用 top-<strong>k</strong> 排名排序分布上的二叉分割树替换了 AgentMark-F 的差分重组。该构造分为两层：一个二进制编码原语（<strong>BinEnc</strong>）和一个递归包装器（<strong>RankEnc</strong>）。</p>
+
+<h4>二进制编码原语</h4>
+
+<p>在树的每一层，编码器面临两组行为之间的二元选择。<strong>BinEnc</strong> 尝试将一个消息比特嵌入此选择，同时 <em>精确保持边缘分布</em>。当低质量组被选中时，它成功（嵌入 1 比特）；当高质量组被选中时，它推迟（嵌入 0 比特）——此时同一消息比特将在下一层重试。</p>
+
+<p>给定组质量 <strong>S<sub>hi</sub> ≥ S<sub>lo</sub></strong>（且 <strong>S = S<sub>hi</sub> + S<sub>lo</sub></strong>）、消息比特 <strong>m</strong> 和伪随机数 <strong>r ← G</strong>：</p>
+<p><strong>r<sub>m</sub> = (r · S + ½ S · m) mod S</strong></p>
+
+<p>编码器在 <strong>r<sub>m</sub> &lt; S<sub>hi</sub></strong> 时选择高质量组（嵌入 0 比特），否则选择低质量组（嵌入 1 比特）。分布保持性来自 <strong>r</strong> 的均匀分布（证明见附录 B）。</p>
+
+<h4>带 Top-k 选择的递归编码</h4>
+
+<blockquote><strong>[图 3 规划]</strong>：5-action 示例，与 ACL 的差分重组示例并排对比。左列标 "AgentMark-F: 差分重组 → Bins → 循环移位"，右列标 "AsymAgentMark-T: Top-k → 排序 → 二叉分割树"。底部高亮：同一个动作被选中后，AgentMark-F 解码需要精确概率重建 bin，AsymAgentMark-T 解码只需排名位置。</blockquote>
+
+<p><strong>算法 1：AsymAgentMark-T 编码（单步）</strong></p>
+<pre>输入: P_t 定义在 B_t 上, 上下文 (t, h_t), 共享秘密 K_sh,
+      载荷 M, 指针 ℓ, top-k 参数 k
+输出: 选中的行为 b̂_t, 嵌入的比特 s_t, 更新后的 ℓ
+
+1:  K_t ← H(K_sh ∥ t ∥ h_t);  G ← DRBG(K_t)
+2:  σ ← argsort(P_t, 降序)
+3:  S_top ← Σ_{i=1}^{k} P_t(σ(i))                ▷ top-k 概率质量
+4:  if Uniform(0,1) ≥ S_top:                       ▷ 落入尾部（与 G 无关）
+5:      b̂_t ← 从尾部 {σ(k+1), ...} 采样; return b̂_t, ∅, ℓ
+6:  D ← {(σ(i), P_t(σ(i))/S_top) : i = 1..k}     ▷ top-k 归一化分布
+7:  sync ← ⌈log₂ k⌉
+8:  while |D| &gt; 1 且 ℓ &lt; |M|:
+9:      D_even ← {D[i] : i 为偶数};  D_odd ← {D[i] : i 为奇数}
+10:     (group, b) ← BinEnc(M[ℓ], (Σ D_even, Σ D_odd), G.next())
+11:     ℓ ← ℓ + b;  sync ← sync − 1;  D ← D_group
+12: for i = 1 to sync: G.next()                    ▷ PRG 同步
+13: b̂_t ← D[0];  s_t ← M[ℓ_old : ℓ]
+14: return b̂_t, s_t, ℓ</pre>
+
+<p><strong>Top-k 选择（第 3–6 行）。</strong> AsymAgentMark-T 并非在整个行为集上编码，而是限制在概率最高的 <strong>k</strong> 个行为上。这一设计基于三点考量：(1) <em>排名稳定性</em>——top-<strong>k</strong> 排名对概率扰动最为鲁棒，因为排名靠前的行为之间的概率差距通常大于尾部行为之间的差距；(2) <em>推理对齐</em>——许多 Agent 部署已经应用了 top-<strong>k</strong> 截断，因此这是自然的契合；(3) <em>嵌入集中</em>——top-<strong>k</strong> 行为承载了大部分概率质量，因此限制在该子集上牺牲的容量很小，同时提升了鲁棒性。当 <strong>k = |B<sub>t</sub>|</strong> 时，AsymAgentMark-T 退化为全分布编码。</p>
+
+<p><strong>交错分割。</strong> 在每一层，我们将排序后的分布划分为偶数索引和奇数索引的元素。由于分布按降序排列，偶数索引组（包含排名 0, 2, 4, ...）的总质量始终 <strong>≥</strong> 奇数索引组（排名 1, 3, 5, ...）。这种交错方式保证了近似均衡的组质量，最大化每层的嵌入机会。若采用简单的前半/后半分割，会产生一个占主导的高质量组，导致 <strong>BinEnc</strong> 几乎总是选择它，嵌入率接近于零。</p>
+
+<p><strong>PRG 同步（rt_sync）。</strong> DRBG 每步恰好推进 <strong>⌈log₂ k⌉</strong> 次调用，无论是否提前终止（第 12 行）。这一固定预算不变性至关重要：没有它，解码器无法确定消耗了多少 DRBG 值，导致所有后续步骤的流去同步。这一机制还使解码器能够在不知道消息长度的情况下运行——这是 AgentMark-F 的变长循环移位编码所不具备的特性。</p>
+
+<h3 class="section-anchor" id="cn-s43">4.3 弱非对称解码</h3>
+
+<p>AsymAgentMark 的核心贡献是一个 <strong>联合设计的编码器-解码器对</strong>，其中编码器的二叉分割树结构直接使解码器能够仅需更少信息即可工作。编码器的树结构设计并非偶然——它是使非对称解码成为可能的结构性前提。</p>
+
+<p><strong>关键观察。</strong> 二叉分割树将每个行为映射到一个唯一的叶子节点。从根到行为叶子节点的路径完全由该行为在 top-<strong>k</strong> 集合中的排名决定：在每一层，属于高质量组还是低质量组对应于当前索引是偶数还是奇数——即该层排名的奇偶性。因此，排名的二进制表示 <em>就是</em> 编码路径。这一性质是交错二叉分割独有的；AgentMark-F 的差分 bin 不支持这种基于排名的路径恢复。</p>
+
+<p><strong>算法 2：AsymAgentMark-T 解码（单步）</strong></p>
+<pre>输入: b̂_t, 排序 σ_t, 上下文 (t, h_t), 共享秘密 K_sh,
+      top-k 参数 k
+输出: 提取的比特串 s_t
+
+1:  K_t ← H(K_sh ∥ t ∥ h_t);  G ← DRBG(K_t)
+2:  rank ← b̂_t 在 σ_t[1..k] 中的位置（从 0 开始索引）
+3:  if b̂_t ∉ σ_t 的 top-k: return ∅           ▷ 尾部动作，无比特
+4:  sync ← ⌈log₂ k⌉
+5:  R ← [G.next() for _ in range(sync)]
+6:  s_t ← "";  level ← 0
+7:  while rank ≠ 0:
+8:      if rank mod 2 = 1:                      ▷ 奇数索引组 → 嵌入比特
+9:          s_t ← s_t ∥ ('1' if R[level] &lt; 0.5 else '0')
+10:     rank ← ⌊rank / 2⌋;  level ← level + 1
+11: return s_t</pre>
+
+<p><strong>注意非对称性</strong>：算法 1（编码器）访问完整分布 <strong>P<sub>t</sub></strong> 来计算 <strong>BinEnc</strong> 的组质量（第 10 行）。算法 2（解码器）仅访问排序 <strong>σ<sub>t</sub></strong>（第 2 行）——概率值从未出现。解码器只需要知道被选中行为在 top-<strong>k</strong> 集合中的位置（排名）。</p>
+
+<p><strong>定理 1（弱非对称性）。</strong> 设 <strong>P<sub>t</sub></strong> 和 <strong>P<sub>t</sub>'</strong> 为 <strong>B<sub>t</sub></strong> 上的分布，满足 <strong>argsort<sub>k</sub>(P<sub>t</sub>) = argsort<sub>k</sub>(P<sub>t</sub>')</strong>（即 top-<strong>k</strong> 排名顺序保持不变）。对于任意行为 <strong>b̂<sub>t</sub></strong> 和 DRBG 状态 <strong>G</strong>：</p>
+<p><strong>Decode(b̂<sub>t</sub>, sort(P<sub>t</sub>), G) = Decode(b̂<sub>t</sub>, sort(P<sub>t</sub>'), G)</strong></p>
+
+<p><em>证明。</em> <strong>Decode</strong> 仅通过 top-<strong>k</strong> 排序 <strong>σ<sub>t</sub> = argsort<sub>k</sub>(P<sub>t</sub>)</strong> 访问 <strong>P<sub>t</sub></strong>。由于该排序得以保持，<strong>b̂<sub>t</sub></strong> 在 top-<strong>k</strong> 集合中的排名在两个分布下完全相同。DRBG 序列仅依赖于 <strong>(K<sub>sh</sub>, t, h<sub>t</sub>)</strong>，与概率值无关。□</p>
+
+<h3 class="section-anchor" id="cn-s44">4.4 与 AgentMark-F 的对比</h3>
+
+<p>AgentMark-F 和 AsymAgentMark-T 都是 AgentMark 范式的分布保持实例化。它们在分解策略、解码器信息需求和由此产生的鲁棒性特征上有所不同：</p>
+
+<table>
+<tr><th></th><th>AgentMark-F (Huang et al., 2026)</th><th>AsymAgentMark-T (本文)</th></tr>
+<tr><td><strong>分解方式</strong></td><td>差分重组 → 均匀 bins</td><td>Top-k 排名排序的二叉分割树</td></tr>
+<tr><td><strong>编码器输入</strong></td><td>P<sub>t</sub>（精确概率）</td><td>P<sub>t</sub>（精确概率）</td></tr>
+<tr><td><strong>解码器输入</strong></td><td>P<sub>t</sub>（精确概率）</td><td>σ<sub>t</sub>（仅 top-k 排名顺序）</td></tr>
+<tr><td><strong>每步比特数</strong></td><td>可变，取决于 bin 大小</td><td>≤ ⌈log₂ k⌉</td></tr>
+<tr><td><strong>PRG 同步</strong></td><td>固定 2 次调用/步（隐式）</td><td>显式固定预算 ⌈log₂ k⌉</td></tr>
+<tr><td><strong>鲁棒性</strong></td><td>擦除/截断（通过 RLNC）</td><td>擦除 + 分布扰动</td></tr>
+<tr><td><strong>脆弱性</strong></td><td>概率扰动破坏 bin 同步</td><td>排名交换攻击（top-k 内）破坏排名同步</td></tr>
+</table>
+
+<p><strong>何时选择何种方案。</strong> AgentMark-F 在受控环境中（编码者和验证者共享相同的 API 和配置）可实现更高的嵌入率，此时解码时可以获得精确的 <strong>P<sub>t</sub></strong>。AsymAgentMark-T 适用于验证者无法保证精确 <strong>P<sub>t</sub></strong> 的场景——这是开放世界部署中的常见情况，其中 Agent 可能被重新服务、微调或通过不同的 API 配置访问。top-<strong>k</strong> 限制通过聚焦于排名最稳定的行为进一步提升了鲁棒性。</p>
+
+<p><strong>与 RLNC 的兼容性。</strong> AsymAgentMark-T 与 AgentMark-F 的 RLNC 纠删编码层完全兼容。<strong>Encode</strong> 产生的每步嵌入比特 <strong>s<sub>t</sub></strong> 可以像 AgentMark-F 的循环移位输出一样作为 RLNC 编码包使用（Huang et al., 2026 第 4.3 节）。</p>
+
+<h3 class="section-anchor" id="cn-s45">4.5 安全属性</h3>
+
+<p>AsymAgentMark-T 通过不同的构造实现了与 AgentMark-F 相同的安全保障：</p>
+
+<p><strong>分布保持性。</strong> 在均匀消息比特条件下，<strong>BinEnc</strong> 在 top-<strong>k</strong> 集合上产生的边缘分布精确匹配 <strong>P<sub>t</sub></strong>（命题 1；证明见附录 B）。结合概率比例尾部回退（算法 1，第 4–5 行），整体边缘分布在所有行为上匹配 <strong>P<sub>t</sub></strong>。AsymAgentMark-T 和 AgentMark-F 都满足相同的分布保持性质（公式 1），但通过完全不同的机制实现：AgentMark-F 通过对概率依赖的均匀 bin 进行差分重组，而 AsymAgentMark-T 通过在排序二叉分割树上进行递归 <strong>BinEnc</strong>。</p>
+
+<p><strong>不可检测性。</strong> 在 HMAC-SHA512 的 PRF 假设下，DRBG 输出在计算上与均匀随机比特不可区分，使得带水印的行为序列与无水印的采样不可区分。这直接来自 Meteor DRBG 的安全论证 [Kaptchuk et al., 2021] 和 FDPSS 框架 [Liao et al., 2025]。</p>
+
+<p><strong>新增：扰动鲁棒性。</strong> 根据定理 1，AsymAgentMark-T 额外保证了在任何保持 top-<strong>k</strong> 排名顺序的分布扰动下都能正确解码——这是 AgentMark-F 不具备的性质。top-<strong>k</strong> 限制增强了这一保证：最主导行为之间的概率差距通常更大，使其排名对扰动更具抵抗力。我们在第 5 节中量化了这一边界（即在温度缩放和量化下保持 top-<strong>k</strong> 排名稳定所需的最小概率差距）。</p>
+
+<hr>
+
+<blockquote><strong>附录规划：</strong><br>
+- <strong>附录 A</strong>：Meteor DRBG 构造细节（HMAC-SHA512 重新播种、比特提取）<br>
+- <strong>附录 B</strong>：分布保持性证明（BinEnc → RankEnc 归纳，含 top-k + 尾部分解）<br>
+- <strong>附录 C</strong>：嵌入率分析——E[比特/步] 作为 k 和 H(P<sub>t</sub>) 的函数<br>
+- <strong>附录 D</strong>：Top-k 排名稳定性分析——温度缩放、量化和微调下保持排名所需的最小概率差距<br>
+- <strong>附录 E</strong>：分布扰动下与 AgentMark-F 的正式对比（理论 + 实证）<br>
+- <strong>附录 F</strong>：RLNC 集成细节（继承自 AgentMark-F）<br>
+- <strong>附录 G</strong>：全分布模式（k = |B<sub>t</sub>|）作为特例
+</blockquote>
+
+<blockquote><strong>下一版待办事项：</strong><br>
+- [ ] 画图 2（系统总览，含 AgentMark-F vs AsymAgentMark-T 解码器对比）<br>
+- [ ] 画图 3（Top-k 二叉分割树示例，与差分重组并排对比）<br>
+- [ ] 补充平局处理讨论（概率相等时排名不稳定）<br>
+- [ ] 确认第 3 节与 ACL 论文的符号体系完全一致<br>
+- [ ] 与相关工作（Meteor, SWEET, DiPmark, FDPSS）做显式区分<br>
+- [ ] 确认 RLNC 整合层细节是否需要在正文展开<br>
+- [ ] 讨论 k 的选择策略（固定 k vs. 基于概率差距的自适应 k）
+</blockquote>
+
+</div>
+
+</div><!-- /.panel-wrap -->
+
+</div><!-- /.container -->
+</body>
+</html>

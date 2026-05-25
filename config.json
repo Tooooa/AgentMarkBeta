@@ -1,0 +1,55 @@
+{
+"api_key": "${OPENAI_API_KEY}",
+"base_url": "https://api.deepseek.com",
+"model": "deepseek-chat",
+"alfworld_config": {
+"config_path": "experiments/alfworld/configs/base_config.yaml",
+"eval_split": "valid_seen",
+"train_eval": "eval_in_distribution",
+"num_tasks": 1,
+"max_steps_per_task": 20,
+"context_window_size": 3,
+"sampling_strategy": "weighted",
+"sampling_temperature": 1.0
+},
+"watermark_config": {
+"payload_bit_length": 8,
+"ecc_method": "rlnc",
+"repetition_factor": 1,
+"rlnc_stream_key": null,
+"rlnc_bits_per_step": 5,
+"rlnc_min_stream_length": 8192,
+"method": "differential",
+"green_red_config": {
+"gamma": 0.5,
+"delta": 2.0
+},
+"embedding_strategy": "cyclic"
+},
+"experiment_config": {
+"random_seed": 2025,
+"save_failed_trajectories": true,
+"output_dir": "output/alfworld",
+"log_level": "INFO",
+"bit_stream_path": "agentmark/data/bit_stream.txt",
+"num_rounds": 1,
+"resample_tasks_each_round": false,
+"auto_decode": true,
+"save_step_prompts": true,
+"decoder_task_index": null
+},
+"prompt_config": {
+"use_few_shot": true,
+"few_shot_count": 2,
+"include_reasoning": false
+},
+"role_config": {
+"name": "AI Assistant",
+"system_prompt": "You are an AI assistant helping to complete household tasks. You should analyze the current situation and choose the most appropriate action."
+},
+"decoder_config": {
+"report_path": "output/alfworld/reports/evaluation_report.json",
+"task_index": null,
+"output_path": "output/alfworld/reports/decoded_bits.json"
+}
+}

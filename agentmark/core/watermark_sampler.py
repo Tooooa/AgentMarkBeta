@@ -317,32 +317,10 @@ def RankDecStep(T: torch.Tensor, sorted_indices: torch.Tensor, PRG: DRBG) -> str
     
     rt_sync = math.ceil(math.log2(len(sorted_indices)))
     
-    # Collect random numbers for each level
-    rts = []
-    for _ in range(rt_sync):
-        rts.append(PRG.generate_random(n=52))
-    
-    # The decoding logic in RankStego (source):
-    # it generates random numbers in the same order as encoder.
-    # We need to process them in reverse or match the level.
-    # In RankStego.decstep:
-    #   rts = [self.PRG.generate_random(n=52) for _ in range(math.ceil(math.log2(len(sorted_indices))))]
-    #   while rank != 0:
-    #       rt = rts.pop(0) # This is WRONG if we want to match encoder?
-    # Actually, in RankStego.py (source):
-    # while rank != 0:
-    #    rt = self.PRG.generate_random(n=52)
-    #    if rank % 2 == 1:
-    #        bit = '1' if rt < 0.5 else '0'
-    #        decoded_bits += bit
-    #    rank = rank // 2
-    # This assumes we use ONE random number per level, regardless of whether we were on high or low prob branch?
-    # Wait, the encoder uses PRG in the order of the loop.
-    # Level 1 (top) -> Level 2 -> ...
-    # But rank // 2 goes from BOTTOM to TOP.
-    # So we MUST pre-generate all random numbers for all potential levels to maintain sync.
-    
-    # Corrected logic matching source's intended sync:
+    # Generate exactly the same per-level random numbers as RankEncStep.
+    # Previously this function accidentally generated the sequence twice and
+    # decoded from the second batch, shifting the PRG stream and reducing
+    # recovered-bit accuracy to chance level.
     rts = [PRG.generate_random(n=52) for _ in range(rt_sync)]
     current_level = 0
     while rank != 0:

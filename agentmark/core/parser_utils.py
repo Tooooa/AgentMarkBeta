@@ -223,3 +223,66 @@ def extract_and_normalize_probabilities(response_text, admissible_commands, logg
         
         uniform_prob = 1.0 / len(admissible_commands)
         return {cmd: uniform_prob for cmd in admissible_commands}
+
+
+def extract_action_from_response(response_text, admissible_commands, logger=None):
+    """
+    Extract a single action from LLM response (for Vanilla mode).
+    
+    Strategies (in order):
+    1. Exact match: check if any admissible command appears in response
+    2. Fuzzy match: find longest common substring or best partial match
+    3. First line: if response starts with an admissible command word
+    4. Fallback: return first admissible command
+    
+    Args:
+        response_text (str): LLM response text
+        admissible_commands (list): List of valid commands
+        logger: Optional logger
+    
+    Returns:
+        str: Selected action (guaranteed to be in admissible_commands)
+    """
+    response_text = response_text.strip()
+    
+    # Strategy 1: Exact match (case-insensitive substring search)
+    response_lower = response_text.lower()
+    for cmd in admissible_commands:
+        if cmd.lower() in response_lower:
+            if logger:
+                logger.info(f"[Vanilla Extract] Exact match: '{cmd}'")
+            return cmd
+    
+    # Strategy 2: Fuzzy match - find command with longest common subsequence
+    def common_length(s1, s2):
+        """Simple measure: count matching words"""
+        words1 = set(s1.lower().split())
+        words2 = set(s2.lower().split())
+        return len(words1 & words2)
+    
+    best_cmd = None
+    best_score = -1
+    for cmd in admissible_commands:
+        score = common_length(response_text, cmd)
+        if score > best_score:
+            best_score = score
+            best_cmd = cmd
+    
+    if best_score > 0:
+        if logger:
+            logger.info(f"[Vanilla Extract] Fuzzy match: '{best_cmd}' (score={best_score})")
+        return best_cmd
+    
+    # Strategy 3: First line heuristic
+    first_line = response_text.split('\n')[0].strip().lower()
+    for cmd in admissible_commands:
+        if first_line.strip().lower().startswith(cmd.lower()[:5]):  # First 5 chars
+            if logger:
+                logger.info(f"[Vanilla Extract] First-line match: '{cmd}'")
+            return cmd
+    
+    # Strategy 4: Fallback - select first command
+    selected = admissible_commands[0]
+    if logger:
+        logger.warning(f"[Vanilla Extract] No match found; using fallback: '{selected}'")
+    return selected

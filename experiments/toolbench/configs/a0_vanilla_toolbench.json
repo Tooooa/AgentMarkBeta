@@ -1,0 +1,23 @@
+{
+  "common_config": {
+    "data_root": "experiments/toolbench/data/data",
+    "toolenv_root": "experiments/toolbench/data/data/toolenv/tools",
+    "cache_root": "experiments/toolbench/data/fake_response_cache",
+    "use_local_model": false,
+    "api_key": "${A0_TOOLBENCH_API_KEY}",
+    "base_url": "${A0_TOOLBENCH_BASE_URL}",
+    "model": "${A0_TOOLBENCH_MODEL}",
+    "split": "G1_instruction",
+    "task_limit": "${A0_TOOLBENCH_TASK_LIMIT}",
+    "filter_failed_reference": true,
+    "max_steps": 10,
+    "verbose": true,
+    "seed": 2025,
+    "shuffle": false,
+    "temperature": 0.7
+  },
+  "baseline_specific": {
+    "mode": "baseline",
+    "run_name": "a0_vanilla_toolbench"
+  }
+}

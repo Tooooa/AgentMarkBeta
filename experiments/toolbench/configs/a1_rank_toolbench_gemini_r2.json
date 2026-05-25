@@ -1,0 +1,56 @@
+{
+  "pipeline_steps": {
+    "run_baseline": false,
+    "run_watermark": true,
+    "run_evaluation": true,
+    "run_decoding": false,
+    "run_analysis": false
+  },
+  "common_config": {
+    "data_root": "experiments/toolbench/data/data",
+    "toolenv_root": "experiments/toolbench/data/data/toolenv/tools",
+    "cache_root": "experiments/toolbench/data/fake_response_cache",
+    "use_local_model": false,
+    "api_key": "sk-dEzx6C60jp1tNEyz2cDb59De4e94435d91Ad202370Bc4284",
+    "base_url": "https://aihubmix.com/v1",
+    "model": "gemini-2.0-flash",
+    "splits": [
+      "G1_instruction",
+      "G1_category",
+      "G1_tool",
+      "G2_category",
+      "G2_instruction",
+      "G3_instruction"
+    ],
+    "task_limit": 20,
+    "filter_failed_reference": false,
+    "max_steps": 10,
+    "verbose": true,
+    "seed": 2026,
+    "shuffle": false,
+    "temperature": 0.7,
+    "max_concurrency": 100
+  },
+  "watermark_specific": {
+    "mode": "watermark",
+    "run_name": "exp_rank_toolbench_gemini_r2",
+    "sampling_strategy": "rank",
+    "bit_stream_path": "agentmark/data/bit_stream.txt",
+    "watermark_config": {
+      "sampling_strategy": "rank",
+      "embedding_strategy": "cyclic",
+      "payload_bit_length": 8,
+      "use_rlnc": true
+    }
+  },
+  "eval": {
+    "enable": true,
+    "convert_script": "experiments/toolbench/tools/stable_toolbench_eval/convert_to_answer_format.py",
+    "eval_script": "experiments/toolbench/tools/stable_toolbench_eval/eval_pass_rate.py",
+    "test_ids": "experiments/toolbench/data/data/test_query_ids",
+    "reference_dir": "experiments/toolbench/data/data/answer/G1_answer",
+    "method": "watermark",
+    "max_eval_threads": 10,
+    "evaluate_times": 3
+  }
+}

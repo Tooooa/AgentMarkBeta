@@ -1,0 +1,212 @@
+[
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": 1,
+    "pred_root": "/root/output-0425/toolbench/vanilla/gemini-flash/run_1/exp_a0_toolbench",
+    "label": "vanilla"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": 2,
+    "pred_root": "/root/output-0425/toolbench/vanilla/gemini-flash/run_2/exp_a0_toolbench",
+    "label": "vanilla"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "vanilla",
+    "run": 3,
+    "pred_root": "/root/output-0425/toolbench/vanilla/gemini-flash/run_3/exp_a0_toolbench",
+    "label": "vanilla"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": 1,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/clean/gemini-flash/run_1/exp_a1_clean_toolbench_gemini_r1",
+    "label": "clean"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": 2,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/clean/gemini-flash/run_2/exp_a1_clean_toolbench_gemini_r2",
+    "label": "clean"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "clean",
+    "run": 3,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/clean/gemini-flash/run_3/exp_a1_clean_toolbench_gemini_r3",
+    "label": "clean"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": 1,
+    "pred_root": "/root/output-0425/toolbench/rg/gemini-flash/run_1/exp_a2_rg_toolbench",
+    "label": "rg"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": 2,
+    "pred_root": "/root/output-0425/toolbench/rg/gemini-flash/run_2/exp_a2_rg_toolbench",
+    "label": "rg"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rg",
+    "run": 3,
+    "pred_root": "/root/output-0425/toolbench/rg/gemini-flash/run_3/exp_a2_rg_toolbench",
+    "label": "rg"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": 1,
+    "pred_root": "/root/output-0425/toolbench/agentmark/gemini-flash/run_1",
+    "label": "agentmark"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": 2,
+    "pred_root": "/root/output-0425/toolbench/agentmark/gemini-flash/run_2",
+    "label": "agentmark"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "agentmark",
+    "run": 3,
+    "pred_root": "/root/output-0425/toolbench/agentmark/gemini-flash/run_3",
+    "label": "agentmark"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": 1,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/rank/gemini-flash/run_1/exp_a1_rank_toolbench_gemini_r1",
+    "label": "rank"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": 2,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/rank/gemini-flash/run_2/exp_a1_rank_toolbench_gemini_r2",
+    "label": "rank"
+  },
+  {
+    "model": "gemini-flash",
+    "method": "rank",
+    "run": 3,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/rank/gemini-flash/run_3/exp_a1_rank_toolbench_gemini_r3",
+    "label": "rank"
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": 1,
+    "pred_root": "/root/output-0425/toolbench/vanilla/deepseek/run_1/exp_a0_toolbench",
+    "label": "vanilla"
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": 2,
+    "pred_root": "/root/output-0425/toolbench/vanilla/deepseek/run_2/exp_a0_toolbench",
+    "label": "vanilla"
+  },
+  {
+    "model": "deepseek",
+    "method": "vanilla",
+    "run": 3,
+    "pred_root": "/root/output-0425/toolbench/vanilla/deepseek/run_3/exp_a0_toolbench",
+    "label": "vanilla"
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": 1,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/clean/deepseek/run_1/exp_a1_clean_toolbench_deepseek_r1",
+    "label": "clean"
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": 2,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/clean/deepseek/run_2/exp_a1_clean_toolbench_deepseek_r2",
+    "label": "clean"
+  },
+  {
+    "model": "deepseek",
+    "method": "clean",
+    "run": 3,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/clean/deepseek/run_3/exp_a1_clean_toolbench_deepseek_r3",
+    "label": "clean"
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": 1,
+    "pred_root": "/root/output-0425/toolbench/rg/deepseek/run_1/exp_a2_rg_toolbench",
+    "label": "rg"
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": 2,
+    "pred_root": "/root/output-0425/toolbench/rg/deepseek/run_2/exp_a2_rg_toolbench",
+    "label": "rg"
+  },
+  {
+    "model": "deepseek",
+    "method": "rg",
+    "run": 3,
+    "pred_root": "/root/output-0425/toolbench/rg/deepseek/run_3/exp_a2_rg_toolbench",
+    "label": "rg"
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": 1,
+    "pred_root": "/root/output-0425/toolbench/agentmark/deepseek/run_1",
+    "label": "agentmark"
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": 2,
+    "pred_root": "/root/output-0425/toolbench/agentmark/deepseek/run_2",
+    "label": "agentmark"
+  },
+  {
+    "model": "deepseek",
+    "method": "agentmark",
+    "run": 3,
+    "pred_root": "/root/output-0425/toolbench/agentmark/deepseek/run_3",
+    "label": "agentmark"
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": 1,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/rank/deepseek/run_1/exp_a1_rank_toolbench_deepseek_r1",
+    "label": "rank"
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": 2,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/rank/deepseek/run_2/exp_a1_rank_toolbench_deepseek_r2",
+    "label": "rank"
+  },
+  {
+    "model": "deepseek",
+    "method": "rank",
+    "run": 3,
+    "pred_root": "/root/autodl-tmp/AgentMark3/AgentMark/output/toolbench_regen_0425/rank/deepseek/run_3/exp_a1_rank_toolbench_deepseek_r3",
+    "label": "rank"
+  }
+]
