@@ -518,6 +518,9 @@ Tool-use traces are shorter and often contain fewer semantically viable actions 
 \textbf{Rank consistency is observable.}
 Unlike exact probability equality, rank consistency can be measured directly during verification. A verifier can report top-$k$ agreement, Kendall tau distance, or adjacent-swap rates to calibrate confidence.
 
+\textbf{Why not fully asymmetric verification?}
+A verifier that sees only the selected action has too little information to distinguish a keyed watermark from ordinary policy variation without shifting the agent's behavior distribution. The selected-only negative-control view in our evaluation reflects this limit. \ours{} therefore takes a middle position: it does not require calibrated probabilities, but it does require a reproducible candidate ranking. This is a practical assumption for many audited agents because tool schemas, admissible environment actions, and candidate lists are often easier to reconstruct than exact sampling probabilities.
+
 \textbf{Adaptive adversaries.}
 An adversary aware of the watermark could try to perturb ranks while preserving task success. This attack is outside pure distribution perturbation and should be treated as an active removal attack. Defenses include randomized $k$, context-dependent rank partitions, and cross-step consistency checks.
 
@@ -533,8 +536,14 @@ The evaluation establishes the channel-knowledge tradeoff: rank-only verificatio
 \textbf{LLM and agent watermarking.}
 Token-level LLM watermarking modifies or tests generated text distributions~\cite{kirchenbauer2023watermark,dathathri2024synthid}. Follow-up work studies reliability under paraphrasing, mixed documents, and edit-style perturbations~\cite{kirchenbauer2024reliability,kuditipudi2024robust}. These methods are complementary to behavioral watermarking because agents often compile natural-language plans into structured actions, where the final text may no longer carry the decision signal. AgentMark~\cite{agentmark2026} is the closest prior work and establishes distribution-preserving behavioral watermarking. \ours{} keeps its utility-preservation objective but weakens the verifier's channel requirement.
 
+\textbf{Robustness target.}
+Most text-watermark robustness work asks whether a detector can still identify generated text after rewriting or mixing. Our robustness target is different: the observed behavior may be unchanged, but the verifier's reconstruction of the behavior distribution may differ from the embedder's. This makes probability-value perturbation a channel-knowledge problem rather than an output-editing problem. \ours{} addresses this by designing the decoded statistic to be rank position, not a probability-dependent bin.
+
 \textbf{Steganography and distribution-preserving sampling.}
 Provably secure steganography formalizes indistinguishability between cover and stego content~\cite{hopper2002provably}. Meteor provides a practical cryptographic construction for realistic distributions~\cite{kaptchuk2021meteor}. Weakly asymmetric steganography studies receivers with partial channel knowledge~\cite{weakasym2026}. \ours{} adapts this idea from token/text channels to planning-behavior channels.
+
+\textbf{Erasure coding for partial logs.}
+Random linear network coding is a standard way to recover a payload from any sufficiently independent subset of coded symbols~\cite{ho2006random}. In behavioral watermarking, this abstraction is useful because trajectories are naturally partial: failed steps, missing telemetry, and verifier-side top-$k$ misses all become erasures. Our contribution is not a new erasure code; it is the rank-only step decoder that supplies coded bits to the existing erasure-tolerant layer.
 
 \textbf{Agent benchmarks.}
 ALFWorld aligns text-based embodied environments with interactive learning~\cite{shridhar2021alfworld}. ToolBench evaluates LLM tool-use over real-world APIs~\cite{qin2023toolllm}. OASIS demonstrates large-scale social-agent simulation~\cite{gao2024oasis}. These benchmarks highlight why behavior-level provenance matters: the action trajectory is often more important than the final message.
