@@ -581,6 +581,49 @@ Behavioral provenance for LLM agents should not depend on a verifier reproducing
 
 These results should be read as evidence for partial-channel feasibility rather than as a final production certification. Exact-channel \agentmark{} remains attractive when the original behavior probabilities are available; \ours{} targets the common audit setting where only ranks can be reconstructed reliably. Closing the remaining deployment gap requires longer live trajectories, end-to-end coded-payload recovery, and cross-model rank calibration.
 
+\appendices
+
+\section{Distribution-Preservation Details}
+\label{app:dist-preservation}
+
+This appendix expands the proof sketch from Section~\ref{sec:security}. At any internal node of the top-$k$ partition tree, let the even-rank group have normalized mass $S_0$ and the odd-rank group have mass $S_1$, with $S_0+S_1=S$. Assume without loss of generality that $S_0\geq S_1$; otherwise the group labels are swapped for the binary primitive. For $r\leftarrow U[0,1)$ and message bit $m\in\{0,1\}$, \BinEnc{} computes
+\[
+  r_m=(rS+\tfrac{1}{2}Sm)\bmod S.
+\]
+For either fixed $m$, $r_m$ is uniform over $[0,S)$ because adding a constant modulo $S$ preserves uniformity. Therefore the probability of selecting group $j$ is exactly $S_j/S$. When the higher-mass group is selected, no bit is consumed; when the lower-mass group is selected, one bit is consumed. Bit consumption changes the message pointer but not the marginal group-selection probability.
+
+Inducting over the recursive partition tree, every top-$k$ leaf $b$ is selected with probability equal to its normalized top-$k$ mass $P_t(b)/S_{\mathrm{top}}$. The top/tail gate enters the tree with probability $S_{\mathrm{top}}=\sum_{i\leq k}P_t(\sigma_t(i))$ and otherwise samples the tail proportionally. Hence every behavior, including tail behaviors that carry no bits, has marginal probability $P_t(b)$.
+
+\section{DRBG Synchronization}
+\label{app:drbg-sync}
+
+The encoder and decoder derive a per-step HMAC-SHA512 DRBG stream from the shared key and logged context. The important invariant is not the exact digest format, but the fixed consumption budget. For a top-$k$ step, both sides reserve
+\[
+  B_k=\lceil\log_2 k\rceil
+\]
+DRBG draws for the rank tree. The encoder may terminate early when a singleton leaf is reached or when a zero-bit branch defers the message bit, but it still advances the stream to consume exactly $B_k$ draws. The decoder independently consumes the same $B_k$ draws before returning the recovered bits. Tail selections emit no bits and are treated as erasures by the verifier.
+
+This fixed-budget rule prevents a local zero-bit event from shifting every later step. Without it, the decoder would have to know whether the encoder consumed a message bit or terminated early at each level, which is precisely the information it is trying to infer from the rank path.
+
+\section{RLNC Payload Recovery}
+\label{app:rlnc}
+
+The rank decoder outputs a variable number of coded bits from each observed step. Deterministic RLNC converts these bits into payload equations. For an $L$-bit payload $m$, the $i$-th coded bit is $c_i=\langle a_i,m\rangle\bmod 2$, where $a_i$ is generated from a deterministic coefficient stream. The verifier collects decoded pairs $(a_i,c_i)$ and solves the resulting linear system over GF(2). Recovery succeeds when the collected coefficient matrix has rank $L$ and the decoded right-hand side is consistent.
+
+This layer is agnostic to whether a coded bit came from exact-probability decoding or rank-only decoding. Rank-only verification typically produces fewer reliable equations, so it may need longer trajectories or larger audit windows. The paper's 8-bit proxy tables are therefore channel diagnostics: they measure whether the step decoder supplies useful equations under different verifier views, not whether a deployment-length identifier has been certified.
+
+\section{Rank Stability and Top-\texorpdfstring{$k$}{k} Choice}
+\label{app:rank-stability}
+
+Temperature rescaling preserves rank order because $p_i^{1/T}/Z$ is monotone in $p_i$ for $T>0$. Quantization, model refreshes, and proxy re-querying need not preserve ranks exactly, but adjacent swaps are most likely when score gaps are small. This motivates top-$k$ restriction: high-probability behaviors usually have larger gaps and more stable semantic alternatives than long-tail candidates.
+
+The top-$k$ parameter therefore trades capacity against reconstruction risk. Larger $k$ gives more leaves and potentially more decoded bits per step, but it asks the verifier to reconstruct lower-probability ranks. Smaller $k$ is conservative and compatible with restricted APIs, but it may underuse high-entropy trajectories. The evaluation reports a sweep rather than selecting a universal $k$ because the best choice is environment-dependent.
+
+\section{Artifact Mapping}
+\label{app:artifacts}
+
+The reported tables are tied to postprocessed artifacts as follows. Utility uses \texttt{stage\_b\_2\_1\_utility.csv}; behavioral JSD uses \texttt{stage\_b\_2\_2\_jsd.csv}; exact and rank-only capacity proxies use \texttt{stage\_b\_1\_1\_capacity\_proxy.csv}; the top-$k$ sweep uses \texttt{stage\_b\_1\_2\_topk\_ablation.csv}; rank-noise diagnostics use \texttt{stage\_c\_3\_1\_rank\_noise.csv}; step-erasure diagnostics use \texttt{stage\_c\_3\_2\_erasure\_channel.csv}; false-positive calculations use \texttt{stage\_c\_3\_4\_false\_positive.csv}; and confidence curves use \texttt{stage\_d\_4\_1\_confidence\_curve.csv}. JSON sidecars mirror the CSV rows for automated checks.
+
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
