@@ -96,12 +96,12 @@
       <section class="panel">
         <div class="label">English</div>
         <p>The paper is not merely another agent watermark. Its central axis is verifier channel knowledge. AgentMark-F shows that behavioral watermarking can preserve an agent's per-step policy when the verifier reconstructs exact probabilities. Real audits often cannot satisfy that assumption: model refreshes, quantization, restricted APIs, and proxy re-querying may change probability values while preserving the order of plausible behaviors.</p>
-        <p>AsymAgentMark-TK moves behavioral provenance into a weakly asymmetric setting. The embedder keeps full access to the behavior distribution so that the marginal policy is preserved, while the verifier decodes from top-k rank order alone. The contribution is a co-designed rank encoder and decoder whose tree structure makes rank-only decoding possible.</p>
+        <p>AsymAgentMark-TK moves behavioral provenance into a weakly asymmetric setting. The embedder keeps full access to the behavior distribution so that the marginal policy is preserved, while the verifier decodes from top-k rank order alone. The rank-splitting primitive itself comes from weakly asymmetric steganography; the paper's contribution is the AgentMark behavior-channel instantiation: top-k audit views, fixed DRBG synchronization, RLNC recovery over partial logs, and empirical evidence on agent trajectories.</p>
       </section>
       <section class="panel">
         <div class="label">中文</div>
         <p>这篇论文的主轴不是“又一个 agent 水印”，而是验证端信道知识的降级。AgentMark-F 已经证明：当验证端能复现精确概率时，可以在保持每步行为分布的同时嵌入水印。真实审计里这个假设常常不成立：模型更新、量化、受限 API、代理模型重查询都会改变概率值，但高概率行为的排序仍可能稳定。</p>
-        <p>AsymAgentMark-TK 将行为溯源推进到弱非对称设定：嵌入端仍使用完整行为分布来保持边际策略，验证端只依赖 top-k 排名解码。真正的贡献是共同设计 encoder 和 decoder，使二叉树结构本身支持 rank-only 解码。</p>
+        <p>AsymAgentMark-TK 将行为溯源推进到弱非对称设定：嵌入端仍使用完整行为分布来保持边际策略，验证端只依赖 top-k 排名解码。rank 奇偶递归原语来自弱非对称隐写；本文的贡献是 AgentMark 行为信道实例化：top-k 审计视图、固定 DRBG 同步、部分日志上的 RLNC 恢复，以及 agent 轨迹实验证据。</p>
       </section>
     </div>
 
@@ -114,7 +114,7 @@
         <tr><td>Carrier</td><td>Token watermarks target generated text; this paper targets planning behaviors such as tool calls, subgoals, and embodied actions.</td><td>载体从 token 文本换成 agent 行为轨迹。</td></tr>
         <tr><td>Predecessor</td><td>AgentMark-F is the direct predecessor because it is distribution-preserving behavioral watermarking, but it is symmetric.</td><td>AgentMark-F 是直接前作，但验证端需要精确概率。</td></tr>
         <tr><td>Gap</td><td>Exact probability reconstruction is too brittle for real audits; top-k rank order is a more reproducible partial channel.</td><td>真实验证中概率值脆弱，排名更容易复现。</td></tr>
-        <tr><td>Method</td><td>Interleaved even/odd rank splitting creates a path that the verifier can recover from the selected behavior's rank.</td><td>奇偶递归划分让“行为排名”变成解码路径。</td></tr>
+        <tr><td>Method</td><td>We adapt interleaved even/odd rank splitting from weakly asymmetric steganography to AgentMark-style behavior distributions.</td><td>不是发明奇偶递归，而是把它迁移到 AgentMark 行为分布。</td></tr>
         <tr><td>Claim scope</td><td>The paper demonstrates partial-channel signal and distribution-preserving rank decoding, not production certification from short proxy payloads.</td><td>当前结果支撑可行性和 tradeoff，不要把 8-bit proxy 夸成生产级认证。</td></tr>
       </tbody>
     </table>
@@ -128,7 +128,7 @@
         <p>Recent behavior-level watermarking work moves the carrier from text to trajectories. Agent Guide biases agents toward keyed behavior subsets and detects the resulting statistic. AgentMark-F preserves the per-step behavior distribution and embeds payload bits through symmetric differential recombination. Sequential behavioral watermarking encodes signals across action transitions and supports position-agnostic detection. These works establish the importance of behavior-level provenance. Our paper asks a different question: what channel information must a verifier reconstruct to decode a distribution-preserving behavioral payload?</p>
 
         <h3>Provably Secure Steganography</h3>
-        <p>Provably secure steganography formalizes indistinguishability between cover and stego samples. Meteor and later language-model steganography schemes show how to sample from realistic distributions while carrying hidden information. Weakly asymmetric steganography introduces the intermediate case where the sender has the full channel but the receiver has only partial channel knowledge. AsymAgentMark-TK imports this principle into the agent behavior channel: the embedder uses probabilities, while the verifier uses only top-k rank order.</p>
+        <p>Provably secure steganography formalizes indistinguishability between cover and stego samples. Meteor and later language-model steganography schemes show how to sample from realistic distributions while carrying hidden information. Weakly asymmetric steganography introduces the intermediate case where the sender has the full channel but the receiver has only partial channel knowledge, and it supplies the rank-based primitive we rely on. AsymAgentMark-TK imports that principle into the agent behavior channel: the embedder uses probabilities, while the verifier uses only top-k rank order.</p>
 
         <h3>Erasure Coding</h3>
         <p>Random linear network coding is useful because agent logs are naturally partial. Missing steps, tail selections, and top-k misses become erasures. The coding layer is inherited from AgentMark; the new contribution is the rank-only step decoder that supplies coded bits to that layer.</p>
@@ -140,7 +140,7 @@
         <p>近年的行为级水印把载体从文本转向轨迹。Agent Guide 将 agent 偏向带密钥的行为子集并检测轨迹统计量。AgentMark-F 保持每步行为分布，并通过对称 differential recombination 嵌入 payload。Sequential Behavioral Watermarking 在动作转移中编码信号，并支持位置无关检测。这些工作说明行为级溯源很重要；本文进一步追问：验证端到底需要复现什么信道信息，才能解码一个分布保持的行为 payload？</p>
 
         <h3>可证明安全隐写</h3>
-        <p>可证明安全隐写形式化了 cover 样本与 stego 样本的不可区分性。Meteor 及后续语言模型隐写工作展示了如何在真实分布上采样并携带隐藏信息。弱非对称隐写提出中间情形：发送端拥有完整信道，接收端只有部分信道知识。AsymAgentMark-TK 将这一原则迁移到 agent 行为信道：嵌入端用概率，验证端只用 top-k 排名。</p>
+        <p>可证明安全隐写形式化了 cover 样本与 stego 样本的不可区分性。Meteor 及后续语言模型隐写工作展示了如何在真实分布上采样并携带隐藏信息。弱非对称隐写提出中间情形：发送端拥有完整信道，接收端只有部分信道知识，并提供了本文依赖的 rank 原语。AsymAgentMark-TK 将这一原则迁移到 agent 行为信道：嵌入端用概率，验证端只用 top-k 排名。</p>
 
         <h3>擦除编码</h3>
         <p>随机线性网络编码适合 agent 日志，因为日志天然不完整。缺失步骤、tail selection、top-k 未命中都可以视为擦除。编码层继承自 AgentMark；本文新贡献是为这个编码层提供 rank-only step decoder。</p>
@@ -155,7 +155,7 @@
         <p>At each step, the agent exposes a finite behavior set and a probability distribution over candidate behaviors. AsymAgentMark-TK first sorts candidates by probability and restricts embedding to the top-k region. It samples outside this region with the original tail probabilities and emits no bits, so tail events are treated as erasures by the verifier.</p>
 
         <h3>Rank Encoder</h3>
-        <p>Inside the top-k region, the encoder recursively partitions the sorted list into even and odd ranks. At each node it computes the probability mass of the two groups and invokes a binary distribution-preserving primitive. The primitive selects the high-mass group without consuming a bit, or selects the low-mass group while consuming one payload bit. Since the random offset is uniform, the selected group probability equals its original mass, and induction over the tree preserves the behavior distribution.</p>
+        <p>Inside the top-k region, the encoder reuses the weak-asymmetric rank construction: it recursively partitions the sorted list into even and odd ranks. At each node it computes the probability mass of the two groups and invokes a binary distribution-preserving primitive. The primitive selects the high-mass group without consuming a bit, or selects the low-mass group while consuming one payload bit. Since the random offset is uniform, the selected group probability equals its original mass, and induction over the tree preserves the behavior distribution.</p>
 
         <h3>Rank Decoder</h3>
         <p>The decoder receives only the selected behavior and the top-k rank order. It finds the selected behavior's zero-indexed rank and reconstructs the path by repeatedly checking parity. An odd rank means the encoder entered the odd branch and embedded one bit; the bit value is derived from the same DRBG value. No numeric probability is used during decoding. If two verifier distributions have the same top-k order, decoding is identical under both.</p>
@@ -169,7 +169,7 @@
         <p>每一步中，agent 给出有限候选行为集合及其概率分布。AsymAgentMark-TK 先按概率排序候选行为，并只在 top-k 区域嵌入信息。如果采样落到 tail 区域，则按原始 tail 概率采样且不输出 bit；验证端把这种情况当作擦除。</p>
 
         <h3>Rank Encoder</h3>
-        <p>进入 top-k 后，编码器递归地把排序列表划分为偶数 rank 与奇数 rank 两组。每个节点计算两组概率质量，并调用一个二元分布保持原语。该原语选择高质量组时不消耗 bit，选择低质量组时消耗一个 payload bit。由于随机偏移是均匀的，选择任一组的概率等于原始概率质量；对二叉树递归归纳即可得到行为分布保持。</p>
+        <p>进入 top-k 后，编码器复用弱非对称隐写的 rank 构造：递归地把排序列表划分为偶数 rank 与奇数 rank 两组。每个节点计算两组概率质量，并调用一个二元分布保持原语。该原语选择高质量组时不消耗 bit，选择低质量组时消耗一个 payload bit。由于随机偏移是均匀的，选择任一组的概率等于原始概率质量；对二叉树递归归纳即可得到行为分布保持。</p>
 
         <h3>Rank Decoder</h3>
         <p>解码器只接收 selected behavior 和 top-k 排名。它找到该行为的 0-indexed rank，并通过不断检查奇偶性重建路径。奇数 rank 表示编码器进入了 odd 分支并嵌入一个 bit；bit 值由同一个 DRBG 值确定。整个解码过程不使用任何概率数值。如果两个验证端分布拥有相同 top-k 排序，解码输出完全一致。</p>
@@ -183,11 +183,11 @@
     <div class="grid">
       <section class="panel">
         <div class="label">English</div>
-        <p>The A-conference story is credible if the paper stays honest about its scope. The novelty axis is clear: weakening verifier channel knowledge for distribution-preserving behavioral watermarking. The main remaining empirical risk is live end-to-end recovery under real rank reconstruction; the manuscript should present current tables as postprocessed channel diagnostics and avoid overstating production attribution.</p>
+        <p>The A-conference story is credible if the paper stays honest about its scope. The novelty axis is not the rank primitive itself; it is weakening verifier channel knowledge for distribution-preserving behavioral watermarking and showing that the weak-asymmetric rank primitive can be made into an AgentMark-style audit system. The main remaining empirical risk is live end-to-end recovery under real rank reconstruction; the manuscript should present current tables as postprocessed channel diagnostics and avoid overstating production attribution.</p>
       </section>
       <section class="panel">
         <div class="label">中文</div>
-        <p>只要诚实限定结论范围，这条 A 会叙事是成立的。新颖性主轴清楚：在分布保持的行为水印中降低验证端信道知识要求。剩余主要风险是缺少真实 rank reconstruction 下的 live end-to-end recovery；当前表格应被表述为后处理信道诊断，不应被夸大为生产归属认证。</p>
+        <p>只要诚实限定结论范围，这条 A 会叙事是成立的。新颖性主轴不是 rank 原语本身，而是在分布保持的行为水印中降低验证端信道知识要求，并证明弱非对称 rank 原语可以系统化为 AgentMark 风格审计方案。剩余主要风险是缺少真实 rank reconstruction 下的 live end-to-end recovery；当前表格应被表述为后处理信道诊断，不应被夸大为生产归属认证。</p>
       </section>
     </div>
 
