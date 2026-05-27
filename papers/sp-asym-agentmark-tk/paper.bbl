@@ -106,4 +106,27 @@ R.~Kuditipudi, J.~Thickstun, T.~Hashimoto, and P.~Liang, ``Robust
   distortion-free watermarks for language models,'' \emph{Transactions on
   Machine Learning Research}, 2024.
 
+\bibitem{agentguide2025}
+K.~Huang, Z.~Zhang, Z.~Yang, and L.~Zhou, ``Agent guide: A simple agent
+  behavioral watermarking framework,'' \emph{arXiv preprint arXiv:2504.05871},
+  2025.
+
+\bibitem{seqwm2026}
+H.~An, S.~Park, D.~Kim, and Y.-S. Han, ``Sequential behavioral watermarking for
+  {LLM} agents,'' \emph{arXiv preprint arXiv:2605.11036}, 2026.
+
+\bibitem{christ2024undetectable}
+M.~Christ, S.~Gunn, and O.~Zamir, ``Undetectable watermarks for language
+  models,'' in \emph{Proceedings of the Conference on Learning Theory}, 2024.
+
+\bibitem{zamir2024steganography}
+O.~Zamir, ``Undetectable steganography for language models,''
+  \emph{Transactions on Machine Learning Research}, 2024.
+
+\bibitem{sparsamp2025}
+Y.~Wang, G.~Pei, K.~Chen, J.~Ding, C.~Pan, W.~Pang, D.~Hu, and W.~Zhang,
+  ``{SparSamp}: Efficient provably secure steganography based on sparse
+  sampling,'' in \emph{Proceedings of the 34th USENIX Security Symposium},
+  2025.
+
 \end{thebibliography}
