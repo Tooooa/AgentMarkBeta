@@ -12,6 +12,10 @@
 
 `/Users/local/AgentMarkBeta/鲁棒实验_实验/remote_data/agentmark_robustness_data_20260530.tgz`
 
+3.2 修复版补充包：
+
+`/Users/local/AgentMarkBeta/鲁棒实验_实验/remote_data/stage3_robustness_3_2_fixed_r10_20260530.tgz`
+
 解压目录：
 
 `/Users/local/AgentMarkBeta/鲁棒实验_实验/remote_data/extracted`
@@ -41,7 +45,17 @@
 - Repeats: 1
 - FPR trials per trajectory/config: 1000
 
-重要限制：3.1/3.2 的扰动 repeat 只有 1。结果可用于论文初稿和趋势分析，正式投稿建议补 3 个以上随机 seed。
+3.2 旧版结果存在 `agentmark` baseline 配置错误：`differential_based_decoder` 被错误地喂入 Top-k proxy/degraded probabilities，导致 AgentMark-F 几乎失败。旧 3.2 文件已在本地归档到：
+
+`/Users/local/AgentMarkBeta/鲁棒实验_实验/remote_data/archive/20260530_3_2_buggy_local/stage3_robustness_pooled_rerun_3_2_files`
+
+3.2 修复版已重跑：
+
+- output dir: `stage3_robustness_3_2_fixed_r10`
+- Repeats: 10
+- script fix: `agentmark` 直接使用完整概率分布调用 `differential_based_decoder`; 只有 `rank` 使用 channel degradation / Top-k proxy.
+
+重要限制：3.1 的扰动 repeat 仍只有 1。3.2 已补为 repeats=10。
 
 ## 2. 最重要的口径区分
 
@@ -107,17 +121,17 @@ DeepSeek + topk=10 + adjacent_swap 代表性 pooled 结果：
 
 | 文件 | 行数 | 粒度 | 推荐用途 |
 | --- | ---: | --- | --- |
-| `stage3_robustness_pooled_rerun/stage_c_3_2_erasure_channel_pooled_summary.csv` | 672 | dataset/method/model/split/topk/erasure across 3 runs | 主表、方法对比图 |
-| `stage3_robustness_pooled_rerun/stage_c_3_2_erasure_channel_pooled.csv` | 2016 | 每个 run 的 pooled decode | 复查非单调结果 |
-| `stage3_robustness_pooled_rerun/stage_c_3_2_erasure_channel_summary.csv` | 672 | strict per-trajectory summary | 附录或 caveat |
-| `stage3_robustness_pooled_rerun/stage_c_3_2_erasure_channel_by_task.csv` | 99288 | 单 task × erasure 条件 | Debug 和细粒度分析 |
+| `stage3_robustness_3_2_fixed_r10/stage_c_3_2_erasure_channel_pooled_summary.csv` | 252 | dataset/method/model/pool_split/topk/erasure across 3 runs × 10 repeats | 主表、方法对比图 |
+| `stage3_robustness_3_2_fixed_r10/stage_c_3_2_erasure_channel_pooled.csv` | 5880 | 每个 run/repeat 的 pooled decode | 画误差线或复查 run-level 异常 |
+| `stage3_robustness_3_2_fixed_r10/stage_c_3_2_erasure_channel_summary.csv` | 672 | strict per-trajectory summary | 附录或 caveat |
+| `stage3_robustness_3_2_fixed_r10/stage_c_3_2_erasure_channel_by_task.csv` | 992880 | 单 task × erasure × repeat 条件 | Debug 和细粒度分析 |
 
 字段重点：
 
-- `dataset`, `method`, `model`, `split`, `topk`, `erasure_rate`
+- `dataset`, `method`, `model`, `pool_split`, `topk`, `erasure_rate`
 - `pooled_decode_success_rate_mean/std`
 - `pooled_dedup_packet_mean/std`
-- strict 表里的 `decode_success_rate`, `accepted_steps_mean`, `erased_steps_mean`
+- strict 表里的 `split`, `decode_success_rate`, `accepted_steps_mean`
 
 可用实验条件：
 
@@ -127,27 +141,41 @@ DeepSeek + topk=10 + adjacent_swap 代表性 pooled 结果：
 - topk: 3, 5, 10
 - erasure_rate: 0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9
 
-DeepSeek + topk=10 代表性 pooled 结果：
+DeepSeek + topk=10 代表性 pooled 结果（修复版 r10）：
 
-| dataset | method | split | erasure=0.0 | erasure=0.5 | erasure=0.9 | 解释 |
+| dataset | method | pool_split | erasure=0.0 | erasure=0.5 | erasure=0.9 | 解释 |
 | --- | --- | --- | ---: | ---: | ---: | --- |
+| ALFWorld | agentmark | ID | 1.000 | 1.000 | 1.000 | 修复后 baseline 正常 |
+| ALFWorld | agentmark | OOD | 1.000 | 1.000 | 1.000 | 修复后 baseline 正常 |
 | ALFWorld | rank | ID | 1.000 | 1.000 | 1.000 | 极强 |
 | ALFWorld | rank | OOD | 1.000 | 1.000 | 1.000 | 极强 |
-| ToolBench | rank | G1_category | 0.667 | 0.333 | 0.000 | 高擦除失败 |
-| ToolBench | rank | G2_category | 0.333 | 0.333 | 0.000 | 高擦除失败 |
-| ToolBench | rank | G3_instruction | 0.667 | 0.667 | 0.000 | 高擦除失败 |
-| ALFWorld | agentmark | ID | 0.000 | 0.333 | 0.333 | baseline 异常，需谨慎 |
-| ALFWorld | agentmark | OOD | 0.000 | 0.000 | 0.000 | baseline 弱 |
-| ToolBench | agentmark | G1/G2/G3 | 0.000 | 0.000 | 0.000 | baseline 基本失败 |
+| ToolBench | agentmark | ALL_SPLITS | 1.000 | 1.000 | 1.000 | 全 split 池化后可恢复 |
+| ToolBench | rank | ALL_SPLITS | 1.000 | 1.000 | 1.000 | 全 split 池化后可恢复 |
+
+DeepSeek + topk=10 strict per-trajectory erasure=0 参考：
+
+| dataset | method | split | trajectories | strict decode success | dedup packets |
+| --- | --- | --- | ---: | ---: | ---: |
+| ALFWorld | agentmark | ID | 4200 | 0.667 | 19.56 |
+| ALFWorld | agentmark | OOD | 4020 | 0.721 | 21.90 |
+| ALFWorld | rank | ID | 4200 | 0.219 | 6.59 |
+| ALFWorld | rank | OOD | 4020 | 0.234 | 7.15 |
+| ToolBench | agentmark | G1_category | 600 | 0.033 | 1.18 |
+| ToolBench | agentmark | G2_category | 600 | 0.200 | 3.93 |
+| ToolBench | agentmark | G3_instruction | 600 | 0.183 | 3.10 |
+| ToolBench | rank | G1_category | 600 | 0.050 | 1.17 |
+| ToolBench | rank | G2_category | 600 | 0.033 | 2.10 |
+| ToolBench | rank | G3_instruction | 600 | 0.033 | 1.58 |
 
 推荐论文结论：
 
-> The rank-based asymmetric watermark retains pooled recovery under severe erasure on ALFWorld, while ToolBench requires enough surviving packets and degrades under high erasure. The legacy agentmark baseline is substantially weaker in this setting.
+> After fixing the AgentMark-F decoder configuration, both AgentMark-F and AsymAgentMark-TK recover robustly under pooled erasure-channel detection. Strict single-trajectory recovery remains much lower, especially on ToolBench, because individual trajectories contain few usable packets.
 
 风险点：
 
-- `agentmark` baseline 有非单调和过弱现象，可能来自 decoder/payload 对齐或 differential watermark 本身的配置差异。
-- 如果正式论文要强比较 `AgentMark-F + RLNC` vs `AsymAgentMark-TK + RLNC`，建议先复查 `agentmark` 解码逻辑。
+- 旧版 3.2 不可引用；它只作为 bug 诊断记录。
+- ToolBench pooled summary 现在以 `ALL_SPLITS` 为主要池化口径；单 split 的 strict recovery 仍很低。
+- 3.2 的 pooled 结论是 corpus-level/pool-level detection，不是单条 trajectory 的 payload 恢复率。
 
 ## 5. 3.3 Semantic Rewrite
 
@@ -293,7 +321,7 @@ DeepSeek + topk=10 代表性结果：
 
 1. 先读取本索引，确认 strict 与 pooled 口径。
 2. 3.1 主图使用 `stage_c_3_1_rank_noise_pooled_summary.csv`，x 轴为 `epsilon`，y 轴为 `pooled_decode_success_rate_mean`，分 facet 展示 dataset/split/topk。
-3. 3.2 主图使用 `stage_c_3_2_erasure_channel_pooled_summary.csv`，x 轴为 `erasure_rate`，y 轴为 `pooled_decode_success_rate_mean`，用 method 对比 `agentmark` 和 `rank`。
+3. 3.2 主图使用 `stage3_robustness_3_2_fixed_r10/stage_c_3_2_erasure_channel_pooled_summary.csv`，x 轴为 `erasure_rate`，y 轴为 `pooled_decode_success_rate_mean`，用 method 对比 `agentmark` 和 `rank`。
 4. 3.3 主图一使用 `stage_c_3_3_semantic_rewrite_summary.csv` 展示 rank stability；主图二使用 `stage_c_3_3_semantic_rewrite_pooled_subsample_summary.csv` 展示 pool size 对恢复率的影响。
 5. 3.4 主图使用 `stage_c_3_4_false_positive_summary.csv`，x 轴为 `payload_len`，y 轴为 `fpr_micro`，同时画 `theoretical_fpr` 虚线。
 6. 附录使用 `*_by_task.csv` 和 strict `*_summary.csv` 报告单轨迹恢复限制。
@@ -302,14 +330,12 @@ DeepSeek + topk=10 代表性结果：
 
 优先级从高到低：
 
-1. 3.1/3.2 补扰动 repeat 或 seed，当前 `Repeats: 1`。
-2. 复查 3.2 `agentmark` baseline 的 decoder/payload 对齐，避免把配置问题当作方法失败。
-3. 若论文需要完整覆盖，3.3 补 ALFWorld semantic rewrite 或增加每个 task 的 steps。
-4. 3.4 写作时解释 empirical FPR 低于 theory 的原因：真实 clean trace 中 decodable packets 不足。
+1. 3.1 仍可考虑补 repeat/seed，当前 `Repeats: 1`。
+2. 若论文需要完整覆盖，3.3 补 ALFWorld semantic rewrite 或增加每个 task 的 steps。
+3. 3.4 写作时解释 empirical FPR 低于 theory 的原因：真实 clean trace 中 decodable packets 不足。
 
 ## 10. 一句话总论
 
 当前数据足以支撑这样的鲁棒性结论：
 
 > AsymAgentMark-TK is robust in corpus-level pooled detection under ranking noise, erasure, and semantic rewrite perturbations; exact single-trajectory decoding is much harder and mainly limited by packet scarcity. False positives remain low and decrease rapidly with payload length.
-

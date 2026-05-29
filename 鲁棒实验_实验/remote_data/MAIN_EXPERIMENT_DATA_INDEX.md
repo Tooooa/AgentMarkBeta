@@ -60,7 +60,7 @@
 | 2.1 效用保持 | `asym_agentmark_tk/utility_retention.csv` | 可用 | 包含 vanilla/clean/rg/agentmark/rank 汇总 |
 | 2.2 行为分布 JSD | `asym_agentmark_tk/behavior_jsd.csv` | 可用 | 包含相对 clean/vanilla 的 JSD |
 | 3.1 排名噪声 | `stage3_robustness_pooled_rerun/stage_c_3_1_*` | 可用 | 详见鲁棒性索引；repeat=1 |
-| 3.2 擦除+信道降级 | `stage3_robustness_pooled_rerun/stage_c_3_2_*` | 可用但需复查 baseline | agentmark baseline 异常偏弱 |
+| 3.2 擦除+信道降级 | `stage3_robustness_3_2_fixed_r10/stage_c_3_2_*` | 可用 | 修复 AgentMark-F decoder 配置后 repeats=10 |
 | 3.3 语义改写 | `stage3_toolbench_5level_r3_subsample_w200/*` | 可用但仅 ToolBench | DeepSeek rewrite/rerank，failures=0 |
 | 3.4 假阳性 | `stage3_robustness_pooled_rerun/stage_c_3_4_*` | 可用 | clean traces, 1000 random payload trials |
 | 4.1 解码置信度曲线 | `evidence_strength/stage_d_4_1_confidence_*` | 可用 | exact one-sided binomial test |
