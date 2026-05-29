@@ -14,6 +14,10 @@
 
 `/Users/local/AgentMarkBeta/鲁棒实验_实验/remote_data/ROBUSTNESS_DATA_INDEX.md`
 
+补充包：
+
+`/Users/local/AgentMarkBeta/鲁棒实验_实验/remote_data/agentmark_extra_evidence_vanilla_rg_20260530.tgz`
+
 ## 0. 当前数据总体状态
 
 `asym_agentmark_tk/README.md` 记录：
@@ -31,18 +35,21 @@
 | ALFWorld | vanilla / clean / rg / agentmark / rank | 各 1644 |
 | ToolBench | vanilla / clean / rg / agentmark / rank | 各 720 |
 
-但本地本次压缩包只包含以下原始轨迹目录：
+第一批本地压缩包只包含以下原始轨迹目录：
 
 | dataset | local raw methods | 文件数 |
 | --- | --- | ---: |
 | ALFWorld | `clean`, `agentmark`, `rank` | 4932 |
 | ToolBench | `clean`, `agentmark`, `rank` | 2160 |
 
-因此：
+随后已从远端补拉 Vanilla/RG 原始目录：
 
-- 论文表格：A0 Vanilla、A2 RG 的 2.1/2.2 汇总结果可用。
-- 重新分析：若要重算 Vanilla/RG 的行为序列、动作分布或 task-level 指标，需要从远端补传 `vanilla` 和 `rg` 原始目录。
-- OASIS：当前没有数据。
+| dataset | added raw methods | 文件数 |
+| --- | --- | ---: |
+| ALFWorld | `vanilla`, `rg` | 3288 |
+| ToolBench | `vanilla`, `rg` | 1440 |
+
+因此当前本地已具备 A0/A1/A2/A3/A4 的 ALFWorld + ToolBench 原始数据和汇总表。OASIS 仍无数据。
 
 ## 1. 实验覆盖矩阵
 
@@ -56,9 +63,9 @@
 | 3.2 擦除+信道降级 | `stage3_robustness_pooled_rerun/stage_c_3_2_*` | 可用但需复查 baseline | agentmark baseline 异常偏弱 |
 | 3.3 语义改写 | `stage3_toolbench_5level_r3_subsample_w200/*` | 可用但仅 ToolBench | DeepSeek rewrite/rerank，failures=0 |
 | 3.4 假阳性 | `stage3_robustness_pooled_rerun/stage_c_3_4_*` | 可用 | clean traces, 1000 random payload trials |
-| 4.1 解码置信度曲线 | 暂无现成表 | 缺失 | 可从 A3/A4 raw 或 by-task packet 数据后处理生成 |
-| 4.2 最小证据阈值 | 暂无现成表 | 缺失 | 依赖 4.1 |
-| 4.3 鲁棒性补偿分析 | 暂无现成表 | 缺失 | 依赖 3.1/3.2 + 4.1 |
+| 4.1 解码置信度曲线 | `evidence_strength/stage_d_4_1_confidence_*` | 可用 | exact one-sided binomial test |
+| 4.2 最小证据阈值 | `evidence_strength/stage_d_4_2_thresholds_*` | 可用 | alpha={0.05,0.01,0.001}; L={8,16,32,64} |
+| 4.3 鲁棒性补偿分析 | `evidence_strength/stage_d_4_3_compensation*` | 可用 | noise × erasure 下的 N_attack/N_clean |
 | OASIS | 无 | 缺失 | 原设计中为可选补充 |
 
 ## 2. 实验 1.1：有效容量对比
@@ -210,34 +217,90 @@ manifest 数据源：
 - `toolbench/agentmark`
 - `toolbench/rank`
 
-缺失的本地 raw 目录：
+补充包已拉取以下 raw 目录：
 
 - `alfworld/vanilla`
 - `alfworld/rg`
 - `toolbench/vanilla`
 - `toolbench/rg`
 
-如果后续需要对 2.1/2.2 做重新统计、p-value 检验或更细粒度可视化，应从远端补传这些目录。
+当前可以对 2.1/2.2 重算行为序列、动作分布或 task-level 指标。
 
 ## 7. 实验 4.x：证据强度
 
-当前没有现成的 4.1/4.2/4.3 结果表。
+主数据目录：
 
-可生成的数据基础：
+`evidence_strength`
 
-- A3/A4 raw trajectories: `agentmark`, `rank`
-- task-level decode/packet 表: `rlnc_recovery_a3_a4/rlnc_recovery_by_task.csv`
-- 鲁棒性 by-task 表: `stage3_robustness_pooled_rerun/stage_c_3_1_rank_noise_by_task.csv`, `stage_c_3_2_erasure_channel_by_task.csv`
+`evidence_strength/README.md` 记录：
 
-建议后处理产物：
+- Step observations: 55475
+- Audit rows: 14184
+- 4.1: exact one-sided binomial test, H0 match probability = 0.5
+- 4.2: alpha in {0.05, 0.01, 0.001}, payload lengths {8, 16, 32, 64}
+- 4.3: 基于 4.1 match 序列注入 erasure/noise 后重新求 `N_attack / N_clean`
 
-| 新表名建议 | 来源 | 内容 |
-| --- | --- | --- |
-| `evidence_pvalue_curve.csv` | A3/A4 raw 或 packet table | `N`, `k`, `method`, `matches`, `p_value`, `log10_p` |
-| `evidence_min_steps.csv` | 4.1 结果 | `alpha`, `payload_len`, `k`, `N_min` |
-| `evidence_attack_compensation.csv` | 3.1/3.2 + 4.1 | `epsilon`, `erasure_rate`, `N_attack`, `N_clean`, `compensation_ratio` |
+主数据源：
 
-结论：4.x 目前属于“可由现有 A3/A4 数据后处理生成，但尚未生成”的状态。
+| 文件 | 行数 | 字段 | 推荐用途 |
+| --- | ---: | --- | --- |
+| `evidence_strength/evidence_step_observations.csv` | 55475 | `dataset`, `method`, `config`, `step_match`, `bit_matches` | step-level Bernoulli observations |
+| `evidence_strength/evidence_decode_audit.csv` | 14184 | `accepted_steps`, `no_bits_steps`, `len_mismatch_steps` | 审计可用 step |
+| `evidence_strength/stage_d_4_1_confidence_summary.csv` | 864 | `N`, `match_rate_mean`, `log10_p_value_mean`, `p_value_geomean` | 4.1 主表 |
+| `evidence_strength/stage_d_4_1_confidence_per_run.csv` | 2592 | per-run confidence | 误差线/复查 |
+| `evidence_strength/stage_d_4_2_thresholds_summary.csv` | 1116 | `payload_len`, `alpha`, `N_min_mean`, `attained_runs` | 4.2 主表 |
+| `evidence_strength/stage_d_4_2_thresholds_per_run.csv` | 3183 | per-run thresholds | 误差线/复查 |
+| `evidence_strength/stage_d_4_3_compensation_summary.csv` | 3360 | `noise_rate`, `erasure_rate`, `N_clean_mean`, `N_attack_mean`, `compensation_ratio_mean` | 4.3 主表 |
+| `evidence_strength/stage_d_4_3_compensation.csv` | 10080 | per-run compensation | 误差线/复查 |
+
+可用配置：
+
+- dataset: `alfworld`, `toolbench`
+- method: `agentmark`, `rank`
+- config: `L0_exact_probs`, `full_rank`, `top10`, `top5`, `top3`, `top2`
+- N: 5, 10, 20, 30, 50, 80, 100, 150, 200
+- alpha: 0.05, 0.01, 0.001
+- payload_len: 8, 16, 32, 64
+- compensation noise_rate: 0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5
+- compensation erasure_rate: 0.0, 0.1, 0.2, 0.3, 0.5, 0.7
+
+DeepSeek + ALFWorld ID 代表性 4.1 结果：
+
+| method/config | N=5 p-value | N=10 p-value | N=20 p-value | N=100 p-value | 解释 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| agentmark/L0 | 3.12e-2 | 9.77e-4 | 9.54e-7 | 7.89e-31 | oracle 证据最快 |
+| rank/top10 | 2.60e-1 | 1.85e-2 | 4.32e-5 | 4.10e-26 | N=20 已显著 |
+| rank/top5 | 2.60e-1 | 1.85e-2 | 4.32e-5 | 3.71e-26 | 与 top10 接近 |
+| rank/top3 | 1.03e-1 | 4.83e-3 | 7.26e-6 | 1.19e-25 | 此 cell 中 top3 更快 |
+
+DeepSeek + ALFWorld ID, alpha=0.01 的 4.2 最小步数：
+
+| method/config | L=8 N_min | L=16 N_min | attained runs |
+| --- | ---: | ---: | --- |
+| agentmark/L0 | 10 | 20 | 3/3 |
+| rank/top10 | 20 | 50 | 3/3 |
+| rank/top5 | 20 | 50 | 3/3 |
+| rank/top3 | 16.67 | 40 | 3/3 |
+
+DeepSeek + ALFWorld ID, rank top10, alpha=0.01 的 4.3 补偿：
+
+| noise | erasure | N_clean | N_attack | ratio | attained |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 0.0 | 0.0 | 20 | 20 | 1.00 | 3/3 |
+| 0.1 | 0.0 | 20 | 23.33 | 1.17 | 3/3 |
+| 0.3 | 0.0 | 20 | 43.33 | 2.17 | 3/3 |
+| 0.3 | 0.3 | 20 | 70 | 3.50 | 3/3 |
+| 0.3 | 0.7 | 20 | 100 | 5.00 | 3/3 |
+| 0.5 | any selected | 20 | NA | NA | 0/3 |
+
+推荐论文结论：
+
+> Evidence significance improves rapidly with observed steps under a one-sided binomial test. Rank-based evidence reaches conventional significance with tens of steps on ALFWorld, while stronger perturbations increase the required evidence length; at severe noise, some runs no longer attain the target threshold within the evaluated range.
+
+风险点：
+
+- step-level evidence 把一个 accepted embedding step 作为一个 Bernoulli trial；如果论文中讲 payload-level evidence，需要解释这个统计口径。
+- 4.3 是基于 match 序列的后处理注入，不是重新跑 LLM。
 
 ## 8. 给论文 agent 的使用建议
 
@@ -245,5 +308,5 @@ manifest 数据源：
 2. 写 capacity 时，明确区分 `capacity_l0_l6_proxy.csv` 与 `capacity_rlnc_exact_recovery.csv`，不要混成同一个 decode success。
 3. 写 Top-k 消融时，用 `topk_ablation.csv`，重点展示 ALFWorld 上 k 增大的收益和 ToolBench 的 packet-limited 现象。
 4. 写 robustness 时，读取 `ROBUSTNESS_DATA_INDEX.md`，严格区分 strict 与 pooled。
-5. 暂时不要写 OASIS 和 4.x 的实证结果，除非后续补跑/补生成。
-
+5. 4.x 可以写实证结果，优先使用 `evidence_strength/stage_d_4_1_confidence_summary.csv`、`stage_d_4_2_thresholds_summary.csv` 和 `stage_d_4_3_compensation_summary.csv`。
+6. 暂时不要写 OASIS 的实证结果，除非后续补跑。
