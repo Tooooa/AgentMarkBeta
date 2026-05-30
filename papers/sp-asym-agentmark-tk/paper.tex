@@ -35,7 +35,7 @@ Autonomous large language model (LLM) agents increasingly act through tool calls
 
 We propose \ours, a weakly asymmetric behavioral watermark for LLM agents. The central observation is that probability-dependent decoding bins are not stable under rank-preserving verifier perturbations: two APIs can agree on the top behaviors while assigning a selected behavior to different probability bins. \ours{} repairs this verifier-channel failure by making rank path, rather than probability mass, the decoder statistic. The embedder still uses full per-step probabilities to preserve the agent's marginal policy, while the verifier needs only top-$k$ rank order. The construction replaces probability-dependent differential bins with an interleaved binary partition tree over rank-sorted behaviors. A selected top-$k$ behavior's rank determines a decoding path, enabling bit recovery from ranks alone. A fixed-budget HMAC-SHA512 deterministic random bit generator (DRBG) schedule keeps both sides synchronized, and deterministic random linear network coding turns variable per-step bits into payload recovery.
 
-We evaluate \ours{} on ALFWorld and ToolBench using DeepSeek and Gemini Flash. Across 11,820 trajectories in the current postprocessed corpus, rank watermarking stays close to the clean AgentMark pipeline: success is 78.6\% versus 80.0\% on ALFWorld and 77.1\% versus 75.7\% on ToolBench, with Jensen-Shannon divergence comparable to symmetric AgentMark. In the offline 8-bit decoder proxy, symmetric AgentMark has higher exact-channel recovery on ALFWorld, but under top-10 rank-only verification it drops from 0.700 to 0.014 while \ours{} remains at 0.068. Strict single-trajectory RLNC recovery remains packet-limited, especially on ToolBench; pooled evidence over audit windows is substantially stronger, recovering under 90\% step erasure in the fixed erasure run. The result is a robustness contribution rather than a capacity claim: audit-grade attribution requires pre-registered longer payloads, calibrated rank reconstruction, and live end-to-end recovery.
+We evaluate \ours{} on ALFWorld and ToolBench using DeepSeek and Gemini Flash. Across 11,820 trajectories in the current postprocessed corpus, rank watermarking stays close to the clean AgentMark pipeline: success is 78.6\% versus 80.0\% on ALFWorld and 77.1\% versus 75.7\% on ToolBench, with Jensen-Shannon divergence comparable to symmetric AgentMark. In the offline 8-bit decoder proxy, symmetric AgentMark has higher exact-channel recovery on ALFWorld, but under top-10 rank-only verification it drops from 0.700 to 0.014 while \ours{} remains at 0.068. Strict single-trajectory RLNC recovery remains packet-limited, especially on ToolBench; pooled evidence over audit windows is substantially stronger, recovering under 90\% step erasure in the fixed erasure run and reaching 1.0 pooled recovery in a real ToolBench DeepSeek--Gemini cross-model top-10 rerank/decode test. The result is a robustness contribution rather than a capacity claim: audit-grade attribution requires pre-registered longer payloads, calibrated rank reconstruction, and live end-to-end recovery.
 \end{abstract}
 
 \section{Introduction}
@@ -61,7 +61,7 @@ Our contributions are:
   \item We formulate weakly asymmetric behavioral watermarking for LLM agents, separating the embedder's full channel access from the verifier's top-$k$ rank-only access and proving correctness under rank-preserving probability perturbations.
   \item We instantiate the weakly asymmetric rank construction as \ours{} for AgentMark-style behavior distributions, including top-$k$ verifier views, fixed DRBG synchronization, and behavior-log decoding.
   \item We connect per-step decoding to deterministic random linear network coding (RLNC) and analyze packet scarcity, clarifying when evidence should be treated as strict per-trajectory attribution versus pooled audit-window signal.
-  \item We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023toolllm} across DeepSeek and Gemini Flash models, measuring utility, stealth, rank-only decoding, selected-only negative controls, top-$k$ sensitivity, rank noise, erasure, semantic rewrite, and false-positive accounting.
+  \item We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023toolllm} across DeepSeek and Gemini Flash models, measuring utility, stealth, rank-only decoding, selected-only negative controls, top-$k$ sensitivity, rank noise, erasure, ToolBench semantic rewrite, live ToolBench cross-model reranking, and false-positive accounting.
 \end{itemize}
 
 The rest of the paper proceeds as follows. Section~\ref{sec:background} motivates behavioral watermarking and weak asymmetry. Section~\ref{sec:formulation} defines the agent behavior channel, adversary, and verifier knowledge. Section~\ref{sec:design} presents the rank encoder, decoder, synchronization, and coding layer. Sections~\ref{sec:security} and~\ref{sec:evaluation} analyze security and evaluate utility, stealth, and rank-only recovery. Section~\ref{sec:discussion} discusses operational limits, Section~\ref{sec:related-work} covers related work, Section~\ref{sec:validity} covers validity and ethics, and Section~\ref{sec:conclusion} concludes. The appendices provide the optional depth behind the main claims: distribution preservation, DRBG synchronization, RLNC recovery, rank stability, and artifact mapping.
@@ -383,11 +383,11 @@ For each decode-capable trajectory, we run the same verifier under several chann
 
 \subsection{Reproducibility Trail}
 
-The evaluation package is organized so that each reported number has a concrete source. The paper package contains the manuscript, resolved bibliography, compiled PDF, and build helper. The rank encoder and decoder are implemented in \texttt{watermark\_sampler.py}, and deterministic RLNC is implemented in \texttt{rlnc\_codec.py}. The canonical non-robust result package supports utility, JSD, capacity-proxy, top-$k$, strict-recovery, and evidence-strength claims; the robustness package supports pooled rank-noise, fixed erasure, ToolBench semantic-rewrite, and false-positive claims. Appendix~\ref{app:artifacts} maps the reported diagnostics to their source tables. We treat these artifacts as a reproducibility trail for the reported postprocessed diagnostics; a live deployment study with end-to-end cross-model verification is complementary evidence rather than something implied by the proxy capacity tables.
+The evaluation package is organized so that each reported number has a concrete source. The paper package contains the manuscript, resolved bibliography, compiled PDF, and build helper. The rank encoder and decoder are implemented in \texttt{watermark\_sampler.py}, and deterministic RLNC is implemented in \texttt{rlnc\_codec.py}. The canonical non-robust result package supports utility, JSD, capacity-proxy, top-$k$, strict-recovery, and evidence-strength claims; the robustness package supports pooled rank-noise, fixed erasure, ToolBench semantic-rewrite, ToolBench live cross-model rerank, and false-positive claims. Appendix~\ref{app:artifacts} maps the reported diagnostics to their source tables. We treat these artifacts as a reproducibility trail for the reported postprocessed diagnostics; the live ToolBench L5 rerank results are deployment-facing evidence for the verifier channel rather than a claim that all agent domains have equally stable cross-model ranks.
 
 \subsection{Research Questions}
 
-The evaluation answers seven questions. \textbf{RQ1}: Does rank-based embedding preserve task utility compared with clean and symmetric AgentMark pipelines? \textbf{RQ2}: Does it leave behavior-frequency distributions close to clean trajectories? \textbf{RQ3}: Does the probability-bin instability predicted by Lemma~1 appear empirically when an exact-channel decoder is forced into rank-only verification? \textbf{RQ4}: What is the tradeoff between exact-probability capacity, rank-only robustness, and selected-only negative controls? \textbf{RQ5}: How sensitive is the method to the top-$k$ parameter? \textbf{RQ6}: How quickly does pooled recovery degrade when the verifier's rank order is noisy, steps are erased, or verifier-side prompts are semantically rewritten? \textbf{RQ7}: What false-positive threshold and bit-level evidence strength should a verifier use before making an attribution claim?
+The evaluation answers seven questions. \textbf{RQ1}: Does rank-based embedding preserve task utility compared with clean and symmetric AgentMark pipelines? \textbf{RQ2}: Does it leave behavior-frequency distributions close to clean trajectories? \textbf{RQ3}: Does the probability-bin instability predicted by Lemma~1 appear empirically when an exact-channel decoder is forced into rank-only verification? \textbf{RQ4}: What is the tradeoff between exact-probability capacity, rank-only robustness, and selected-only negative controls? \textbf{RQ5}: How sensitive is the method to the top-$k$ parameter? \textbf{RQ6}: How quickly does pooled recovery degrade when the verifier's rank order is noisy, steps are erased, verifier-side prompts are semantically rewritten, or a different model performs the top-$k$ rerank? \textbf{RQ7}: What false-positive threshold and bit-level evidence strength should a verifier use before making an attribution claim?
 
 \subsection{Metrics}
 
@@ -496,21 +496,19 @@ ToolBench & .351/.000 & .426/.006 & .470/.010 & .488/.021 & .495/.032 & .505/.03
 
 Strict single-trajectory decoding is intentionally difficult in short benchmark traces, so the robustness experiments also report pooled recovery. Pooled recovery combines packets from trajectories with the same dataset, model, split, run, and verifier configuration before RLNC decoding. This corresponds to corpus-level auditing or a longer audit window, not to a per-task success rate.
 
-Table~\ref{tab:noise} reports ranking-noise robustness for \ours{} with DeepSeek and top-10 adjacent-swap perturbations. ALFWorld is robust under moderate ranking noise: the ID split remains at 1.0 pooled recovery through $\epsilon=0.5$, and OOD remains at 1.0 through $\epsilon=0.3$ before dropping at $\epsilon=0.5$. ToolBench is harder and degrades under high perturbation, consistent with its lower packet counts. This is the expected boundary of weak asymmetry: probability-value perturbations are harmless when ranks are preserved, but top-$k$ swaps can corrupt the decoded path.
+Table~\ref{tab:noise} reports the repeats-10 ranking-noise rerun for \ours{} with DeepSeek and top-10 adjacent-swap perturbations. ALFWorld is robust under moderate ranking noise: the ID split remains at 1.0 pooled recovery through $\epsilon=0.5$, and OOD remains at 1.0 through $\epsilon=0.3$ before dropping at $\epsilon=0.5$. ToolBench all-split pooling remains at 1.0 through $\epsilon=0.5$ in the DeepSeek rerun. This is the expected boundary of weak asymmetry: probability-value perturbations are harmless when ranks are preserved, but top-$k$ swaps can corrupt the decoded path once they remove too many independent packets or introduce conflicts.
 
 \begin{table}[t]
 \centering
-\caption{Pooled recovery for \ours{} under adjacent-swap ranking noise. DeepSeek, top-10. Values are corpus-level pooled decode success, not per-trajectory recovery.}
+\caption{Pooled recovery for \ours{} under adjacent-swap ranking noise. DeepSeek, top-10, repeats=10. Values are corpus-level pooled decode success, not per-trajectory recovery.}
 \label{tab:noise}
 \resizebox{\columnwidth}{!}{\begin{tabular}{llrrrr}
 \toprule
 Dataset & Split & $\epsilon=0.0$ & $\epsilon=0.1$ & $\epsilon=0.3$ & $\epsilon=0.5$ \\
 \midrule
 ALFWorld & ID & 1.00 & 1.00 & 1.00 & 1.00 \\
-ALFWorld & OOD & 1.00 & 1.00 & 1.00 & 0.67 \\
-ToolBench & G1 category & 0.67 & 0.67 & 0.33 & 0.00 \\
-ToolBench & G2 category & 0.33 & 0.33 & 0.33 & 0.00 \\
-ToolBench & G3 instruction & 0.67 & 0.67 & 0.67 & 0.33 \\
+ALFWorld & OOD & 1.00 & 1.00 & 1.00 & 0.83 \\
+ToolBench & all splits & 1.00 & 1.00 & 1.00 & 1.00 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -537,21 +535,39 @@ ToolBench & \ours{} & all splits & 1.00 & 1.00 & 1.00 \\
 
 \subsection{Semantic Rewrite}
 
-We also evaluate a verifier-side semantic rewrite on ToolBench. The experiment keeps the action set fixed, rewrites the prompt context at five strengths, re-ranks actions with DeepSeek, and decodes from the rewritten ranks. Step-level rank preservation drops substantially under rewriting, so strict per-task recovery remains low. Pooled subsampling shows that enough trajectories can still recover the watermark: at pool size 100 and top-10, recovery is 0.99 for minimal rewrites, 0.97 for light rewrites, 0.82 for medium rewrites, and 0.98 for heavy rewrites. The non-monotonic heavy result reflects sampling and rewrite-distribution effects, so we interpret the experiment as evidence for pool-size robustness rather than as a monotonic rewrite-strength curve.
+We also evaluate verifier-side semantic rewrite on ToolBench. The experiment keeps the action set fixed, rewrites the prompt context at light, medium, and heavy strengths, re-ranks actions with DeepSeek, and decodes from the rewritten ranks. Step-level rank preservation drops under rewriting, so strict per-task recovery remains low: in the rerun, top-10 strict recovery is about 0.011 after aggregating the six ToolBench splits. Pooled recovery is much stronger. Table~\ref{tab:rewrite} shows that ToolBench all-split pooling recovers at all three top-$k$ settings and all three rewrite strengths. The result should be read as audit-window robustness, not as a per-task success guarantee.
 
 \begin{table}[t]
 \centering
-\caption{ToolBench pooled subsample recovery after semantic rewrite. DeepSeek verifier, top-10.}
+\caption{ToolBench pooled recovery after semantic rewrite. DeepSeek verifier, light/medium/heavy rerun.}
 \label{tab:rewrite}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lrr}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrr}
 \toprule
-Rewrite strength & Pool 30 & Pool 100 \\
+Rewrite strength & $k=3$ & $k=5$ & $k=10$ & Packets @3 & Packets @5 & Packets @10 \\
 \midrule
-Original & 1.00 & 1.00 \\
-Minimal & 0.75 & 0.99 \\
-Light & 0.60 & 0.97 \\
-Medium & 0.53 & 0.82 \\
-Heavy & 0.67 & 0.98 \\
+Light & 1.00 & 1.00 & 1.00 & 29.0 & 36.0 & 45.0 \\
+Medium & 1.00 & 1.00 & 1.00 & 28.0 & 36.0 & 45.0 \\
+Heavy & 1.00 & 1.00 & 1.00 & 29.0 & 36.0 & 45.0 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Live Cross-Model Rerank}
+
+The preceding rank-noise and rewrite experiments perturb the verifier channel in controlled ways. We also run a live ToolBench L5 cross-model rerank/decode experiment: the verifier model calls an API to rescore each eligible candidate action set and then decodes from the resulting top-$k$ order. This is a real verifier rerank rather than an offline probability proxy. Table~\ref{tab:l5} reports top-10 results for both directions between DeepSeek and Gemini Flash.
+
+Strict single-trajectory recovery remains low, again because ToolBench trajectories provide few independent packets per task. However, top-10 rank agreement is high enough for pooled audit-window recovery. DeepSeek-to-Gemini reaches 0.935 pooled recovery at pool size 10 and 0.990 at pool size 20; Gemini-to-DeepSeek reaches 0.705 at pool size 10 and 0.945 at pool size 20. Pooling all available ToolBench splits recovers in both directions. This is the strongest deployment-facing evidence in the current artifact set: \ours{} does not require the verifier to reproduce calibrated probabilities, but it does require enough cross-model rank agreement and enough independent packets.
+
+\begin{table}[t]
+\centering
+\caption{ToolBench live L5 cross-model top-10 rerank/decode. Strict is single-trajectory payload recovery; pooled columns are audit-window recovery at sampled pool sizes.}
+\label{tab:l5}
+\resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrrr}
+\toprule
+Embedder & Verifier & Top-1 & Top-10 overlap & Strict & Pool 10 & Pool 20 & All pooled \\
+\midrule
+DeepSeek & Gemini & .842 & .640 & .044 & .935 & .990 & 1.00 \\
+Gemini & DeepSeek & .761 & .593 & .011 & .705 & .945 & 1.00 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -624,7 +640,7 @@ ALFWorld aligns text-based embodied environments with interactive learning~\cite
 Capacity and robustness experiments are computed from logged trajectories and offline decoder proxies. This is appropriate for isolating the channel-knowledge question, but it is weaker than a complete live deployment study with end-to-end RLNC recovery under production logging. The paper therefore labels proxy capacity claims explicitly and avoids treating them as full-system recovery guarantees.
 
 \textbf{Verifier perturbations.}
-The current artifact package includes controlled ranking-noise injection, a fixed erasure/channel-degradation rerun, empirical false-positive trials, evidence-strength diagnostics, and a ToolBench semantic-rewrite study. It does not yet include a full live L5 cross-model Top-$k$ rerank/decode table between DeepSeek and Gemini Flash, nor does the semantic-rewrite study cover ALFWorld. These missing perturbations are important for deployment calibration because they test the verifier's rank-reconstruction pipeline rather than only the probability-versus-rank decoder boundary isolated here. The theory covers cross-model L5 only to the extent that the cross-model verifier preserves top-$k$ rank paths; measuring that preservation remains empirical deployment work.
+The current artifact package includes controlled ranking-noise injection, a fixed erasure/channel-degradation rerun, empirical false-positive trials, evidence-strength diagnostics, a ToolBench semantic-rewrite study, and a ToolBench live L5 cross-model top-$k$ rerank/decode study between DeepSeek and Gemini Flash. These perturbations test the verifier's rank-reconstruction pipeline rather than only the probability-versus-rank decoder boundary isolated in the offline proxy. The coverage is still incomplete: the positive semantic-rewrite and L5 claims are ToolBench claims, not a statement that embodied-planning domains such as ALFWorld have equally stable cross-model ranks. The theory covers L5 only to the extent that the cross-model verifier preserves top-$k$ rank paths; calibrating that preservation remains a deployment requirement.
 
 \textbf{Benchmark coverage.}
 ALFWorld and ToolBench cover embodied planning and tool-use, but they do not exhaust the space of agentic workflows. Social simulation, GUI control, multi-agent collaboration, and long-running enterprise agents may have different rank stability and trajectory length. The construction is domain-agnostic, but the best $k$ and payload length should be calibrated per environment.
@@ -702,7 +718,9 @@ The reported tables are tied to postprocessed artifacts as follows.
   \item Capacity and top-$k$: \path{capacity_proxy_payload8_logged_channels.csv}, \path{topk_ablation_main.csv}.
   \item Strict recovery: \path{strict_rlnc_recovery_main.csv}, \path{strict_rlnc_recovery_global.csv}.
   \item Pooled robustness: \path{stage_c_3_1_rank_noise_pooled_summary.csv}, \path{stage_c_3_2_erasure_channel_pooled_summary.csv}.
-  \item Semantic rewrite and false positives: the ToolBench five-level rewrite summaries and \path{stage_c_3_4_false_positive_summary.csv}.
+  \item Semantic rewrite: \path{stage3_semantic_rewrite_toolbench_lmh_r3_pooled_w300/stage_c_3_3_semantic_rewrite_pooled_summary.csv}.
+  \item Live L5 cross-model rerank: \path{capacity_l5_cross_model_rerank_toolbench_packets/l5_cross_model_summary.csv}, \path{capacity_l5_cross_model_rerank_toolbench_packets/l5_cross_model_pooled_summary.csv}, and \path{capacity_l5_cross_model_rerank_toolbench_pool_curve/l5_toolbench_pool_curve_summary.csv}.
+  \item False positives: \path{stage_c_3_4_false_positive_summary.csv}.
   \item Evidence strength: \path{stage_d_4_1_confidence_summary.csv}, \path{stage_d_4_2_thresholds_summary.csv}.
 \end{itemize}
 \endgroup

@@ -105,9 +105,19 @@ Weighted top-10 strict/rank diagnostics:
 | ToolBench | medium | 183 | 0.000 | 0.389 | 0.637 | 0.215 | 1.454 |
 | ToolBench | heavy | 183 | 0.000 | 0.399 | 0.637 | 0.245 | 1.596 |
 
-Pooled top-10 recovery in this run is 0.0 for ALFWorld and ToolBench. This run
-is useful for rank-stability diagnostics and packet inspection, but it is weak
-evidence for recovery because the pooled payload recovery does not succeed.
+ToolBench pooled recovery in this run is sensitive to the top-$k$ choice:
+
+| Strength | $k=3$ | $k=5$ | $k=10$ |
+|---|---:|---:|---:|
+| Heavy | 1.000 | 1.000 | 0.000 |
+| Light | 0.000 | 0.000 | 0.000 |
+| Medium | 0.000 | 0.000 | 0.000 |
+
+This run is useful for rank-stability diagnostics and packet inspection. It
+also suggests that a conservative top-$k$ gate can sometimes avoid conflicts
+introduced by larger candidate sets. However, because the positive recovery is
+limited to the heavy/top-3/top-5 cells in this run, the cleaner positive
+ToolBench claim should use the r3 pooled W300 rerun below.
 
 ### ToolBench LMH R3 Pooled W300
 
@@ -214,4 +224,3 @@ Writing implication:
 4. For 3.3 semantic rewrite, use the ToolBench LMH R3 pooled W300 run for the
    positive pooled recovery claim and explicitly state that ALFWorld rewrite
    recovery is not established by the current artifacts.
-
