@@ -7,6 +7,7 @@ security paper on weakly asymmetric behavioral watermarking for LLM agents.
 
 - `draft.md`: human-readable first draft and section narrative.
 - `storyline_zh.md`: Chinese story-line analysis comparing the weak-asymmetry paper, AgentMark-F, and the rank method.
+- `figure_plan_zh.md`: Chinese plan for paper figures, including each figure's narrative role, expected content, placement, and priority.
 - `paper_story_bilingual.html`: bilingual English/Chinese narrative, related-work, and method writing scaffold.
 - `paper.tex`: LaTeX submission draft.
 - `references.bib`: bibliography used by `paper.tex`.
