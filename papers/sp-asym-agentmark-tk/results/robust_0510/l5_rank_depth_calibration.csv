@@ -1,0 +1,11 @@
+direction,direction_label,topk,trajectories,steps,top1_match,topk_overlap,kendall_tau,rank_displacement,dedup_packets_per_traj,accepted_steps_per_traj,all_pooled_success,all_pooled_dedup,all_pooled_conflicts,all_pooled_reason,all_pooled_recovered_payload,best_pool_size,best_pool_success,best_pool_dedup,best_pool_conflicts
+deepseek->gemini-flash,DeepSeek -> Gemini,2,107,134,0.575,0.660,0.402,0.963,0.542,0.542,0.000,6,0,insufficient_packets,,1,0.000,1.060,0.000
+deepseek->gemini-flash,DeepSeek -> Gemini,3,141,227,0.493,0.736,0.286,0.956,1.050,1.050,1.000,20,15,,11001101,100,0.965,20.250,14.670
+deepseek->gemini-flash,DeepSeek -> Gemini,4,148,276,0.449,0.797,0.301,0.967,1.142,1.041,0.000,17,14,payload_mismatch,00010001,20,0.235,10.730,3.705
+deepseek->gemini-flash,DeepSeek -> Gemini,5,160,316,0.415,0.774,0.317,1.130,1.175,1.050,0.000,27,12,payload_mismatch,01001010,20,0.350,13.435,3.325
+deepseek->gemini-flash,DeepSeek -> Gemini,10,176,428,0.421,0.641,0.332,1.561,1.750,1.403,0.000,31,22,payload_mismatch,01111010,50,0.205,24.255,12.425
+gemini-flash->deepseek,Gemini -> DeepSeek,2,121,134,0.507,0.780,0.353,0.776,0.488,0.488,0.000,4,0,insufficient_packets,,1,0.000,1.025,0.000
+gemini-flash->deepseek,Gemini -> DeepSeek,3,141,181,0.508,0.762,0.313,0.895,0.688,0.688,0.000,10,5,rank_deficient,,1,0.000,1.180,0.000
+gemini-flash->deepseek,Gemini -> DeepSeek,4,209,547,0.300,0.708,0.093,1.325,1.249,1.124,0.000,21,17,payload_mismatch,01111010,15,0.180,12.195,3.130
+gemini-flash->deepseek,Gemini -> DeepSeek,5,163,233,0.528,0.731,0.396,0.936,0.920,0.853,1.000,19,7,,11001101,100,1.000,18.435,6.845
+gemini-flash->deepseek,Gemini -> DeepSeek,10,182,295,0.471,0.575,0.268,1.237,1.049,0.918,0.000,24,11,payload_mismatch,00111001,30,0.075,13.585,3.790

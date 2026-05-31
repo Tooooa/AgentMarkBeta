@@ -10,9 +10,8 @@ The May 30 remote pull also mirrors the latest server reruns under:
 
 `/Users/local/AgentMarkBeta/鲁棒实验_实验/remote_data/output-0510`
 
-See `REMOTE_0510_PULL_ANALYSIS.md` for the current analysis of the pulled
-Stage 3.1 repeats=10, Stage 3.3 ToolBench matched-top-k, and L5 cross-model
-rerank artifacts.
+See `REMOTE_0510_PULL_ANALYSIS.md` for the original remote-pull analysis and
+the compact CSVs in this directory for the paper-ready top-k calibration data.
 
 ## Main Source Tables
 
@@ -28,13 +27,20 @@ rerank artifacts.
   - ToolBench matched-top-k all-split pooled recovery by seed.
 - `toolbench_rank_topk_matched/pool_curve/pool_curve_summary.csv`
   - ToolBench matched-top-k sampled audit-window curve.
+- `toolbench_rank_topk_matched_top2_top4_deepseek/` and
+  `toolbench_rank_topk_matched_top2_top4_gemini/`
+  - Additional same-model ToolBench top2/top4 calibration runs.
 - `stage3_semantic_rewrite_toolbench_lmh_r3_pooled_w300/`
   - Older ToolBench semantic-rewrite rerun retained for diagnostics, but no
     longer used for the main 3.3 paper table.
-- `capacity_l5_cross_model_rerank/` and `capacity_l5_cross_model_rerank_toolbench_packets/`
-  - Real cross-model Top-k rerank/decode artifacts.
-- `capacity_l5_cross_model_rerank_toolbench_pool_curve/`
-  - ToolBench L5 pooled audit-window curve.
+- `l5_toolbench_rank_topk_matched_clean_w100/`
+  - Real cross-model top3/top5/top10 matched rerank/decode artifacts.
+- `l5_toolbench_rank_top2_top4_matched_clean_w100/`
+  - Real cross-model top2/top4 matched rerank/decode artifacts.
+- `toolbench_same_model_rank_depth.csv`
+  - Paper-ready same-model top2/top3/top4/top5/top10 calibration summary.
+- `l5_rank_depth_calibration.csv` and `l5_rank_depth_pool_curve.csv`
+  - Paper-ready L5 rank-depth calibration table and sampled pool curve.
 - `stage3_robustness_pooled_rerun/stage_c_3_4_false_positive_summary.csv`
   - Clean-trace random-payload false-positive trials.
 - `evidence_strength/stage_d_4_1_confidence_summary.csv`
@@ -51,6 +57,7 @@ rerank artifacts.
   only; ALFWorld matched-top-k or rewrite recovery is not established by the
   pulled artifacts.
 - Live L5 cross-model Top-k rerank/decode is now mirrored locally. Treat it as
-  mixed evidence: ToolBench pooled recovery is strong, while ALFWorld remains a
-  hard rank-reconstruction boundary.
+  calibrated evidence: ToolBench has direction-specific positive operating
+  points, while top2 is packet-limited and top4/top10 expose conflict
+  accumulation.
 - OASIS is not included.

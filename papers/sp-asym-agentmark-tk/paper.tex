@@ -572,45 +572,67 @@ ToolBench & \ours{} & all splits & 1.00 & 1.00 & 1.00 \\
 
 \subsection{Robustness Axis: Matched Top-\texorpdfstring{$k$}{k} Audit Windows}
 
-We also rerun ToolBench with the rank embedder configured to the same $k$ used by the rank-only decoder. This matched-top-$k$ rerun removes a calibration confound from earlier ToolBench robustness artifacts: if the embedder and verifier use different candidate depths, packet scarcity and top-$k$ truncation are entangled. The rerun uses DeepSeek v3.2 across all six ToolBench splits, three seeds, and 20 tasks per split, giving 360 trajectories for each $k \in \{3,5,10\}$ and 1080 completed jobs.
+% Plan: Establish the same-model baseline before interpreting cross-model rank-depth failures.
+We also rerun ToolBench with the rank embedder configured to the same $k$ used by the rank-only decoder. This matched-top-$k$ rerun removes a calibration confound from earlier ToolBench robustness artifacts: if the embedder and verifier use different candidate depths, packet scarcity and top-$k$ truncation are entangled. The rerun covers DeepSeek and Gemini Flash across all six ToolBench splits, three seeds, and 20 tasks per split, giving 360 trajectories per model and per $k$. The main sweep uses $k\in\{3,5,10\}$, and we add $k=2,4$ as calibration points around the low-depth regime exposed by the cross-model study.
 
-Table~\ref{tab:matched_topk} summarizes the result. Single-trajectory strict recovery remains low because most ToolBench tasks expose too few independent packets. Mean deduplicated packets per trajectory increase from 0.63 at $k=3$ to 1.63 at $k=10$, and strict recovery rises only from 0.000 to 0.028. Audit-window recovery is much stronger. Pooling all splits and all three seeds recovers the 8-bit payload at all three $k$ values with no packet conflicts; pooling each seed separately succeeds in 1/3, 2/3, and 3/3 seeds for $k=3,5,10$, respectively. The sampled pool curve shows the same pattern: at pool size 10, recovery is 0.590, 0.860, and 0.950; by pool size 20, it is 0.985, 0.990, and 1.000. Thus the ToolBench result is not a per-task attribution claim. It is evidence that, once the top-$k$ interface is calibrated, pooled ToolBench audits recover reliably and $k=10$ is the most stable tested setting.
+% Plan: Report same-model recovery as a control showing that top4 is algorithmically valid before cross-model conflicts appear.
+Table~\ref{tab:matched_topk} summarizes the same-model result. Single-trajectory strict recovery remains low because most ToolBench tasks expose too few independent packets. Audit-window recovery is much stronger: with matched same-model ranking, all tested settings except DeepSeek $k=2$ recover the 8-bit payload after pooling all splits and seeds, and none of the same-model pools introduces packet conflicts. DeepSeek $k=2$ is rank-deficient despite zero conflicts, which marks the conservative capacity boundary. The important control is $k=4$: it recovers in both same-model reruns with zero conflicts. Therefore the later cross-model top4 failure is not an implementation failure of the rank encoder; it is a verifier-channel conflict effect.
 
 \begin{table}[t]
 \centering
-\caption{ToolBench matched-top-$k$ rerun. Strict is single-trajectory payload recovery; pooled columns report all-split audit-window recovery.}
+\caption{ToolBench same-model matched-top-$k$ rerun. Strict is single-trajectory payload recovery. All pooled combines all splits and seeds; pkt./traj. is mean deduplicated packet count.}
 \label{tab:matched_topk}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrrr}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrr}
 \toprule
-$k$ & Traj. & Strict & Pkt./traj. & All pooled & Per-seed pooled & Pool 10 & Pool 20 \\
+$k$ & DS strict & DS pkt. & DS pooled & Gemini strict & Gemini pkt. & Gemini pooled \\
 \midrule
-3 & 360 & .000 & .63 & 1.00 & 1/3 & .590 & .985 \\
-5 & 360 & .008 & 1.06 & 1.00 & 2/3 & .860 & .990 \\
-10 & 360 & .028 & 1.63 & 1.00 & 3/3 & .950 & 1.000 \\
+2 & .000 & .37 & .00 & .000 & .37 & 1.00 \\
+3 & .000 & .63 & 1.00 & .000 & .50 & 1.00 \\
+4 & .003 & .93 & 1.00 & .022 & 1.87 & 1.00 \\
+5 & .008 & 1.06 & 1.00 & .003 & .75 & 1.00 \\
+10 & .028 & 1.63 & 1.00 & .011 & 1.04 & 1.00 \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
 \subsection{Robustness Axis: Live Cross-Model Rerank}
 
-The preceding rank-noise, erasure, and matched-top-$k$ experiments isolate controlled verifier-channel factors. We also run a live ToolBench L5 cross-model rerank/decode experiment: the verifier model calls an API to rescore each eligible candidate action set and then decodes from the resulting top-$k$ order. This is a real verifier rerank rather than an offline probability proxy. Table~\ref{tab:l5} reports top-10 results for both directions between DeepSeek and Gemini Flash.
+% Plan: Define L5 as a live verifier-channel test rather than another offline top-k proxy.
+The preceding rank-noise, erasure, and matched-top-$k$ experiments isolate controlled verifier-channel factors. We also run a live ToolBench L5 cross-model rerank/decode experiment: the verifier model calls an API to rescore each eligible candidate action set and then decodes from the resulting top-$k$ order. This is a real verifier rerank rather than an offline probability proxy. We run both directions between DeepSeek and Gemini Flash and sweep $k\in\{2,3,4,5,10\}$.
 
-Strict single-trajectory recovery remains low, again because ToolBench trajectories provide few independent packets per task. However, top-10 rank agreement is high enough for pooled audit-window recovery. DeepSeek-to-Gemini reaches 0.935 pooled recovery at pool size 10 and 0.990 at pool size 20; Gemini-to-DeepSeek reaches 0.705 at pool size 10 and 0.945 at pool size 20. Pooling all available ToolBench splits recovers in both directions. This is the strongest deployment-facing ToolBench evidence in the current artifact set: \ours{} does not require the verifier to reproduce calibrated probabilities, but it does require enough cross-model rank agreement and enough independent packets.
+% Plan: Explain why the cross-model sweep is a calibration result, not a universal top-k winner.
+The L5 result is a calibration curve rather than a monotone capacity curve. Top2 is clean but packet-limited: both directions have zero all-pooled conflicts, but only 4--6 deduplicated pooled packets, so recovery fails with insufficient packets. Top4 is the opposite boundary: same-model top4 recovers, but cross-model top4 introduces 14--17 conflicting pooled packets and fails by payload mismatch. Top10 is deeper still and remains conflict-dominated. The successful operating points are direction-dependent: DeepSeek-to-Gemini is best at top3, while Gemini-to-DeepSeek is best at top5.
 
 \begin{table}[t]
 \centering
-\caption{ToolBench live L5 cross-model top-10 rerank/decode. Strict is single-trajectory payload recovery; pooled columns are audit-window recovery at sampled pool sizes.}
+\caption{ToolBench live L5 cross-model rank-depth calibration. Best pool is the highest sampled pooled success with its pool size; all pooled is the full audit-window decode. D/C is all-pooled deduplicated packets / conflicts.}
 \label{tab:l5}
-\resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrrr}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrr}
 \toprule
-Embedder & Verifier & Top-1 & Top-10 overlap & Strict & Pool 10 & Pool 20 & All pooled \\
+$k$ & \multicolumn{3}{c}{DeepSeek$\rightarrow$Gemini} & \multicolumn{3}{c}{Gemini$\rightarrow$DeepSeek} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+& Best pool & All & D/C & Best pool & All & D/C \\
 \midrule
-DeepSeek & Gemini & .842 & .640 & .044 & .935 & .990 & 1.00 \\
-Gemini & DeepSeek & .761 & .593 & .011 & .705 & .945 & 1.00 \\
+2 & .000@1 & .00 & 6/0 & .000@1 & .00 & 4/0 \\
+3 & .965@100 & 1.00 & 20/15 & .000@1 & .00 & 10/5 \\
+4 & .235@20 & .00 & 17/14 & .180@15 & .00 & 21/17 \\
+5 & .350@20 & .00 & 27/12 & 1.000@100 & 1.00 & 19/7 \\
+10 & .205@50 & .00 & 31/22 & .075@30 & .00 & 24/11 \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_l5_rank_depth_calibration.png}
+\caption{Live ToolBench L5 cross-model rank-depth calibration. The top row shows sampled pooled recovery; the bottom row shows mean packet conflicts over the same pools. Small $k$ is packet-limited, while larger $k$ can accumulate conflicts as lower-ranked candidates become less stable across verifier models.}
+\label{fig:l5-rank-depth}
+\end{figure*}
+
+% Plan: State the mechanism supported by the new figure and tie it back to Proposition 4.
+Figure~\ref{fig:l5-rank-depth} makes the mechanism visible. Increasing $k$ can increase packet yield, but it also asks the verifier to reconstruct lower-ranked candidates whose rank paths are less stable across models. In the rank tree, even a one-position displacement can move a selected behavior to a different parity branch and turn a useful RLNC equation into a conflicting one. Thus the relevant quantity is not nominal depth alone; it is the balance between independent packet yield and rank-path consistency. In this artifact, top3 gives the cleanest DeepSeek-to-Gemini operating point, top5 gives the cleanest Gemini-to-DeepSeek operating point, top2 is capacity-limited, and top4/top10 expose the conflict boundary.
+
+% Plan: Preserve the domain-dependent caveat from the earlier draft.
 The same live L5 protocol exposes a boundary on ALFWorld. Cross-model top-10 overlap is moderate (0.596 for DeepSeek-to-Gemini and 0.633 for Gemini-to-DeepSeek), but top-1 agreement is only about 0.20, and pooled recovery succeeds only for the Gemini-to-DeepSeek ID pool in the pulled artifact. We therefore treat cross-model rerank as a ToolBench-positive but domain-dependent result, not as evidence that every agent domain has stable enough ranks for pooled recovery without calibration.
 
 \subsection{Evidence Axis: False Positives and Evidence Thresholds}
@@ -762,8 +784,8 @@ The reported tables are tied to postprocessed artifacts as follows.
   \item Capacity and top-$k$: \path{capacity_proxy_payload8_logged_channels.csv}, \path{topk_ablation_main.csv}.
   \item Strict recovery: \path{strict_rlnc_recovery_main.csv}, \path{strict_rlnc_recovery_global.csv}.
   \item Pooled robustness: \path{stage_c_3_1_rank_noise_pooled_summary.csv}, \path{stage_c_3_2_erasure_channel_pooled_summary.csv}.
-  \item ToolBench matched top-$k$: \path{toolbench_rank_topk_matched/postprocess/summary_global.csv}, \path{toolbench_rank_topk_matched/postprocess/pooled_by_run.csv}, and \path{toolbench_rank_topk_matched/pool_curve/pool_curve_summary.csv}.
-  \item Live L5 cross-model rerank: \path{capacity_l5_cross_model_rerank_toolbench_packets/l5_cross_model_summary.csv}, \path{capacity_l5_cross_model_rerank_toolbench_packets/l5_cross_model_pooled_summary.csv}, and \path{capacity_l5_cross_model_rerank_toolbench_pool_curve/l5_toolbench_pool_curve_summary.csv}.
+  \item ToolBench matched top-$k$: \path{toolbench_same_model_rank_depth.csv}, built from \path{toolbench_rank_topk_matched*} postprocessing and pool-curve tables.
+  \item Live L5 cross-model rerank: \path{l5_rank_depth_calibration.csv}, \path{l5_rank_depth_pool_curve.csv}, built from \path{l5_toolbench_rank_topk_matched_clean_w100} and \path{l5_toolbench_rank_top2_top4_matched_clean_w100}.
   \item False positives: \path{stage_c_3_4_false_positive_summary.csv}.
   \item Evidence strength: \path{stage_d_4_1_confidence_summary.csv}, \path{stage_d_4_2_thresholds_summary.csv}.
 \end{itemize}
