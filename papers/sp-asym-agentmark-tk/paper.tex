@@ -309,18 +309,17 @@ There exist two behavior distributions with identical rank order for which a pro
 \emph{Proof sketch.}
 Consider four behaviors ordered $a\succ b\succ c\succ d$ and a two-bin prefix decoder whose first bin is the smallest rank prefix whose cumulative probability exceeds $1/2$. Under $P=(0.45,0.30,0.15,0.10)$, the first bin is $\{a,b\}$. Under $Q=(0.55,0.25,0.12,0.08)$, the rank order is unchanged but the first bin is $\{a\}$. The selected behavior $b$ is therefore interpreted in different bins although the verifier preserved the full ranking. Differential recombination uses a richer bin structure than this toy prefix rule, but it shares the same dependence on probability masses; rank agreement alone does not fix its decoder partition. \hfill$\square$
 
-\textbf{Theorem 1 (rank-preserving robustness).}
-Let $P_t$ and $P'_t$ satisfy $\operatorname{argsort}_k(P_t)=\operatorname{argsort}_k(P'_t)$. For any selected behavior $\hat b_t$ and shared key/context-derived DRBG stream,
+\textbf{Proposition 2 (rank-noise robustness boundary).}
+Under an adjacent-swap noise model with per-adjacent-pair swap probability $\epsilon$, suppose a selected rank's decoded path of depth $d=\lceil\log_2 k\rceil$ can be corrupted by at most $c d$ relevant local swaps. Then the per-step path-corruption probability is bounded by
 \begin{equation}
-  \RankDec(\hat b_t,\operatorname{argsort}_k(P_t))
-  =
-  \RankDec(\hat b_t,\operatorname{argsort}_k(P'_t)).
+  p_{\mathrm{flip}} \leq 1-(1-\epsilon)^{c\lceil\log_2 k\rceil}.
 \end{equation}
+Combining this bound with the bit-evidence model below gives the observation budget needed to distinguish the watermark from the null at a chosen tail probability. The bound is deliberately model-dependent: arbitrary targeted rank manipulation remains outside the weak-asymmetric guarantee, but the expression captures the empirical tradeoff that larger $k$ gives more path bits while exposing more rank positions to noise.
 
-\emph{Proof.}
-\RankDec{} accesses channel information only through the rank position of $\hat b_t$ in the top-$k$ order. If the two orders are equal, this rank is identical. The DRBG stream depends on the secret key and context, not probability values. Therefore the decoded path and bit values are identical. \hfill$\square$
+\textbf{Corollary 1 (zero-noise rank preservation).}
+Let $P_t$ and $P'_t$ satisfy $\operatorname{argsort}_k(P_t)=\operatorname{argsort}_k(P'_t)$. For any selected behavior $\hat b_t$ and shared key/context-derived DRBG stream, \RankDec{} returns the same bits under both distributions. This follows immediately from Proposition~2 with $\epsilon=0$: the decoder accesses channel information only through the rank position of $\hat b_t$, and the DRBG stream depends on the key and context rather than probability values.
 
-\textbf{Corollary 1 (bit evidence under rank agreement).}
+\textbf{Corollary 2 (bit evidence under rank agreement).}
 Let $\rho$ be the probability that an observed embedding step is top-$k$ rank-consistent between embedder and verifier. Suppose rank-consistent steps decode a coded bit correctly with probability $q>1/2$, while rank-inconsistent steps are independent of the claimed bit. Then the expected bit-match rate is
 \begin{equation}
   \mathbb{E}[\bar X]=\frac{1}{2}+\rho(q-\frac{1}{2}).
@@ -333,7 +332,7 @@ For $N$ decoded bits, Hoeffding's inequality gives
 \end{equation}
 whenever $0<\gamma<\rho(q-\frac{1}{2})$. Thus lower rank agreement does not create a hard impossibility; it increases the evidence budget needed to distinguish the watermark from the null. This corollary is a diagnostic model for bit-level evidence, not a replacement for strict payload recovery.
 
-\textbf{Proposition 2 (packet scarcity).}
+\textbf{Proposition 3 (packet scarcity).}
 For an $L$-bit deterministic RLNC payload, strict recovery from a single trajectory requires at least $L$ independent coded packets. If $M$ independent packets survive after top-$k$ misses, erasures, and rank failures, then
 \begin{equation}
   \Pr[\mathrm{recover}] \leq \Pr[M\geq L].
@@ -348,15 +347,8 @@ If each trajectory has expected packet yield $\mu_{\mathrm{traj}}=N(1-r)\mathrm{
 \end{equation}
 This explains why short ToolBench traces can show usable bit-level signal but weak strict single-trajectory recovery, while pooled audit windows recover once enough independent packets accumulate.
 
-\textbf{Proposition 3 (top-$k$ operating point).}
-Let $C_{\mathrm{nom}}(k)$ be the nominal coded-bit opportunity exposed by a top-$k$ verifier view, and let $\mathrm{DSR}(k)$ be the probability that those coded bits remain decodable under the verifier channel. Assume $C_{\mathrm{nom}}(k)$ is nondecreasing with diminishing marginal log-gain and $\mathrm{DSR}(k)$ is nonincreasing with nondecreasing marginal log-loss. Then $\log \Ceff(k)=\log C_{\mathrm{nom}}(k)+\log\mathrm{DSR}(k)$ has at most one internal maximum. When the maximum is internal, it occurs where the marginal capacity gain from increasing $k$ equals the marginal reliability loss. This is a design rule rather than a worst-case guarantee: high-entropy environments can afford larger $k$, while low-entropy or unstable-rank environments can have a smaller optimum.
-
-\textbf{Lemma 2 (rank-noise boundary).}
-Under an adjacent-swap noise model with per-adjacent-pair swap probability $\epsilon$, suppose a selected rank's decoded path of depth $d=\lceil\log_2 k\rceil$ can be corrupted by at most $c d$ relevant local swaps. Then the per-step path-corruption probability is bounded by
-\begin{equation}
-  p_{\mathrm{flip}} \leq 1-(1-\epsilon)^{c\lceil\log_2 k\rceil}.
-\end{equation}
-Combining this bound with Corollary~1 gives the evidence budget needed to distinguish the watermark from the null at a chosen tail probability. The bound is deliberately model-dependent: arbitrary targeted rank manipulation remains outside the weak-asymmetric guarantee, but the expression captures the empirical tradeoff that larger $k$ gives more path bits while exposing more rank positions to noise.
+\textbf{Proposition 4 (top-$k$ marginal gain and saturation).}
+Let $C_{\mathrm{nom}}(k)$ be the nominal coded-bit opportunity exposed by a top-$k$ verifier view, and let $\mathrm{DSR}(k)$ be the observed decode success rate under that view. Increasing $k$ can raise $\Ceff(k)=C_{\mathrm{nom}}(k)\mathrm{DSR}(k)$ in two ways: by exposing more coded bits, and in packet-limited regimes by pushing more trajectories over the minimum packet threshold for payload recovery. Once additional ranks mostly add unstable low-probability candidates, marginal gains should saturate and may turn negative. This statement does not imply an internal optimum in every measured range. If the measured $k$ values do not reach the regime where rank instability dominates, $\Ceff(k)$ can be monotone over the tested interval and the best observed $k$ is only a lower bound on the true operating point.
 
 \textbf{Minimum evidence threshold.}
 For bit-level triage before strict RLNC recovery, a one-sided binomial test with match probability $q>1/2$ under the watermark and $1/2$ under the null needs on the order of
@@ -369,7 +361,7 @@ observed decoded bits to reach significance level $\alpha$. This threshold is no
 For an unwatermarked or unrelated trajectory, strict attribution requires recovery of a key and payload claim that was registered before the trajectory is inspected. Under the standard null that decoded clean bits are independent of this fixed claim and that no adaptive post-hoc key or payload search is counted as a single test, an $L$-bit payload match occurs with probability $2^{-L}$. In practice the verifier can tune $L$ to the desired audit threshold; $L=32$ yields $2.33\times10^{-10}$ and $L=64$ yields $5.42\times10^{-20}$.
 
 \textbf{Why the theory matches the contribution.}
-Lemma~1 gives the negative result: rank agreement alone is insufficient for probability-bin decoders. Theorem~1 gives the positive boundary for \ours{}: arbitrary probability-value perturbations are harmless as long as the top-$k$ order is preserved. Proposition~2 separates channel robustness from evidence volume, which is why the evaluation reports both strict per-trajectory recovery and pooled RLNC recovery. Proposition~3 and Lemma~2 explain why top-$k$ should be calibrated rather than treated as a universal constant: larger $k$ can raise nominal capacity, but only until rank instability erodes decode success.
+Lemma~1 gives the negative result: rank agreement alone is insufficient for probability-bin decoders. Proposition~2 is the quantitative robustness statement for \ours{} under rank noise, with Corollary~1 giving the zero-noise rank-preservation case. Proposition~3 separates channel robustness from evidence volume, which is why the evaluation reports both strict per-trajectory recovery and pooled RLNC recovery. Proposition~4 explains why top-$k$ should be calibrated rather than treated as a universal constant: larger $k$ can raise nominal capacity, but the measured optimum is only meaningful once the sweep reaches the regime where rank instability erodes decode success.
 
 \textbf{Key privacy.}
 The deployment watermark key is used only to derive context-specific pseudorandomness. The public trajectory and rank list do not reveal the key under the pseudorandom function assumption for HMAC-SHA512. A verifier may check many trajectories under the same registered owner only with domain-separated contexts, key identifiers, and tenant/product isolation; operational deployments should rotate keys to limit blast radius if a key is disclosed. The offline experiments use recorded payload metadata and deterministic replay to evaluate the watermark channel; they should not be read as evidence that a public context-derived prototype default provides secret-key security.
@@ -421,12 +413,20 @@ The evaluation is organized around four axes rather than a table-by-table result
 
 \subsection{Metrics}
 
-We report task success rate and average steps for utility. We report Jensen-Shannon divergence (JSD) between empirical action-frequency distributions for a coarse stealth check. For watermark recovery, \emph{payload recovery} is the fraction of trajectories whose decoded payload exactly matches the embedded payload; in the offline proxy tables this is the 8-bit benchmark payload defined in the setup, not an audit-grade deployment identifier. \emph{Bit match} is the average agreement between decoded coded bits and the expected coded stream. When a verifier view recovers no coded bits, both payload recovery and bit match are reported as zero. The latter is not a substitute for attribution, but it is a sensitive diagnostic for channel degradation. We also report proxy $\Ceff$, which multiplies nominal coded-bit opportunity by decode success so that a high-capacity exact-channel scheme that fails under rank-only verification is scored as low usable capacity in that verifier channel. For confidence analysis, we use a one-sided binomial tail probability under the null hypothesis that each decoded bit matches the claim with probability $1/2$.
+We report task success rate and average steps for utility. We report Jensen-Shannon divergence (JSD) between empirical action-frequency distributions for a coarse stealth check. For watermark recovery, \emph{payload recovery} is the fraction of trajectories whose decoded payload exactly matches the embedded payload; in the offline proxy tables this is the 8-bit benchmark payload defined in the setup, not an audit-grade deployment identifier. \emph{Bit match} is the average agreement between decoded coded bits and the expected coded stream. When a verifier view recovers no coded bits, both payload recovery and bit match are reported as zero. The latter is not a substitute for attribution, but it is a sensitive diagnostic for channel degradation. We also report proxy $\Ceff$ in units of proxy bits per trajectory:
+\begin{equation}
+  \Ceff^{\mathrm{proxy}}
+  =
+  C_{\mathrm{nom}}^{\mathrm{proxy}}
+  \cdot
+  \mathrm{DSR}^{\mathrm{proxy}} .
+\end{equation}
+Here $C_{\mathrm{nom}}^{\mathrm{proxy}}$ is the mean decoded proxy bits per trajectory, and $\mathrm{DSR}^{\mathrm{proxy}}$ is 8-bit proxy payload recovery, not bit match. This score is useful for comparing channel views because a high-capacity exact-channel scheme that fails under rank-only verification is scored as low usable capacity in that verifier channel. For confidence analysis, we use a one-sided binomial tail probability under the null hypothesis that each decoded bit matches the claim with probability $1/2$.
 All recovery tables report cells as bit match / payload recovery.
 
 \subsection{Capacity Axis: Mechanism Diagnosis}
 
-The central empirical comparison is not simply whether \ours{} has higher recovery than \agentmark{} in every channel. It does not: exact probabilities are the native channel for \agentmark{}, and Table~\ref{tab:capacity} shows that \agentmark{} has higher exact-channel payload recovery on ALFWorld. The question is whether that exact-channel advantage survives the weaker verifier interface that motivated this paper. The rank-only columns test precisely this mechanism. If a decoder depends on probability bins, Lemma~1 predicts that preserving candidate order is not enough to preserve decoder state. If a decoder depends only on rank path, Theorem~1 predicts no loss from probability-value perturbations as long as ranks are preserved. The evaluation therefore treats the exact column as an upper-bound capacity diagnostic and the top-$k$ columns as the target robustness channel.
+The central empirical comparison is not simply whether \ours{} has higher recovery than \agentmark{} in every channel. It does not: exact probabilities are the native channel for \agentmark{}, and Table~\ref{tab:capacity} shows that \agentmark{} has higher exact-channel payload recovery on ALFWorld. The question is whether that exact-channel advantage survives the weaker verifier interface that motivated this paper. The rank-only columns test precisely this mechanism. If a decoder depends on probability bins, Lemma~1 predicts that preserving candidate order is not enough to preserve decoder state. If a decoder depends only on rank path, Corollary~1 predicts no loss from probability-value perturbations as long as ranks are preserved. The evaluation therefore treats the exact column as an upper-bound capacity diagnostic and the top-$k$ columns as the target robustness channel.
 
 \subsection{Undetectability Axis: Utility Preservation}
 
@@ -477,7 +477,7 @@ ToolBench & 0.174 & 0.140 & 0.181 & 0.162 \\
 
 \subsection{Capacity Axis: Rank-Only Verification}
 
-Table~\ref{tab:capacity} compares payload recovery and bit match for 8-bit payloads under different verifier knowledge. Under exact probabilities on ALFWorld, \agentmark{} has higher payload recovery (0.700) than \ours{} (0.532), reflecting the efficiency cost of rank-only structure. Under top-10 rank-only verification, \agentmark{} collapses to 0.014 payload recovery, while \ours{} remains at 0.068. In $\Ceff$ terms, ALFWorld \agentmark{} falls from 19.692 under exact probabilities to 0.333 under top-10 ranks, while \ours{} falls from 7.707 to 1.000. This is the empirical analogue of Lemma~1: a method can be strong under the exact probability metric yet lose its decoder state when the verifier has only ranks. It is also the central tradeoff of the paper: \agentmark{} is better when exact probabilities are available; \ours{} is more reliable when the verifier only has rank knowledge.
+Table~\ref{tab:capacity} compares payload recovery and bit match for 8-bit payloads under different verifier knowledge. Under exact probabilities on ALFWorld, \agentmark{} has higher payload recovery (0.700) than \ours{} (0.532), reflecting the efficiency cost of rank-only structure. Under top-10 rank-only verification, \agentmark{} collapses to 0.014 payload recovery, while \ours{} remains at 0.068. In $\Ceff$ terms, ALFWorld \agentmark{} falls from 19.692 under exact probabilities to 0.333 under top-10 ranks, while \ours{} falls from 7.707 to 1.000. This supports the mechanism suggested by Lemma~1, but it is not by itself a per-step proof of bin-boundary flips. The current artifact controls for packet scarcity only at the aggregate level: ALFWorld \agentmark{} still has comparable proxy nominal capacity under top-10 ranks ($C_{\mathrm{nom}}=24.3$ bits/trajectory) versus exact probabilities ($C_{\mathrm{nom}}=27.5$), yet its bit match drops from 0.985 to 0.594. A stronger diagnostic would count, step by step, cases where the top-$k$ order is unchanged but the probability-bin assignment changes; that table is not present in the 0510 artifact.
 
 ToolBench is lower-capacity for both schemes because trajectories are short and many tool choices have low recoverable entropy. Nevertheless, \ours{} keeps nearly the same payload recovery from exact probabilities to top-10 rank-only decoding (0.033 to 0.032), whereas \agentmark{} drops from 0.085 to 0.003 payload recovery. The same pattern appears in $\Ceff$: ToolBench \agentmark{} drops from 0.248 to 0.009, while \ours{} remains effectively flat from 0.053 to 0.050.
 
@@ -504,22 +504,26 @@ Dataset & Method & Exact & Top-10 & Top-6 & Top-2 & Sel. only \\
 
 \subsection{\texorpdfstring{Capacity Axis: Top-$k$}{Capacity Axis: Top-k} Operating Point}
 
-Increasing $k$ raises both the amount of available rank information and the risk of rank instability, matching Proposition~3's operating-point view. In ALFWorld, \ours{}'s mean bit-match rate rises from 0.558 at $k=2$ to 0.863 at $k=20$, with payload recovery increasing from 0.006 to 0.313 and proxy $\Ceff$ increasing from 0.046 to 4.511. ToolBench improves more modestly, from 0.351 to 0.505 bit-match and from 0.000 to 0.056 proxy $\Ceff$, reflecting lower behavior entropy and shorter horizons. These results suggest that $k$ should be selected per environment: larger $k$ helps high-entropy embodied planning, while low-entropy tool tasks require either longer traces, stronger coding, or adaptive gating.
+Increasing $k$ raises both the amount of available rank information and the risk of rank instability, matching Proposition~4's saturation view but not demonstrating an internal optimum. In ALFWorld, \ours{}'s mean bit-match rate rises from 0.558 at $k=2$ to 0.863 at $k=20$, with payload recovery increasing from 0.006 to 0.313 and proxy $\Ceff$ increasing from 0.046 to 4.511. ToolBench improves more modestly, from 0.351 to 0.505 bit-match and from 0.000 to 0.056 proxy $\Ceff$, reflecting lower behavior entropy and shorter horizons. The current 0510 artifact contains $k\in\{2,4,6,8,10,20\}$ only; it has no $k>20$ or full-rank sweep. Therefore ALFWorld has not reached its observed optimum in this data, while ToolBench appears packet-limited and close to saturation by $k=10$--$20$.
 
-This ablation is a design diagnostic rather than a winner-take-all tuning result. It supports the weak-asymmetry story by showing where rank information becomes useful and where lower-ranked candidates stop paying for their reconstruction risk; Appendix~\ref{app:rank-stability} gives the corresponding stability rationale.
+This ablation is a design diagnostic rather than a winner-take-all tuning result. It supports the weak-asymmetry story by showing where rank information becomes useful and where lower-ranked candidates stop paying for their reconstruction risk; Appendix~\ref{app:rank-stability} gives the corresponding stability rationale. The top-10 $\Ceff$ in Table~\ref{tab:capacity} and the $k=10$ value in Table~\ref{tab:topk} come from two independently generated offline proxy artifacts: the L0--L6 channel ladder and the rank-only top-$k$ sweep. They use the same logged corpus and the same formula above, but their proxy payload-recovery rows differ slightly because the postprocessing passes replay the stochastic proxy separately. We therefore compare trends rather than treating the third decimal as a shared measurement.
 
 \begin{table}[t]
 \centering
-\caption{Top-$k$ ablation for \ours{} in the offline decoder proxy. Match/rec. cells show bit-match / payload recovery; $\Ceff$ rows show proxy effective capacity.}
+\caption{Top-$k$ ablation for \ours{} in the offline decoder proxy. DSR is 8-bit proxy payload recovery; $C_{\mathrm{nom}}$ and $\Ceff$ are proxy bits per trajectory.}
 \label{tab:topk}
 \resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrrr}
 \toprule
 Dataset & Metric & $k=2$ & $k=4$ & $k=6$ & $k=8$ & $k=10$ & $k=20$ \\
 \midrule
-ALFWorld & Match/rec. & .558/.006 & .601/.013 & .642/.028 & .670/.048 & .707/.064 & .863/.313 \\
+ALFWorld & Bit match & .558 & .601 & .642 & .670 & .707 & .863 \\
+ALFWorld & DSR & .006 & .013 & .028 & .048 & .064 & .313 \\
+ALFWorld & $C_{\mathrm{nom}}$ & 8.161 & 12.113 & 12.113 & 13.276 & 13.276 & 13.469 \\
 ALFWorld & $\Ceff$ & .046 & .164 & .372 & .690 & .954 & 4.511 \\
 \midrule
-ToolBench & Match/rec. & .351/.000 & .426/.006 & .470/.010 & .488/.021 & .495/.032 & .505/.035 \\
+ToolBench & Bit match & .351 & .426 & .470 & .488 & .495 & .505 \\
+ToolBench & DSR & .000 & .006 & .010 & .021 & .032 & .035 \\
+ToolBench & $C_{\mathrm{nom}}$ & 1.096 & 1.426 & 1.426 & 1.468 & 1.468 & 1.468 \\
 ToolBench & $\Ceff$ & .000 & .009 & .016 & .032 & .053 & .056 \\
 \bottomrule
 \end{tabular}}
@@ -675,6 +679,9 @@ ALFWorld aligns text-based embodied environments with interactive learning~\cite
 
 \textbf{Offline postprocessing.}
 Capacity and robustness experiments are computed from logged trajectories and offline decoder proxies. This is appropriate for isolating the channel-knowledge question, but it is weaker than a complete live deployment study with end-to-end RLNC recovery under production logging. The paper therefore labels proxy capacity claims explicitly and avoids treating them as full-system recovery guarantees.
+
+\textbf{Mechanism attribution.}
+The current proxy artifacts show that \agentmark{} loses bit match under rank-only verification even when nominal packet availability remains high, which is consistent with probability-bin instability. They do not yet include the stricter step-level counterfactual needed to measure the exact rate of ``rank preserved but bin changed'' events. Adding that diagnostic would make Lemma~1's real-data attribution sharper and should be part of the next artifact pass.
 
 \textbf{Verifier perturbations.}
 The current artifact package includes controlled ranking-noise injection, a fixed erasure/channel-degradation rerun, empirical false-positive trials, evidence-strength diagnostics, a ToolBench matched-top-$k$ rerun, and a ToolBench live L5 cross-model top-$k$ rerank/decode study between DeepSeek and Gemini Flash. These studies test the verifier's rank-reconstruction pipeline rather than only the probability-versus-rank decoder boundary isolated in the offline proxy. The coverage is still incomplete: the positive matched-top-$k$ and L5 claims are ToolBench claims, not a statement that embodied-planning domains such as ALFWorld have equally stable cross-model ranks. The theory covers L5 only to the extent that the cross-model verifier preserves top-$k$ rank paths; calibrating that preservation remains a deployment requirement.
