@@ -1,0 +1,8 @@
+{
+  "rank_trajectories": 1644,
+  "rank_steps": 26963,
+  "max_candidate_count": 69,
+  "mean_candidate_count": 25.710121,
+  "steps_over_20": 17782,
+  "steps_over_20_rate": 0.659496
+}

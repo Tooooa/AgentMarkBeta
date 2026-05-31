@@ -1,0 +1,10 @@
+dataset,method,topk,cells,c_nom_proxy_bits,payload_recovery_rate,bit_match_rate,c_eff_proxy_bits,steps_with_more_candidates_than_k
+ALFWorld,AsymAgentMark-TK,2,4,8.161,0.005517,0.557592,0.046463,26963
+ALFWorld,AsymAgentMark-TK,4,4,12.1125,0.013442,0.600509,0.164358,26963
+ALFWorld,AsymAgentMark-TK,6,4,12.1125,0.028429,0.641697,0.371813,26963
+ALFWorld,AsymAgentMark-TK,8,4,13.2756,0.048472,0.670262,0.690313,26902
+ALFWorld,AsymAgentMark-TK,10,4,13.2756,0.064188,0.707337,0.954038,26592
+ALFWorld,AsymAgentMark-TK,20,4,13.4693,0.313042,0.862825,4.510622,17782
+ALFWorld,AsymAgentMark-TK,30,4,13.4693,0.464437,0.92182,6.711729,6493
+ALFWorld,AsymAgentMark-TK,40,4,13.4855,0.522903,0.939124,7.559976,1954
+ALFWorld,AsymAgentMark-TK,full,4,13.4855,0.530561,0.94211,7.692713,0
