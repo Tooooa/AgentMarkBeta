@@ -413,7 +413,7 @@ def fit_prop2_c(rows: list[dict[str, Any]]) -> float:
     samples = [
         (
             float(row["epsilon"]),
-            max(1, int(row["rank_tree_depth"])),
+            max(1.0, float(row["mean_actual_rank_tree_depth"])),
             float(row["step_flip_rate"]),
             max(1, int(row["trials"])),
         )
@@ -449,9 +449,11 @@ def build_prop2_step_flip(root: Path) -> tuple[list[dict[str, Any]], dict[str, A
             "step_flips": 0,
             "bit_flips": 0,
             "len_mismatches": 0,
+            "depth_sum": 0.0,
         }
     )
     step_events: dict[tuple[str, str, int, float], list[int]] = defaultdict(list)
+    step_depths: dict[tuple[str, str, int, float], list[int]] = defaultdict(list)
 
     for tr in trajectories:
         for step in tr.steps:
@@ -461,6 +463,8 @@ def build_prop2_step_flip(root: Path) -> tuple[list[dict[str, Any]], dict[str, A
                 continue
             order = sort_actions_by_probs(probs)
             for k in (3, 5, 10):
+                actual_n = max(1, min(k, len(order)))
+                depth = max(1, math.ceil(math.log2(actual_n)))
                 clean_bits = decode_rank_bits(probs, selected, step.context, step.round_num, k)
                 if clean_bits == "":
                     continue
@@ -469,6 +473,7 @@ def build_prop2_step_flip(root: Path) -> tuple[list[dict[str, Any]], dict[str, A
                     key = (tr.model, tr.split, k, eps)
                     groups[key]["clean_steps"] += 1
                     groups[key]["clean_bits"] += len(clean_bits)
+                    groups[key]["depth_sum"] += depth
                     for rep in repeats:
                         rng = random.Random(
                             week2.stable_seed(
@@ -497,10 +502,12 @@ def build_prop2_step_flip(root: Path) -> tuple[list[dict[str, Any]], dict[str, A
                         groups[key]["bit_flips"] += bit_flips
                         groups[key]["len_mismatches"] += int(len(noisy_bits) != len(clean_bits))
                         step_events[key].append(flipped)
+                        step_depths[key].append(depth)
 
     rows: list[dict[str, Any]] = []
     for (model, split, k, eps), item in sorted(groups.items()):
-        depth = max(1, math.ceil(math.log2(k)))
+        max_depth = max(1, math.ceil(math.log2(k)))
+        mean_depth = item["depth_sum"] / max(1, int(item["clean_steps"]))
         trials = max(1, int(item["trials"]))
         clean_bits = max(1, int(item["clean_bits"]) * len(repeats))
         rows.append(
@@ -512,36 +519,39 @@ def build_prop2_step_flip(root: Path) -> tuple[list[dict[str, Any]], dict[str, A
                 "topk": k,
                 "noise_model": "adjacent_swap",
                 "epsilon": fmt(eps, 2),
-                "rank_tree_depth": depth,
+                "max_rank_tree_depth": max_depth,
+                "mean_actual_rank_tree_depth": fmt(mean_depth, 4),
                 "clean_decodable_steps": item["clean_steps"],
                 "trials": item["trials"],
                 "step_flip_rate": fmt(item["step_flips"] / trials),
                 "bit_flip_rate": fmt(item["bit_flips"] / clean_bits),
                 "len_mismatch_rate": fmt(item["len_mismatches"] / trials),
-                "prop2_bound_c1": fmt(1.0 - (1.0 - eps) ** depth),
+                "prop2_empirical_envelope_c1": fmt(1.0 - (1.0 - eps) ** mean_depth),
             }
         )
 
     c_fit = fit_prop2_c(rows)
     for row in rows:
         eps = float(row["epsilon"])
-        depth = int(row["rank_tree_depth"])
-        row["prop2_bound_fitted_c"] = fmt(1.0 - (1.0 - eps) ** (c_fit * depth))
+        depth = float(row["mean_actual_rank_tree_depth"])
+        row["prop2_empirical_envelope_fitted_c"] = fmt(1.0 - (1.0 - eps) ** (c_fit * depth))
 
-    window_rows = build_prop2_window_rows(step_events, c_fit)
+    window_rows = build_prop2_window_rows(step_events, step_depths, c_fit)
     fit = {
         "noise_model": "adjacent_swap",
         "fitted_c": fmt(c_fit, 4),
         "topk_values": [3, 5, 10],
         "epsilon_grid": eps_grid,
         "fit_target": "empirical decoded-path step_flip_rate",
-        "theory_curve": "1-(1-epsilon)^(c*ceil(log2(k)))",
+        "empirical_envelope": "1-(1-epsilon)^(c*ceil(log2(n_t))), where n_t=min(k, actual candidate count)",
+        "max_depth_note": "ceil(log2(k)) is the saturated-candidate upper bound",
     }
     return rows, fit, window_rows
 
 
 def build_prop2_window_rows(
     step_events: dict[tuple[str, str, int, float], list[int]],
+    step_depths: dict[tuple[str, str, int, float], list[int]],
     c_fit: float,
 ) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
@@ -555,8 +565,8 @@ def build_prop2_window_rows(
             for _ in range(trials):
                 sample = [events[rng.randrange(len(events))] for _ in range(window_size)]
                 success += int(sum(sample) == 0)
-            depth = max(1, math.ceil(math.log2(k)))
-            pred_flip = 1.0 - (1.0 - eps) ** (c_fit * depth)
+            mean_depth = statistics.mean(step_depths.get((model, split, k, eps), [max(1, math.ceil(math.log2(k)))]))
+            pred_flip = 1.0 - (1.0 - eps) ** (c_fit * mean_depth)
             out.append(
                 {
                     "dataset": "toolbench",
@@ -678,7 +688,7 @@ def make_prop2_svg(rows: list[dict[str, Any]], fit: dict[str, Any]) -> str:
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#FFFFFF"/>',
         '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.title{font-size:27px;font-weight:700}.tick{font-size:15px;fill:#555}.legend{font-size:18px}.note{font-size:14px;fill:#555}</style>',
-        '<text class="title" x="450" y="36" text-anchor="middle">Prop. 2 step flip: empirical vs fitted bound</text>',
+        '<text class="title" x="450" y="36" text-anchor="middle">Prop. 2 step flip: empirical envelope</text>',
         f'<rect x="{x0}" y="{y0}" width="{panel_w}" height="{panel_h}" fill="none" stroke="#333"/>',
     ]
     for frac in (0, 0.25, 0.5, 0.75, 1.0):
@@ -697,7 +707,7 @@ def make_prop2_svg(rows: list[dict[str, Any]], fit: dict[str, Any]) -> str:
         parts.append(f'<path d="{d}" fill="none" stroke="{color}" stroke-width="3.2"/>')
         for xx, yy in coords:
             parts.append(f'<circle cx="{xx:.1f}" cy="{yy:.1f}" r="3.4" fill="{color}"/>')
-        bound_coords = [(x(float(r["epsilon"])), y(float(r["prop2_bound_fitted_c"]))) for r in pts]
+        bound_coords = [(x(float(r["epsilon"])), y(float(r["prop2_empirical_envelope_fitted_c"]))) for r in pts]
         d_bound = " ".join(("M" if i == 0 else "L") + f"{xx:.1f},{yy:.1f}" for i, (xx, yy) in enumerate(bound_coords))
         parts.append(f'<path d="{d_bound}" fill="none" stroke="{color}" stroke-width="2.1" stroke-dasharray="8 6" opacity="0.82"/>')
     parts.append(f'<text class="tick" x="{x0+panel_w/2}" y="{y0+panel_h+58}" text-anchor="middle">epsilon</text>')
@@ -707,8 +717,8 @@ def make_prop2_svg(rows: list[dict[str, Any]], fit: dict[str, Any]) -> str:
         parts.append(f'<line x1="{lx}" x2="{lx+42}" y1="500" y2="500" stroke="{color}" stroke-width="4"/>')
         parts.append(f'<text class="legend" x="{lx+50}" y="507">k={k}</text>')
     parts.append('<line x1="610" x2="655" y1="500" y2="500" stroke="#555" stroke-width="2.1" stroke-dasharray="8 6"/>')
-    parts.append(f'<text class="legend" x="664" y="507">fit c={float(fit.get("fitted_c", 0.0)):.3f}</text>')
-    parts.append('<text class="note" x="450" y="536" text-anchor="middle">solid: empirical path flip; dashed: 1-(1-epsilon)^(c ceil(log2 k))</text>')
+    parts.append(f'<text class="legend" x="664" y="507">emp. c={float(fit.get("fitted_c", 0.0)):.3f}</text>')
+    parts.append('<text class="note" x="450" y="536" text-anchor="middle">solid: empirical path flip; dashed: 1-(1-epsilon)^(c ceil(log2 n_t))</text>')
     parts.append("</svg>")
     return "\n".join(parts)
 
@@ -753,9 +763,9 @@ def write_report(
             "",
             "## B. Prop. 2 fine rank-noise curve",
             "",
-            f"The fine-grid rerun uses ToolBench, repeats=10, k in {{3,5,10}}, epsilon=0:0.05:0.5. Here the measured quantity is the one used by Prop. 2: whether a clean-decodable step changes its decoded rank path under adjacent swaps. The fitted constant for 1-(1-epsilon)^(c ceil(log2 k)) is c={float(prop2_fit.get('fitted_c', 0.0)):.3f}.",
+            f"The fine-grid rerun uses ToolBench, repeats=10, k in {{3,5,10}}, epsilon=0:0.05:0.5. Here the measured quantity is the one used by Prop. 2: whether a clean-decodable step changes its decoded rank path under adjacent swaps. The dashed line is an empirical envelope with c={float(prop2_fit.get('fitted_c', 0.0)):.3f} in 1-(1-epsilon)^(c ceil(log2 n_t)), where n_t is the actual visible candidate count.",
             "",
-            "| Model | Split | Noise | k | eps=0 p_flip | eps=0.25 p_flip | eps=0.5 p_flip | eps=0.5 fitted bound | eps=0.5 bit flip |",
+            "| Model | Split | Noise | k | eps=0 p_flip | eps=0.25 p_flip | eps=0.5 p_flip | eps=0.5 envelope | eps=0.5 bit flip |",
             "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
         ]
     )
@@ -772,7 +782,7 @@ def write_report(
             lines.append(
                 f"| {model} | {split} | {noise} | {k} | {float(r0['step_flip_rate']):.3f} | "
                 f"{float(r25['step_flip_rate']):.3f} | {float(r50['step_flip_rate']):.3f} | "
-                f"{float(r50['prop2_bound_fitted_c']):.3f} | {float(r50['bit_flip_rate']):.3f} |"
+                f"{float(r50['prop2_empirical_envelope_fitted_c']):.3f} | {float(r50['bit_flip_rate']):.3f} |"
             )
     window = pick(
         prop2_window_rows,

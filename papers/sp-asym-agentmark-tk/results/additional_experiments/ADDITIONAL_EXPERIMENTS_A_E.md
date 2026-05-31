@@ -21,14 +21,14 @@ AgentMark-F exact-probability decoding was compared with a top-k verifier view t
 
 ## B. Prop. 2 fine rank-noise curve
 
-The fine-grid rerun uses ToolBench, repeats=10, k in {3,5,10}, epsilon=0:0.05:0.5. Here the measured quantity is the one used by Prop. 2: whether a clean-decodable step changes its decoded rank path under adjacent swaps. The fitted constant for 1-(1-epsilon)^(c ceil(log2 k)) is c=0.336.
+The fine-grid rerun uses ToolBench, repeats=10, k in {3,5,10}, epsilon=0:0.05:0.5. Here the measured quantity is the one used by Prop. 2: whether a clean-decodable step changes its decoded rank path under adjacent swaps. The dashed line is an empirical envelope with c=0.404 in 1-(1-epsilon)^(c ceil(log2 n_t)), where n_t is the actual visible candidate count.
 
-| Model | Split | Noise | k | eps=0 p_flip | eps=0.25 p_flip | eps=0.5 p_flip | eps=0.5 fitted bound | eps=0.5 bit flip |
+| Model | Split | Noise | k | eps=0 p_flip | eps=0.25 p_flip | eps=0.5 p_flip | eps=0.5 envelope | eps=0.5 bit flip |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| deepseek | G1_instruction | adjacent_swap | 3 | 0.000 | 0.184 | 0.348 | 0.372 | 0.348 |
-| deepseek | G1_instruction | adjacent_swap | 5 | 0.000 | 0.306 | 0.502 | 0.503 | 0.418 |
-| deepseek | G1_instruction | adjacent_swap | 10 | 0.000 | 0.299 | 0.532 | 0.606 | 0.413 |
-| gemini-flash | G1_instruction | adjacent_swap | 10 | 0.000 | 0.287 | 0.508 | 0.606 | 0.405 |
+| deepseek | G1_instruction | adjacent_swap | 3 | 0.000 | 0.184 | 0.348 | 0.429 | 0.348 |
+| deepseek | G1_instruction | adjacent_swap | 5 | 0.000 | 0.306 | 0.502 | 0.531 | 0.418 |
+| deepseek | G1_instruction | adjacent_swap | 10 | 0.000 | 0.299 | 0.532 | 0.572 | 0.413 |
+| gemini-flash | G1_instruction | adjacent_swap | 10 | 0.000 | 0.287 | 0.508 | 0.528 | 0.405 |
 
 As a medium audit-window diagnostic, an 8-step DeepSeek/G1/top5 path-consistency window succeeds at 0.042 when epsilon=0.25. This avoids the all-pooled=1.0 and single-trajectory=0.0 saturation endpoints, but it is reported as path consistency rather than full RLNC payload recovery.
 

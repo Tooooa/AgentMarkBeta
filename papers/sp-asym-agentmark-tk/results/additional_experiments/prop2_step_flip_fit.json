@@ -1,6 +1,6 @@
 {
   "noise_model": "adjacent_swap",
-  "fitted_c": 0.336,
+  "fitted_c": 0.404,
   "topk_values": [
     3,
     5,
@@ -20,5 +20,6 @@
     0.5
   ],
   "fit_target": "empirical decoded-path step_flip_rate",
-  "theory_curve": "1-(1-epsilon)^(c*ceil(log2(k)))"
+  "empirical_envelope": "1-(1-epsilon)^(c*ceil(log2(n_t))), where n_t=min(k, actual candidate count)",
+  "max_depth_note": "ceil(log2(k)) is the saturated-candidate upper bound"
 }

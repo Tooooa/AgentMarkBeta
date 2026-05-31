@@ -100,7 +100,7 @@ Provably secure steganography traditionally separates symmetric settings, where 
 
 \subsection{Agent Behavior Channel}
 
-For a trajectory of length $T$, each step $t$ has a behavior set $\B_t=\{b_{t,1},\ldots,b_{t,n_t}\}$ and a behavior distribution $P_t$ induced by the agent and environment context. A watermarking key $K_{\mathrm{sh}}$ and step context $h_t$ derive per-step pseudorandomness. The embedder encodes a payload $m\in\{0,1\}^L$ into selected behaviors $\hat b_1,\ldots,\hat b_T$ while preserving $P_t$ at each step.
+For a trajectory of length $T$, each step $t$ has a behavior set $\B_t=\{b_{t,1},\ldots,b_{t,N_t}\}$ and a behavior distribution $P_t$ induced by the agent and environment context. A watermarking key $K_{\mathrm{sh}}$ and step context $h_t$ derive per-step pseudorandomness. The embedder encodes a payload $m\in\{0,1\}^L$ into selected behaviors $\hat b_1,\ldots,\hat b_T$ while preserving $P_t$ at each step.
 
 The verifier observes a possibly incomplete set of indices $I\subseteq\{1,\ldots,T\}$ and, for each observed step, the selected behavior $\hat b_t$ plus channel side information. In the symmetric setting, the side information is $P_t$ or an exact reconstruction. In our setting, it is the top-$k$ ordering $\sigma_t$.
 
@@ -198,7 +198,7 @@ The primitive gives up a bit when the high-mass group is selected because forcin
 
 \subsection{Rank Encoder}
 
-Let $\sigma_t$ be the descending rank ordering of $P_t$. The encoder first samples whether to enter the top-$k$ region with probability $S_{\mathrm{top}}=\sum_{i=1}^{k}P_t(\sigma_t(i))$. If not, it samples from the tail proportionally and embeds no bits. Inside top-$k$, it normalizes probabilities and applies recursive splitting:
+Let $\sigma_t$ be the descending rank ordering of $P_t$. At step $t$, let $n_t=\min(k,|\B_t|)$ be the actual number of visible candidates in the top-$k$ view. The encoder first samples whether to enter the visible region with probability $S_{\mathrm{top}}=\sum_{i=1}^{n_t}P_t(\sigma_t(i))$. If not, it samples from the tail proportionally and embeds no bits. Inside the visible region, it normalizes probabilities and applies recursive splitting:
 \begin{enumerate}[leftmargin=*]
   \item Split the current sorted list into even ranks $(0,2,4,\ldots)$ and odd ranks $(1,3,5,\ldots)$.
   \item Use \BinEnc{} on the two group masses.
@@ -214,10 +214,10 @@ Interleaving is important. A top-half/bottom-half split would place most mass in
 \textbf{Input:} distribution $P_t$, context $h_t$, key $K_{\mathrm{sh}}$, payload stream $M$, pointer $\ell$, top-$k$.\\
 1. Derive DRBG $\DRBG_t$ from $(K_{\mathrm{sh}},h_t)$.\\
 2. Sort behaviors: $\sigma_t\leftarrow\operatorname{argsort}(P_t)$.\\
-3. With probability $1-\sum_{i\leq k}P_t(\sigma_t(i))$, sample from the tail and return no bits.\\
-4. Normalize the top-$k$ distribution $D$.\\
+3. Set $n_t=\min(k,|\B_t|)$. With probability $1-\sum_{i\leq n_t}P_t(\sigma_t(i))$, sample from the tail and return no bits.\\
+4. Normalize the top-$n_t$ distribution $D$.\\
 5. While $|D|>1$: split $D$ into even/odd ranks; run \BinEnc{} on the group masses; consume a message bit only when \BinEnc{} enters the odd group; recurse into the chosen group.\\
-6. Advance unused DRBG calls until exactly $\lceil\log_2 k\rceil$ calls are consumed.\\
+6. Advance unused DRBG calls until exactly $\lceil\log_2 n_t\rceil$ calls are consumed.\\
 \textbf{Output:} selected behavior and consumed coded bits.
 \end{minipage}}
 \caption{Encoder sketch. The encoder uses probability values only to preserve the marginal behavior distribution.}
@@ -241,11 +241,11 @@ Token watermarks & Text tokens & Text distribution & Generated text/statistic \\
 
 \subsection{Rank Decoder}
 
-Given selected behavior $\hat b_t$ and top-$k$ order $\sigma_t$, the decoder finds the zero-indexed rank $q$ of $\hat b_t$. If $\hat b_t$ is outside top-$k$, the step yields no bits. Otherwise, the decoder reconstructs the path by repeatedly reading the parity of $q$:
+Given selected behavior $\hat b_t$ and top-$k$ order $\sigma_t$, the decoder sets $n_t=\min(k,|\sigma_t|)$ and finds the zero-indexed rank $q$ of $\hat b_t$ within the visible prefix. If $\hat b_t$ is outside that prefix, the step yields no bits. Otherwise, the decoder reconstructs the path by repeatedly reading the parity of $q$:
 \begin{equation}
   q_0=q,\quad q_{\ell+1}=\lfloor q_{\ell}/2\rfloor.
 \end{equation}
-Whenever $q_\ell$ is odd, the selected path entered the odd group and one bit was embedded. The value of that bit is determined by the same DRBG value used at level $\ell$: the implementation decodes it as $1$ if $r_\ell<0.5$ and $0$ otherwise. The decoder consumes exactly $\lceil\log_2 k\rceil$ DRBG values per step, matching the encoder's fixed synchronization budget.
+Whenever $q_\ell$ is odd, the selected path entered the odd group and one bit was embedded. The value of that bit is determined by the same DRBG value used at level $\ell$: the implementation decodes it as $1$ if $r_\ell<0.5$ and $0$ otherwise. The decoder consumes exactly $\lceil\log_2 n_t\rceil$ DRBG values per step, matching the encoder's fixed synchronization budget. The common shorthand $\lceil\log_2 k\rceil$ is the saturated-candidate upper bound when $n_t=k$.
 
 \begin{figure}[t]
 \centering
@@ -253,8 +253,8 @@ Whenever $q_\ell$ is odd, the selected path entered the odd group and one bit wa
 \footnotesize
 \textbf{Algorithm 2: One-step rank decoding.}\\
 \textbf{Input:} selected behavior $\hat b_t$, top-$k$ order $\sigma_t$, context $h_t$, key $K_{\mathrm{sh}}$.\\
-1. Derive the same DRBG sequence $r_0,\ldots,r_{\lceil\log_2 k\rceil-1}$.\\
-2. If $\hat b_t\notin\sigma_t[1:k]$, return the empty string.\\
+1. Set $n_t=\min(k,|\sigma_t|)$ and derive the same DRBG sequence $r_0,\ldots,r_{\lceil\log_2 n_t\rceil-1}$.\\
+2. If $\hat b_t\notin\sigma_t[1:n_t]$, return the empty string.\\
 3. Let $q$ be the zero-indexed rank of $\hat b_t$.\\
 4. While $q\neq0$: if $q$ is odd, append $1$ when the corresponding $r_i<0.5$ and $0$ otherwise; set $q\leftarrow\lfloor q/2\rfloor$.\\
 \textbf{Output:} decoded coded bits for step $t$.
@@ -301,7 +301,7 @@ The top-$k$ parameter controls a reliability--capacity tradeoff. Larger $k$ expo
 For each step $t$ and behavior $b\in\B_t$, \ours{} outputs $b$ with probability $P_t(b)$.
 
 \emph{Proof sketch.}
-The top/tail gate selects the top-$k$ region with probability equal to its total mass and otherwise samples the tail proportionally. Tail samples emit no coded bits, so the verifier need not reproduce the gate randomness. Conditioned on entering top-$k$, each binary split uses \BinEnc{}, whose selected group probability equals its normalized mass because $r_m$ is uniform. Induction over the partition tree gives each leaf its normalized probability within top-$k$. Multiplying by the top-$k$ mass recovers $P_t(b)$. \hfill$\square$
+The top/tail gate selects the visible top-$n_t$ region with probability equal to its total mass and otherwise samples the tail proportionally. Tail samples emit no coded bits, so the verifier need not reproduce the gate randomness. Conditioned on entering the visible region, each binary split uses \BinEnc{}, whose selected group probability equals its normalized mass because $r_m$ is uniform. Induction over the partition tree gives each leaf its normalized probability within top-$n_t$. Multiplying by the visible-region mass recovers $P_t(b)$. \hfill$\square$
 
 \textbf{Lemma 1 (probability-bin instability).}
 There exist two behavior distributions with identical rank order for which a probability-dependent bin decoder assigns the same selected behavior to different bins.
@@ -310,11 +310,11 @@ There exist two behavior distributions with identical rank order for which a pro
 Consider four behaviors ordered $a\succ b\succ c\succ d$ and a two-bin prefix decoder whose first bin is the smallest rank prefix whose cumulative probability exceeds $1/2$. Under $P=(0.45,0.30,0.15,0.10)$, the first bin is $\{a,b\}$. Under $Q=(0.55,0.25,0.12,0.08)$, the rank order is unchanged but the first bin is $\{a\}$. The selected behavior $b$ is therefore interpreted in different bins although the verifier preserved the full ranking. Differential recombination uses a richer bin structure than this toy prefix rule, but it shares the same dependence on probability masses; rank agreement alone does not fix its decoder partition. \hfill$\square$
 
 \textbf{Proposition 2 (rank-noise robustness boundary).}
-Under an adjacent-swap noise model with per-adjacent-pair swap probability $\epsilon$, suppose a selected rank's decoded path of depth $d=\lceil\log_2 k\rceil$ can be corrupted by at most $c d$ relevant local swaps. Then the per-step path-corruption probability is bounded by
+Under an adjacent-swap noise model with per-adjacent-pair swap probability $\epsilon$, suppose a selected rank's decoded path of depth $d_t=\lceil\log_2 n_t\rceil$ can be corrupted by at most $c d_t$ relevant local swaps, where $n_t=\min(k,|\B_t|)$ is the actual visible candidate count. Then the per-step path-corruption probability is bounded by
 \begin{equation}
-  p_{\mathrm{flip}} \leq 1-(1-\epsilon)^{c\lceil\log_2 k\rceil}.
+  p_{\mathrm{flip},t} \leq 1-(1-\epsilon)^{c\lceil\log_2 n_t\rceil}.
 \end{equation}
-Combining this bound with the bit-evidence model below gives the observation budget needed to distinguish the watermark from the null at a chosen tail probability. The bound is deliberately model-dependent: arbitrary targeted rank manipulation remains outside the weak-asymmetric guarantee, but the expression captures the empirical tradeoff that larger $k$ gives more path bits while exposing more rank positions to noise.
+Combining this bound with the bit-evidence model below gives the observation budget needed to distinguish the watermark from the null at a chosen tail probability. The bound is deliberately model-dependent: arbitrary targeted rank manipulation remains outside the weak-asymmetric guarantee, but the expression captures the empirical tradeoff that larger $k$ gives more path bits while exposing more rank positions to noise. When all steps fill the requested top-$k$ view, $\lceil\log_2 k\rceil$ is the corresponding upper-bound depth.
 
 \textbf{Corollary 1 (zero-noise rank preservation).}
 Let $P_t$ and $P'_t$ satisfy $\operatorname{argsort}_k(P_t)=\operatorname{argsort}_k(P'_t)$. For any selected behavior $\hat b_t$ and shared key/context-derived DRBG stream, \RankDec{} returns the same bits under both distributions. This follows immediately from Proposition~2 with $\epsilon=0$: the decoder accesses channel information only through the rank position of $\hat b_t$, and the DRBG stream depends on the key and context rather than probability values.
@@ -544,7 +544,7 @@ Strict single-trajectory decoding is intentionally difficult in short benchmark 
 
 Table~\ref{tab:noise} reports the repeats-10 ranking-noise rerun for \ours{} with DeepSeek and top-10 adjacent-swap perturbations. ALFWorld is robust under moderate ranking noise: the ID split remains at 1.0 pooled recovery through $\epsilon=0.5$, and OOD remains at 1.0 through $\epsilon=0.3$ before dropping at $\epsilon=0.5$. ToolBench all-split pooling remains at 1.0 through $\epsilon=0.5$ in the DeepSeek rerun. This pooled table is deliberately conservative for audit-window recovery, but it saturates and therefore hides the shape predicted by Proposition~2.
 
-To test Proposition~2 on the quantity it bounds, Fig.~\ref{fig:prop2-noise} directly measures the empirical decoded-path flip rate for clean-decodable ToolBench steps under adjacent swaps, and overlays the fitted curve $1-(1-\epsilon)^{c\lceil\log_2 k\rceil}$. The fitted constant is $c=0.336$. On the DeepSeek G1-instruction split, the measured step-flip rate at $\epsilon=0.5$ is 0.348 for $k=3$, 0.502 for $k=5$, and 0.532 for $k=10$; the corresponding bit-flip rates are 0.348, 0.418, and 0.413. The curve is therefore no longer just a packet-budget diagnostic: it measures the path corruption event in Proposition~2 and shows the expected dependence on rank-tree depth. As a non-saturated audit-window diagnostic, an 8-step DeepSeek/G1/top5 path-consistency window falls from 1.000 at $\epsilon=0$ to 0.042 at $\epsilon=0.25$ and 0.002 at $\epsilon=0.5$; we report this as path consistency rather than full RLNC payload recovery because payload recovery also depends on equation rank and packet conflicts.
+To test Proposition~2 on the quantity it bounds, Fig.~\ref{fig:prop2-noise} directly measures the empirical decoded-path flip rate for clean-decodable ToolBench steps under adjacent swaps, and overlays an empirical envelope of the form $1-(1-\epsilon)^{c\lceil\log_2 n_t\rceil}$. The constant $c=0.404$ is fitted from the observed step-flip rates rather than fixed by the theorem; the figure therefore validates the shape and depth dependence of the boundary, not a prior prediction of this numeric constant. On the DeepSeek G1-instruction split, the measured step-flip rate at $\epsilon=0.5$ is 0.348 for $k=3$, 0.502 for $k=5$, and 0.532 for $k=10$; the corresponding bit-flip rates are 0.348, 0.418, and 0.413. This small divergence is expected: deeper paths make it more likely that at least one branch changes, while a single local displacement can flip only part of a longer decoded bit string, so path-flip risk rises while per-bit flip rate saturates. The curve is therefore no longer just a packet-budget diagnostic: it measures the path corruption event in Proposition~2 and shows the expected dependence on actual rank-tree depth. As a non-saturated audit-window diagnostic, an 8-step DeepSeek/G1/top5 path-consistency window falls from 1.000 at $\epsilon=0$ to 0.042 at $\epsilon=0.25$ and 0.002 at $\epsilon=0.5$; we report this as path consistency rather than full RLNC payload recovery because payload recovery also depends on equation rank and packet conflicts.
 
 \begin{table}[t]
 \centering
@@ -564,7 +564,7 @@ ToolBench & all splits & 1.00 & 1.00 & 1.00 & 1.00 \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_prop2_rank_noise_fine.png}
-\caption{Fine-grid ToolBench rank-noise diagnostic for Proposition~2. Solid lines show empirical decoded-path step-flip rates under adjacent swaps; dashed lines show the fitted bound $1-(1-\epsilon)^{c\lceil\log_2 k\rceil}$ with $c=0.336$.}
+\caption{Fine-grid ToolBench rank-noise diagnostic for Proposition~2. Solid lines show empirical decoded-path step-flip rates under adjacent swaps; dashed lines show an empirical envelope $1-(1-\epsilon)^{c\lceil\log_2 n_t\rceil}$ with fitted $c=0.404$.}
 \label{fig:prop2-noise}
 \end{figure}
 
@@ -764,16 +764,16 @@ This appendix expands the proof sketch from Section~\ref{sec:security}. At any i
 \]
 For either fixed $m$, $r_m$ is uniform over $[0,S)$ because adding a constant modulo $S$ preserves uniformity. Therefore the probability of selecting group $j$ is exactly $S_j/S$. When the higher-mass group is selected, no bit is consumed; when the lower-mass group is selected, one bit is consumed. Bit consumption changes the message pointer but not the marginal group-selection probability.
 
-Inducting over the recursive partition tree, every top-$k$ leaf $b$ is selected with probability equal to its normalized top-$k$ mass $P_t(b)/S_{\mathrm{top}}$. The top/tail gate enters the tree with probability $S_{\mathrm{top}}=\sum_{i\leq k}P_t(\sigma_t(i))$ and otherwise samples the tail proportionally. Hence every behavior, including tail behaviors that carry no bits, has marginal probability $P_t(b)$.
+Inducting over the recursive partition tree, every visible leaf $b$ is selected with probability equal to its normalized top-$n_t$ mass $P_t(b)/S_{\mathrm{top}}$. The top/tail gate enters the tree with probability $S_{\mathrm{top}}=\sum_{i\leq n_t}P_t(\sigma_t(i))$ and otherwise samples the tail proportionally. Hence every behavior, including tail behaviors that carry no bits, has marginal probability $P_t(b)$.
 
 \section{DRBG Synchronization}
 \label{app:drbg-sync}
 
-The encoder and decoder derive a per-step HMAC-SHA512 DRBG stream from the shared key and logged context. The important invariant is not the exact digest format, but the fixed consumption budget. For a top-$k$ step, both sides reserve
+The encoder and decoder derive a per-step HMAC-SHA512 DRBG stream from the shared key and logged context. The important invariant is not the exact digest format, but the fixed consumption budget. For a top-$k$ step with actual visible candidate count $n_t=\min(k,|\B_t|)$, both sides reserve
 \[
-  B_k=\lceil\log_2 k\rceil
+  B_t=\lceil\log_2 n_t\rceil
 \]
-DRBG draws for the rank tree. The encoder may terminate early when a singleton leaf is reached or when a zero-bit branch defers the message bit, but it still advances the stream to consume exactly $B_k$ draws. The decoder independently consumes the same $B_k$ draws before returning the recovered bits. Tail selections emit no bits and are treated as erasures by the verifier.
+DRBG draws for the rank tree. The encoder may terminate early when a singleton leaf is reached or when a zero-bit branch defers the message bit, but it still advances the stream to consume exactly $B_t$ draws. The decoder independently consumes the same $B_t$ draws before returning the recovered bits. The commonly reported $\lceil\log_2 k\rceil$ budget is the special case in which the step fills the requested top-$k$ view. Tail selections emit no bits and are treated as erasures by the verifier.
 
 This fixed-budget rule prevents a local zero-bit event from shifting every later step. Without it, the decoder would have to know whether the encoder consumed a message bit or terminated early at each level, which is precisely the information it is trying to infer from the rank path.
 
