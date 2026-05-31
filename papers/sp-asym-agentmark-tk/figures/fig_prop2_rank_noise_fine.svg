@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560">
 <rect x="0" y="0" width="900" height="560" fill="#FFFFFF"/>
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.title{font-size:27px;font-weight:700}.tick{font-size:15px;fill:#555}.legend{font-size:18px}</style>
-<text class="title" x="450" y="36" text-anchor="middle">Prop. 2 rank-noise curve: strict signal before pooling</text>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.title{font-size:27px;font-weight:700}.tick{font-size:15px;fill:#555}.legend{font-size:18px}.note{font-size:14px;fill:#555}</style>
+<text class="title" x="450" y="36" text-anchor="middle">Prop. 2 step flip: empirical vs fitted bound</text>
 <rect x="95" y="70" width="690" height="360" fill="none" stroke="#333"/>
 <line x1="95" x2="785" y1="430.0" y2="430.0" stroke="#E8E8E8"/>
 <text class="tick" x="85" y="435.0" text-anchor="end">0.0</text>
 <line x1="95" x2="785" y1="340.0" y2="340.0" stroke="#E8E8E8"/>
-<text class="tick" x="85" y="345.0" text-anchor="end">0.6</text>
+<text class="tick" x="85" y="345.0" text-anchor="end">0.2</text>
 <line x1="95" x2="785" y1="250.0" y2="250.0" stroke="#E8E8E8"/>
-<text class="tick" x="85" y="255.0" text-anchor="end">1.1</text>
+<text class="tick" x="85" y="255.0" text-anchor="end">0.5</text>
 <line x1="95" x2="785" y1="160.0" y2="160.0" stroke="#E8E8E8"/>
-<text class="tick" x="85" y="165.0" text-anchor="end">1.7</text>
+<text class="tick" x="85" y="165.0" text-anchor="end">0.8</text>
 <line x1="95" x2="785" y1="70.0" y2="70.0" stroke="#E8E8E8"/>
-<text class="tick" x="85" y="75.0" text-anchor="end">2.3</text>
+<text class="tick" x="85" y="75.0" text-anchor="end">1.0</text>
 <line x1="95.0" x2="95.0" y1="70" y2="430" stroke="#F0F0F0"/>
 <text class="tick" x="95.0" y="454" text-anchor="middle">0.0</text>
 <line x1="233.0" x2="233.0" y1="70" y2="430" stroke="#F0F0F0"/>
@@ -25,48 +25,54 @@
 <text class="tick" x="647.0" y="454" text-anchor="middle">0.4</text>
 <line x1="785.0" x2="785.0" y1="70" y2="430" stroke="#F0F0F0"/>
 <text class="tick" x="785.0" y="454" text-anchor="middle">0.5</text>
-<path d="M95.0,281.8 L164.0,286.3 L233.0,292.6 L302.0,294.2 L371.0,300.0 L440.0,303.5 L509.0,308.2 L578.0,313.0 L647.0,315.9 L716.0,322.0 L785.0,323.3" fill="none" stroke="#0072B2" stroke-width="3.2"/>
-<circle cx="95.0" cy="281.8" r="3.4" fill="#0072B2"/>
-<circle cx="164.0" cy="286.3" r="3.4" fill="#0072B2"/>
-<circle cx="233.0" cy="292.6" r="3.4" fill="#0072B2"/>
-<circle cx="302.0" cy="294.2" r="3.4" fill="#0072B2"/>
-<circle cx="371.0" cy="300.0" r="3.4" fill="#0072B2"/>
-<circle cx="440.0" cy="303.5" r="3.4" fill="#0072B2"/>
-<circle cx="509.0" cy="308.2" r="3.4" fill="#0072B2"/>
-<circle cx="578.0" cy="313.0" r="3.4" fill="#0072B2"/>
-<circle cx="647.0" cy="315.9" r="3.4" fill="#0072B2"/>
-<circle cx="716.0" cy="322.0" r="3.4" fill="#0072B2"/>
-<circle cx="785.0" cy="323.3" r="3.4" fill="#0072B2"/>
-<path d="M95.0,170.6 L164.0,180.1 L233.0,200.0 L302.0,206.1 L371.0,224.6 L440.0,238.1 L509.0,243.1 L578.0,256.6 L647.0,268.5 L716.0,270.6 L785.0,277.3" fill="none" stroke="#009E73" stroke-width="3.2"/>
-<circle cx="95.0" cy="170.6" r="3.4" fill="#009E73"/>
-<circle cx="164.0" cy="180.1" r="3.4" fill="#009E73"/>
-<circle cx="233.0" cy="200.0" r="3.4" fill="#009E73"/>
-<circle cx="302.0" cy="206.1" r="3.4" fill="#009E73"/>
-<circle cx="371.0" cy="224.6" r="3.4" fill="#009E73"/>
-<circle cx="440.0" cy="238.1" r="3.4" fill="#009E73"/>
-<circle cx="509.0" cy="243.1" r="3.4" fill="#009E73"/>
-<circle cx="578.0" cy="256.6" r="3.4" fill="#009E73"/>
-<circle cx="647.0" cy="268.5" r="3.4" fill="#009E73"/>
-<circle cx="716.0" cy="270.6" r="3.4" fill="#009E73"/>
-<circle cx="785.0" cy="277.3" r="3.4" fill="#009E73"/>
-<path d="M95.0,70.0 L164.0,93.8 L233.0,114.5 L302.0,133.0 L371.0,147.8 L440.0,159.2 L509.0,182.0 L578.0,202.6 L647.0,229.4 L716.0,228.8 L785.0,225.4" fill="none" stroke="#CC79A7" stroke-width="3.2"/>
-<circle cx="95.0" cy="70.0" r="3.4" fill="#CC79A7"/>
-<circle cx="164.0" cy="93.8" r="3.4" fill="#CC79A7"/>
-<circle cx="233.0" cy="114.5" r="3.4" fill="#CC79A7"/>
-<circle cx="302.0" cy="133.0" r="3.4" fill="#CC79A7"/>
-<circle cx="371.0" cy="147.8" r="3.4" fill="#CC79A7"/>
-<circle cx="440.0" cy="159.2" r="3.4" fill="#CC79A7"/>
-<circle cx="509.0" cy="182.0" r="3.4" fill="#CC79A7"/>
-<circle cx="578.0" cy="202.6" r="3.4" fill="#CC79A7"/>
-<circle cx="647.0" cy="229.4" r="3.4" fill="#CC79A7"/>
-<circle cx="716.0" cy="228.8" r="3.4" fill="#CC79A7"/>
-<circle cx="785.0" cy="225.4" r="3.4" fill="#CC79A7"/>
+<path d="M95.0,430.0 L164.0,410.6 L233.0,401.2 L302.0,397.6 L371.0,378.9 L440.0,363.8 L509.0,334.2 L578.0,332.1 L647.0,332.1 L716.0,310.5 L785.0,304.7" fill="none" stroke="#0072B2" stroke-width="3.2"/>
+<circle cx="95.0" cy="430.0" r="3.4" fill="#0072B2"/>
+<circle cx="164.0" cy="410.6" r="3.4" fill="#0072B2"/>
+<circle cx="233.0" cy="401.2" r="3.4" fill="#0072B2"/>
+<circle cx="302.0" cy="397.6" r="3.4" fill="#0072B2"/>
+<circle cx="371.0" cy="378.9" r="3.4" fill="#0072B2"/>
+<circle cx="440.0" cy="363.8" r="3.4" fill="#0072B2"/>
+<circle cx="509.0" cy="334.2" r="3.4" fill="#0072B2"/>
+<circle cx="578.0" cy="332.1" r="3.4" fill="#0072B2"/>
+<circle cx="647.0" cy="332.1" r="3.4" fill="#0072B2"/>
+<circle cx="716.0" cy="310.5" r="3.4" fill="#0072B2"/>
+<circle cx="785.0" cy="304.7" r="3.4" fill="#0072B2"/>
+<path d="M95.0,430.0 L164.0,417.8 L233.0,405.4 L302.0,392.8 L371.0,379.9 L440.0,366.7 L509.0,353.3 L578.0,339.5 L647.0,325.4 L716.0,310.9 L785.0,295.9" fill="none" stroke="#0072B2" stroke-width="2.1" stroke-dasharray="8 6" opacity="0.82"/>
+<path d="M95.0,430.0 L164.0,405.4 L233.0,386.8 L302.0,355.9 L371.0,345.7 L440.0,319.9 L509.0,312.7 L578.0,292.8 L647.0,277.1 L716.0,269.9 L785.0,249.2" fill="none" stroke="#009E73" stroke-width="3.2"/>
+<circle cx="95.0" cy="430.0" r="3.4" fill="#009E73"/>
+<circle cx="164.0" cy="405.4" r="3.4" fill="#009E73"/>
+<circle cx="233.0" cy="386.8" r="3.4" fill="#009E73"/>
+<circle cx="302.0" cy="355.9" r="3.4" fill="#009E73"/>
+<circle cx="371.0" cy="345.7" r="3.4" fill="#009E73"/>
+<circle cx="440.0" cy="319.9" r="3.4" fill="#009E73"/>
+<circle cx="509.0" cy="312.7" r="3.4" fill="#009E73"/>
+<circle cx="578.0" cy="292.8" r="3.4" fill="#009E73"/>
+<circle cx="647.0" cy="277.1" r="3.4" fill="#009E73"/>
+<circle cx="716.0" cy="269.9" r="3.4" fill="#009E73"/>
+<circle cx="785.0" cy="249.2" r="3.4" fill="#009E73"/>
+<path d="M95.0,430.0 L164.0,411.9 L233.0,393.7 L302.0,375.6 L371.0,357.5 L440.0,339.4 L509.0,321.3 L578.0,303.2 L647.0,285.1 L716.0,267.1 L785.0,249.0" fill="none" stroke="#009E73" stroke-width="2.1" stroke-dasharray="8 6" opacity="0.82"/>
+<path d="M95.0,430.0 L164.0,401.3 L233.0,385.7 L302.0,363.3 L371.0,330.7 L440.0,322.3 L509.0,296.3 L578.0,289.7 L647.0,278.3 L716.0,256.0 L785.0,238.3" fill="none" stroke="#CC79A7" stroke-width="3.2"/>
+<circle cx="95.0" cy="430.0" r="3.4" fill="#CC79A7"/>
+<circle cx="164.0" cy="401.3" r="3.4" fill="#CC79A7"/>
+<circle cx="233.0" cy="385.7" r="3.4" fill="#CC79A7"/>
+<circle cx="302.0" cy="363.3" r="3.4" fill="#CC79A7"/>
+<circle cx="371.0" cy="330.7" r="3.4" fill="#CC79A7"/>
+<circle cx="440.0" cy="322.3" r="3.4" fill="#CC79A7"/>
+<circle cx="509.0" cy="296.3" r="3.4" fill="#CC79A7"/>
+<circle cx="578.0" cy="289.7" r="3.4" fill="#CC79A7"/>
+<circle cx="647.0" cy="278.3" r="3.4" fill="#CC79A7"/>
+<circle cx="716.0" cy="256.0" r="3.4" fill="#CC79A7"/>
+<circle cx="785.0" cy="238.3" r="3.4" fill="#CC79A7"/>
+<path d="M95.0,430.0 L164.0,406.0 L233.0,382.5 L302.0,359.4 L371.0,336.7 L440.0,314.6 L509.0,292.9 L578.0,271.8 L647.0,251.2 L716.0,231.2 L785.0,211.8" fill="none" stroke="#CC79A7" stroke-width="2.1" stroke-dasharray="8 6" opacity="0.82"/>
 <text class="tick" x="440.0" y="488" text-anchor="middle">epsilon</text>
-<text class="tick" transform="translate(33,250.0) rotate(-90)" text-anchor="middle">mean decoded packets / trajectory</text>
+<text class="tick" transform="translate(33,250.0) rotate(-90)" text-anchor="middle">decoded-path step flip rate</text>
 <line x1="255" x2="297" y1="500" y2="500" stroke="#0072B2" stroke-width="4"/>
 <text class="legend" x="305" y="507">k=3</text>
 <line x1="390" x2="432" y1="500" y2="500" stroke="#009E73" stroke-width="4"/>
 <text class="legend" x="440" y="507">k=5</text>
 <line x1="525" x2="567" y1="500" y2="500" stroke="#CC79A7" stroke-width="4"/>
 <text class="legend" x="575" y="507">k=10</text>
+<line x1="610" x2="655" y1="500" y2="500" stroke="#555" stroke-width="2.1" stroke-dasharray="8 6"/>
+<text class="legend" x="664" y="507">fit c=0.336</text>
+<text class="note" x="450" y="536" text-anchor="middle">solid: empirical path flip; dashed: 1-(1-epsilon)^(c ceil(log2 k))</text>
 </svg>

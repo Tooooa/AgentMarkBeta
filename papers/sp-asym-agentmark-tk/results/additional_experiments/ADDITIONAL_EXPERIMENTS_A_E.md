@@ -2,7 +2,7 @@
 
 ## A. Lemma 1 step-level counterfactual
 
-AgentMark-F exact-probability decoding was compared with a top-k verifier view that keeps the selected top-k order but drops the tail and renormalizes probabilities. The selected behavior remains rank-stable whenever it is still in the top-k set; changes below are therefore probability-bin effects, not candidate-order effects.
+AgentMark-F exact-probability decoding was compared with a top-k verifier view that keeps the selected top-k order but drops the tail and renormalizes probabilities. The selected behavior remains rank-stable whenever it is still in the top-k set; changes below are therefore probability-bin effects, not candidate-order effects. Bin-changed and bit-changed rates are conditional on selected-in-top-k; selected-dropped is measured over exact-decodable steps. This is a truncation-and-renormalization instance of Lemma 1, not an exhaustive test of all value perturbations.
 
 | Dataset | Model | top-k | rank-stable steps | bin changed | bit changed | selected dropped |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
@@ -21,14 +21,16 @@ AgentMark-F exact-probability decoding was compared with a top-k verifier view t
 
 ## B. Prop. 2 fine rank-noise curve
 
-The fine-grid rerun uses ToolBench, repeats=10, k in {3,5,10}, epsilon=0:0.05:0.5. Pooled recovery is intentionally not the headline here because it saturates; the useful non-pooled signal is the per-trajectory decoded packet budget.
+The fine-grid rerun uses ToolBench, repeats=10, k in {3,5,10}, epsilon=0:0.05:0.5. Here the measured quantity is the one used by Prop. 2: whether a clean-decodable step changes its decoded rank path under adjacent swaps. The fitted constant for 1-(1-epsilon)^(c ceil(log2 k)) is c=0.336.
 
-| Model | Split | Noise | k | eps=0 Cnom | eps=0.25 Cnom | eps=0.5 Cnom | eps=0 strict DSR | eps=0.5 strict DSR |
+| Model | Split | Noise | k | eps=0 p_flip | eps=0.25 p_flip | eps=0.5 p_flip | eps=0.5 fitted bound | eps=0.5 bit flip |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| deepseek | G1_instruction | adjacent_swap | 3 | 0.933 | 0.797 | 0.672 | 0.000 | 0.000 |
-| deepseek | G1_instruction | adjacent_swap | 5 | 1.633 | 1.208 | 0.962 | 0.000 | 0.000 |
-| deepseek | G1_instruction | adjacent_swap | 10 | 2.267 | 1.705 | 1.288 | 0.017 | 0.003 |
-| gemini-flash | G1_instruction | adjacent_swap | 10 | 1.300 | 0.922 | 0.683 | 0.000 | 0.000 |
+| deepseek | G1_instruction | adjacent_swap | 3 | 0.000 | 0.184 | 0.348 | 0.372 | 0.348 |
+| deepseek | G1_instruction | adjacent_swap | 5 | 0.000 | 0.306 | 0.502 | 0.503 | 0.418 |
+| deepseek | G1_instruction | adjacent_swap | 10 | 0.000 | 0.299 | 0.532 | 0.606 | 0.413 |
+| gemini-flash | G1_instruction | adjacent_swap | 10 | 0.000 | 0.287 | 0.508 | 0.606 | 0.405 |
+
+As a medium audit-window diagnostic, an 8-step DeepSeek/G1/top5 path-consistency window succeeds at 0.042 when epsilon=0.25. This avoids the all-pooled=1.0 and single-trajectory=0.0 saturation endpoints, but it is reported as path consistency rather than full RLNC payload recovery.
 
 ## C. Channel ladder
 
@@ -59,15 +61,15 @@ ALFWorld rank logs contain 26963 decodable rank steps; max candidate count is 69
 
 ## E. Cnom repeated-value audit
 
-Cnom is `decoded_len_mean`: the mean proxy decoded bits per trajectory. Repeated neighboring values are expected when top-k values fall in the same floor(log2(k)) capacity bucket, or when most steps have fewer candidates than the larger k. The audit found repeated settings but no Ceff arithmetic inconsistency.
+Cnom is `decoded_len_mean`: the mean proxy decoded bits per trajectory. Repeated neighboring values are expected when the actual visible candidate count saturates below the larger cutoff, because per-step decoded length is capped by the actual candidate count n rather than by the requested k. The audit found repeated settings but no Ceff arithmetic inconsistency.
 
 - Repeated Cnom groups found: 94.
-- Mechanism: k=4 and k=6 both expose at most 2 rank bits per eligible step; k=8 and k=10 both expose at most 3 rank bits per eligible step. If candidate counts are already below the larger k, Cnom cannot increase.
+- Mechanism: if increasing k does not add visible candidates on most eligible steps, or if the selected/decodable set is unchanged, the actual-n cap keeps Cnom fixed. This matches the decoder accounting over actual candidate count n.
 
 ## Artifacts
 
 - `lemma1_bin_instability_summary.csv`, `lemma1_bin_instability_steps.csv`
-- `prop2_rank_noise_fine_toolbench_summary.csv`, `fig_prop2_rank_noise_fine.svg`
+- `prop2_step_flip_summary.csv`, `prop2_step_flip_fit.json`, `prop2_medium_audit_window.csv`, `fig_prop2_rank_noise_fine.svg`
 - `channel_ladder_main.csv`, `fig_channel_ladder_ceff.svg`
 - `alfworld_topk_extended.csv`, `alfworld_topk_extended_audit.json`
-- `cnom_repeated_value_audit.csv`, `cnom_capacity_bucket_explanation.csv`
+- `cnom_repeated_value_audit.csv`, `cnom_candidate_saturation_explanation.csv`

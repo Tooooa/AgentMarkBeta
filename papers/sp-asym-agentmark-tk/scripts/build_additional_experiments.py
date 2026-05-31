@@ -10,6 +10,7 @@ import importlib.util
 import io
 import json
 import math
+import random
 import statistics
 import sys
 from collections import defaultdict
@@ -59,6 +60,7 @@ from agentmark.core.watermark_sampler import (  # noqa: E402
     differential_based_decoder,
     differential_based_recombination,
     generate_contextual_key,
+    rank_based_decoder,
 )
 
 
@@ -116,6 +118,30 @@ def topk_probs(probs: dict[str, float], k: int) -> dict[str, float]:
     return normalize_probs(dict(ranked))
 
 
+def sort_actions_by_probs(probs: dict[str, float]) -> list[str]:
+    return [item[0] for item in sorted(probs.items(), key=lambda kv: (-float(kv[1]), kv[0]))]
+
+
+def adjacent_swap_order(order: list[str], epsilon: float, rng: random.Random) -> list[str]:
+    out = list(order)
+    i = 0
+    while i < len(out) - 1:
+        if rng.random() < epsilon:
+            out[i], out[i + 1] = out[i + 1], out[i]
+            i += 2
+        else:
+            i += 1
+    return out
+
+
+def probs_from_order(original_probs: dict[str, float], ordered_prefix: list[str]) -> dict[str, float]:
+    all_actions = sort_actions_by_probs(original_probs)
+    seen = set(ordered_prefix)
+    full_order = list(ordered_prefix) + [action for action in all_actions if action not in seen]
+    n = len(full_order)
+    return {action: float(n - idx) for idx, action in enumerate(full_order)}
+
+
 def selected_bin(probs: dict[str, float], context: str, round_num: int) -> dict[str, Any] | None:
     if not probs:
         return None
@@ -149,6 +175,17 @@ def decode_agentmark_bits(probs: dict[str, float], selected: str, context: str, 
             selected,
             context_for_key=context,
             round_num=round_num,
+        )
+
+
+def decode_rank_bits(probs: dict[str, float], selected: str, context: str, round_num: int, topk: int) -> str:
+    with contextlib.redirect_stdout(io.StringIO()):
+        return rank_based_decoder(
+            probs,
+            selected,
+            context_for_key=context,
+            round_num=round_num,
+            topk=topk,
         )
 
 
@@ -365,11 +402,177 @@ def build_cnom_audit() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         proof_rows.append(
             {
                 "topk": k,
-                "floor_log2_topk": int(math.floor(math.log2(k))),
-                "interpretation": "same nominal bits for adjacent k inside the same power-of-two bucket",
+                "candidate_count_cap": k,
+                "interpretation": "nominal bits are capped by the actual visible candidate count n, so increasing k has no effect on steps whose candidate set is already saturated below the new cutoff",
             }
         )
     return repeats, proof_rows
+
+
+def fit_prop2_c(rows: list[dict[str, Any]]) -> float:
+    samples = [
+        (
+            float(row["epsilon"]),
+            max(1, int(row["rank_tree_depth"])),
+            float(row["step_flip_rate"]),
+            max(1, int(row["trials"])),
+        )
+        for row in rows
+        if float(row["epsilon"]) > 0 and row["noise_model"] == "adjacent_swap"
+    ]
+    best_c = 0.0
+    best_loss = float("inf")
+    for i in range(0, 3001):
+        c = i / 1000.0
+        loss = 0.0
+        weight_total = 0
+        for eps, depth, observed, weight in samples:
+            pred = 1.0 - (1.0 - eps) ** (c * depth)
+            loss += weight * (observed - pred) ** 2
+            weight_total += weight
+        loss = loss / max(1, weight_total)
+        if loss < best_loss:
+            best_loss = loss
+            best_c = c
+    return best_c
+
+
+def build_prop2_step_flip(root: Path) -> tuple[list[dict[str, Any]], dict[str, Any], list[dict[str, Any]]]:
+    trajectories = [tr for tr in week2.collect_toolbench(root) if tr.method == "rank" and tr.steps]
+    eps_grid = [round(i * 0.05, 2) for i in range(11)]
+    repeats = range(10)
+    groups: dict[tuple[str, str, int, float], dict[str, Any]] = defaultdict(
+        lambda: {
+            "clean_steps": 0,
+            "trials": 0,
+            "clean_bits": 0,
+            "step_flips": 0,
+            "bit_flips": 0,
+            "len_mismatches": 0,
+        }
+    )
+    step_events: dict[tuple[str, str, int, float], list[int]] = defaultdict(list)
+
+    for tr in trajectories:
+        for step in tr.steps:
+            probs = normalize_probs(step.probabilities)
+            selected = step.chosen
+            if not probs or selected not in probs:
+                continue
+            order = sort_actions_by_probs(probs)
+            for k in (3, 5, 10):
+                clean_bits = decode_rank_bits(probs, selected, step.context, step.round_num, k)
+                if clean_bits == "":
+                    continue
+                clean_prefix = order[:k]
+                for eps in eps_grid:
+                    key = (tr.model, tr.split, k, eps)
+                    groups[key]["clean_steps"] += 1
+                    groups[key]["clean_bits"] += len(clean_bits)
+                    for rep in repeats:
+                        rng = random.Random(
+                            week2.stable_seed(
+                                "prop2_step_flip",
+                                tr.model,
+                                tr.split,
+                                tr.run,
+                                tr.task_id,
+                                step.step_index,
+                                k,
+                                eps,
+                                rep,
+                            )
+                        )
+                        noisy_order = adjacent_swap_order(clean_prefix, eps, rng)
+                        noisy_probs = probs_from_order(probs, noisy_order)
+                        noisy_bits = decode_rank_bits(noisy_probs, selected, step.context, step.round_num, k)
+                        flipped = int(noisy_bits != clean_bits)
+                        bit_flips = sum(
+                            1
+                            for i, bit in enumerate(clean_bits)
+                            if i >= len(noisy_bits) or noisy_bits[i] != bit
+                        )
+                        groups[key]["trials"] += 1
+                        groups[key]["step_flips"] += flipped
+                        groups[key]["bit_flips"] += bit_flips
+                        groups[key]["len_mismatches"] += int(len(noisy_bits) != len(clean_bits))
+                        step_events[key].append(flipped)
+
+    rows: list[dict[str, Any]] = []
+    for (model, split, k, eps), item in sorted(groups.items()):
+        depth = max(1, math.ceil(math.log2(k)))
+        trials = max(1, int(item["trials"]))
+        clean_bits = max(1, int(item["clean_bits"]) * len(repeats))
+        rows.append(
+            {
+                "dataset": "toolbench",
+                "method": "AsymAgentMark-TK",
+                "model": model,
+                "split": split,
+                "topk": k,
+                "noise_model": "adjacent_swap",
+                "epsilon": fmt(eps, 2),
+                "rank_tree_depth": depth,
+                "clean_decodable_steps": item["clean_steps"],
+                "trials": item["trials"],
+                "step_flip_rate": fmt(item["step_flips"] / trials),
+                "bit_flip_rate": fmt(item["bit_flips"] / clean_bits),
+                "len_mismatch_rate": fmt(item["len_mismatches"] / trials),
+                "prop2_bound_c1": fmt(1.0 - (1.0 - eps) ** depth),
+            }
+        )
+
+    c_fit = fit_prop2_c(rows)
+    for row in rows:
+        eps = float(row["epsilon"])
+        depth = int(row["rank_tree_depth"])
+        row["prop2_bound_fitted_c"] = fmt(1.0 - (1.0 - eps) ** (c_fit * depth))
+
+    window_rows = build_prop2_window_rows(step_events, c_fit)
+    fit = {
+        "noise_model": "adjacent_swap",
+        "fitted_c": fmt(c_fit, 4),
+        "topk_values": [3, 5, 10],
+        "epsilon_grid": eps_grid,
+        "fit_target": "empirical decoded-path step_flip_rate",
+        "theory_curve": "1-(1-epsilon)^(c*ceil(log2(k)))",
+    }
+    return rows, fit, window_rows
+
+
+def build_prop2_window_rows(
+    step_events: dict[tuple[str, str, int, float], list[int]],
+    c_fit: float,
+) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for (model, split, k, eps), events in sorted(step_events.items()):
+        if not events:
+            continue
+        rng = random.Random(week2.stable_seed("prop2_window", model, split, k, eps))
+        for window_size in (4, 8, 12):
+            trials = 500
+            success = 0
+            for _ in range(trials):
+                sample = [events[rng.randrange(len(events))] for _ in range(window_size)]
+                success += int(sum(sample) == 0)
+            depth = max(1, math.ceil(math.log2(k)))
+            pred_flip = 1.0 - (1.0 - eps) ** (c_fit * depth)
+            out.append(
+                {
+                    "dataset": "toolbench",
+                    "model": model,
+                    "split": split,
+                    "topk": k,
+                    "noise_model": "adjacent_swap",
+                    "epsilon": fmt(eps, 2),
+                    "window_size_steps": window_size,
+                    "trials": trials,
+                    "path_window_success_rate": fmt(success / trials),
+                    "independent_prediction_from_fit": fmt((1.0 - pred_flip) ** window_size),
+                    "note": "medium audit-window path consistency, not full RLNC payload recovery",
+                }
+            )
+    return out
 
 
 def build_prop2_summary(fine_root: Path) -> list[dict[str, Any]]:
@@ -455,7 +658,7 @@ def make_channel_ladder_svg(rows: list[dict[str, Any]]) -> str:
     return "\n".join(parts)
 
 
-def make_prop2_svg(rows: list[dict[str, Any]]) -> str:
+def make_prop2_svg(rows: list[dict[str, Any]], fit: dict[str, Any]) -> str:
     rows = [
         r for r in rows
         if r["model"] == "deepseek" and r["noise_model"] == "adjacent_swap" and r["split"] == "G1_instruction"
@@ -463,7 +666,7 @@ def make_prop2_svg(rows: list[dict[str, Any]]) -> str:
     width, height = 900, 560
     x0, y0, panel_w, panel_h = 95, 70, 690, 360
     colors = {3: "#0072B2", 5: "#009E73", 10: "#CC79A7"}
-    max_y = max([float(r["c_nom_proxy_bits"]) for r in rows] + [1.0])
+    max_y = 1.0
 
     def x(eps: float) -> float:
         return x0 + eps / 0.5 * panel_w
@@ -474,8 +677,8 @@ def make_prop2_svg(rows: list[dict[str, Any]]) -> str:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#FFFFFF"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.title{font-size:27px;font-weight:700}.tick{font-size:15px;fill:#555}.legend{font-size:18px}</style>',
-        '<text class="title" x="450" y="36" text-anchor="middle">Prop. 2 rank-noise curve: strict signal before pooling</text>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.title{font-size:27px;font-weight:700}.tick{font-size:15px;fill:#555}.legend{font-size:18px}.note{font-size:14px;fill:#555}</style>',
+        '<text class="title" x="450" y="36" text-anchor="middle">Prop. 2 step flip: empirical vs fitted bound</text>',
         f'<rect x="{x0}" y="{y0}" width="{panel_w}" height="{panel_h}" fill="none" stroke="#333"/>',
     ]
     for frac in (0, 0.25, 0.5, 0.75, 1.0):
@@ -489,17 +692,23 @@ def make_prop2_svg(rows: list[dict[str, Any]]) -> str:
             parts.append(f'<text class="tick" x="{xx}" y="{y0+panel_h+24}" text-anchor="middle">{eps:.1f}</text>')
     for k, color in colors.items():
         pts = sorted([r for r in rows if int(r["topk"]) == k], key=lambda r: float(r["epsilon"]))
-        coords = [(x(float(r["epsilon"])), y(float(r["c_nom_proxy_bits"]))) for r in pts]
+        coords = [(x(float(r["epsilon"])), y(float(r["step_flip_rate"]))) for r in pts]
         d = " ".join(("M" if i == 0 else "L") + f"{xx:.1f},{yy:.1f}" for i, (xx, yy) in enumerate(coords))
         parts.append(f'<path d="{d}" fill="none" stroke="{color}" stroke-width="3.2"/>')
         for xx, yy in coords:
             parts.append(f'<circle cx="{xx:.1f}" cy="{yy:.1f}" r="3.4" fill="{color}"/>')
+        bound_coords = [(x(float(r["epsilon"])), y(float(r["prop2_bound_fitted_c"]))) for r in pts]
+        d_bound = " ".join(("M" if i == 0 else "L") + f"{xx:.1f},{yy:.1f}" for i, (xx, yy) in enumerate(bound_coords))
+        parts.append(f'<path d="{d_bound}" fill="none" stroke="{color}" stroke-width="2.1" stroke-dasharray="8 6" opacity="0.82"/>')
     parts.append(f'<text class="tick" x="{x0+panel_w/2}" y="{y0+panel_h+58}" text-anchor="middle">epsilon</text>')
-    parts.append(f'<text class="tick" transform="translate({x0-62},{y0+panel_h/2}) rotate(-90)" text-anchor="middle">mean decoded packets / trajectory</text>')
+    parts.append(f'<text class="tick" transform="translate({x0-62},{y0+panel_h/2}) rotate(-90)" text-anchor="middle">decoded-path step flip rate</text>')
     for i, (k, color) in enumerate(colors.items()):
         lx = 255 + i * 135
         parts.append(f'<line x1="{lx}" x2="{lx+42}" y1="500" y2="500" stroke="{color}" stroke-width="4"/>')
         parts.append(f'<text class="legend" x="{lx+50}" y="507">k={k}</text>')
+    parts.append('<line x1="610" x2="655" y1="500" y2="500" stroke="#555" stroke-width="2.1" stroke-dasharray="8 6"/>')
+    parts.append(f'<text class="legend" x="664" y="507">fit c={float(fit.get("fitted_c", 0.0)):.3f}</text>')
+    parts.append('<text class="note" x="450" y="536" text-anchor="middle">solid: empirical path flip; dashed: 1-(1-epsilon)^(c ceil(log2 k))</text>')
     parts.append("</svg>")
     return "\n".join(parts)
 
@@ -512,6 +721,8 @@ def write_report(
     topk_audit: dict[str, Any],
     cnom_repeats: list[dict[str, Any]],
     prop2_rows: list[dict[str, Any]],
+    prop2_fit: dict[str, Any],
+    prop2_window_rows: list[dict[str, Any]],
 ) -> None:
     def pick(rows: list[dict[str, Any]], **conds: Any) -> dict[str, Any]:
         for row in rows:
@@ -524,7 +735,7 @@ def write_report(
         "",
         "## A. Lemma 1 step-level counterfactual",
         "",
-        "AgentMark-F exact-probability decoding was compared with a top-k verifier view that keeps the selected top-k order but drops the tail and renormalizes probabilities. The selected behavior remains rank-stable whenever it is still in the top-k set; changes below are therefore probability-bin effects, not candidate-order effects.",
+        "AgentMark-F exact-probability decoding was compared with a top-k verifier view that keeps the selected top-k order but drops the tail and renormalizes probabilities. The selected behavior remains rank-stable whenever it is still in the top-k set; changes below are therefore probability-bin effects, not candidate-order effects. Bin-changed and bit-changed rates are conditional on selected-in-top-k; selected-dropped is measured over exact-decodable steps. This is a truncation-and-renormalization instance of Lemma 1, not an exhaustive test of all value perturbations.",
         "",
         "| Dataset | Model | top-k | rank-stable steps | bin changed | bit changed | selected dropped |",
         "| --- | --- | ---: | ---: | ---: | ---: | ---: |",
@@ -542,9 +753,9 @@ def write_report(
             "",
             "## B. Prop. 2 fine rank-noise curve",
             "",
-            "The fine-grid rerun uses ToolBench, repeats=10, k in {3,5,10}, epsilon=0:0.05:0.5. Pooled recovery is intentionally not the headline here because it saturates; the useful non-pooled signal is the per-trajectory decoded packet budget.",
+            f"The fine-grid rerun uses ToolBench, repeats=10, k in {{3,5,10}}, epsilon=0:0.05:0.5. Here the measured quantity is the one used by Prop. 2: whether a clean-decodable step changes its decoded rank path under adjacent swaps. The fitted constant for 1-(1-epsilon)^(c ceil(log2 k)) is c={float(prop2_fit.get('fitted_c', 0.0)):.3f}.",
             "",
-            "| Model | Split | Noise | k | eps=0 Cnom | eps=0.25 Cnom | eps=0.5 Cnom | eps=0 strict DSR | eps=0.5 strict DSR |",
+            "| Model | Split | Noise | k | eps=0 p_flip | eps=0.25 p_flip | eps=0.5 p_flip | eps=0.5 fitted bound | eps=0.5 bit flip |",
             "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
         ]
     )
@@ -559,10 +770,25 @@ def write_report(
         r50 = pick(prop2_rows, model=model, split=split, noise_model=noise, topk=k, epsilon=0.5)
         if r0 and r25 and r50:
             lines.append(
-                f"| {model} | {split} | {noise} | {k} | {float(r0['c_nom_proxy_bits']):.3f} | "
-                f"{float(r25['c_nom_proxy_bits']):.3f} | {float(r50['c_nom_proxy_bits']):.3f} | "
-                f"{float(r0['strict_decode_success_rate']):.3f} | {float(r50['strict_decode_success_rate']):.3f} |"
+                f"| {model} | {split} | {noise} | {k} | {float(r0['step_flip_rate']):.3f} | "
+                f"{float(r25['step_flip_rate']):.3f} | {float(r50['step_flip_rate']):.3f} | "
+                f"{float(r50['prop2_bound_fitted_c']):.3f} | {float(r50['bit_flip_rate']):.3f} |"
             )
+    window = pick(
+        prop2_window_rows,
+        model="deepseek",
+        split="G1_instruction",
+        topk=5,
+        epsilon=0.25,
+        window_size_steps=8,
+    )
+    if window:
+        lines.extend(
+            [
+                "",
+                f"As a medium audit-window diagnostic, an 8-step DeepSeek/G1/top5 path-consistency window succeeds at {float(window['path_window_success_rate']):.3f} when epsilon=0.25. This avoids the all-pooled=1.0 and single-trajectory=0.0 saturation endpoints, but it is reported as path consistency rather than full RLNC payload recovery.",
+            ]
+        )
     lines.extend(
         [
             "",
@@ -603,18 +829,18 @@ def write_report(
             "",
             "## E. Cnom repeated-value audit",
             "",
-            "Cnom is `decoded_len_mean`: the mean proxy decoded bits per trajectory. Repeated neighboring values are expected when top-k values fall in the same floor(log2(k)) capacity bucket, or when most steps have fewer candidates than the larger k. The audit found repeated settings but no Ceff arithmetic inconsistency.",
+            "Cnom is `decoded_len_mean`: the mean proxy decoded bits per trajectory. Repeated neighboring values are expected when the actual visible candidate count saturates below the larger cutoff, because per-step decoded length is capped by the actual candidate count n rather than by the requested k. The audit found repeated settings but no Ceff arithmetic inconsistency.",
             "",
             f"- Repeated Cnom groups found: {len(cnom_repeats)}.",
-            "- Mechanism: k=4 and k=6 both expose at most 2 rank bits per eligible step; k=8 and k=10 both expose at most 3 rank bits per eligible step. If candidate counts are already below the larger k, Cnom cannot increase.",
+            "- Mechanism: if increasing k does not add visible candidates on most eligible steps, or if the selected/decodable set is unchanged, the actual-n cap keeps Cnom fixed. This matches the decoder accounting over actual candidate count n.",
             "",
             "## Artifacts",
             "",
             "- `lemma1_bin_instability_summary.csv`, `lemma1_bin_instability_steps.csv`",
-            "- `prop2_rank_noise_fine_toolbench_summary.csv`, `fig_prop2_rank_noise_fine.svg`",
+            "- `prop2_step_flip_summary.csv`, `prop2_step_flip_fit.json`, `prop2_medium_audit_window.csv`, `fig_prop2_rank_noise_fine.svg`",
             "- `channel_ladder_main.csv`, `fig_channel_ladder_ceff.svg`",
             "- `alfworld_topk_extended.csv`, `alfworld_topk_extended_audit.json`",
-            "- `cnom_repeated_value_audit.csv`, `cnom_capacity_bucket_explanation.csv`",
+            "- `cnom_repeated_value_audit.csv`, `cnom_candidate_saturation_explanation.csv`",
         ]
     )
     (RESULT_DIR / "ADDITIONAL_EXPERIMENTS_A_E.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -637,8 +863,9 @@ def main() -> None:
     lemma_summary, lemma_steps = build_lemma1_counterfactual(raw_root)
     ladder_rows = build_channel_ladder()
     topk_rows, topk_audit = build_topk_extended(raw_root)
-    cnom_repeats, cnom_bucket = build_cnom_audit()
-    prop2_rows = build_prop2_summary(prop2_root)
+    cnom_repeats, cnom_saturation = build_cnom_audit()
+    legacy_prop2_rows = build_prop2_summary(prop2_root)
+    prop2_rows, prop2_fit, prop2_window_rows = build_prop2_step_flip(raw_root)
 
     write_csv(RESULT_DIR / "lemma1_bin_instability_summary.csv", lemma_summary)
     write_csv(RESULT_DIR / "lemma1_bin_instability_steps.csv", lemma_steps)
@@ -646,12 +873,15 @@ def main() -> None:
     write_csv(RESULT_DIR / "alfworld_topk_extended.csv", topk_rows)
     write_json(RESULT_DIR / "alfworld_topk_extended_audit.json", topk_audit)
     write_csv(RESULT_DIR / "cnom_repeated_value_audit.csv", cnom_repeats)
-    write_csv(RESULT_DIR / "cnom_capacity_bucket_explanation.csv", cnom_bucket)
-    write_csv(RESULT_DIR / "prop2_rank_noise_fine_toolbench_summary.csv", prop2_rows)
+    write_csv(RESULT_DIR / "cnom_candidate_saturation_explanation.csv", cnom_saturation)
+    write_csv(RESULT_DIR / "prop2_rank_noise_fine_toolbench_summary.csv", legacy_prop2_rows)
+    write_csv(RESULT_DIR / "prop2_step_flip_summary.csv", prop2_rows)
+    write_json(RESULT_DIR / "prop2_step_flip_fit.json", prop2_fit)
+    write_csv(RESULT_DIR / "prop2_medium_audit_window.csv", prop2_window_rows)
 
     (FIG_DIR / "fig_channel_ladder_ceff.svg").write_text(make_channel_ladder_svg(ladder_rows), encoding="utf-8")
     if prop2_rows:
-        (FIG_DIR / "fig_prop2_rank_noise_fine.svg").write_text(make_prop2_svg(prop2_rows), encoding="utf-8")
+        (FIG_DIR / "fig_prop2_rank_noise_fine.svg").write_text(make_prop2_svg(prop2_rows, prop2_fit), encoding="utf-8")
 
     write_report(
         lemma_rows=lemma_summary,
@@ -660,6 +890,8 @@ def main() -> None:
         topk_audit=topk_audit,
         cnom_repeats=cnom_repeats,
         prop2_rows=prop2_rows,
+        prop2_fit=prop2_fit,
+        prop2_window_rows=prop2_window_rows,
     )
     print(f"[INFO] wrote additional experiment artifacts to {RESULT_DIR}")
 

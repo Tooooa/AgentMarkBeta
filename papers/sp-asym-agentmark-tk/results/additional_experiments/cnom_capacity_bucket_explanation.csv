@@ -1,7 +1,0 @@
-topk,floor_log2_topk,interpretation
-2,1,same nominal bits for adjacent k inside the same power-of-two bucket
-4,2,same nominal bits for adjacent k inside the same power-of-two bucket
-6,2,same nominal bits for adjacent k inside the same power-of-two bucket
-8,3,same nominal bits for adjacent k inside the same power-of-two bucket
-10,3,same nominal bits for adjacent k inside the same power-of-two bucket
-20,4,same nominal bits for adjacent k inside the same power-of-two bucket

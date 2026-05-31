@@ -1,0 +1,7 @@
+topk,candidate_count_cap,interpretation
+2,2,"nominal bits are capped by the actual visible candidate count n, so increasing k has no effect on steps whose candidate set is already saturated below the new cutoff"
+4,4,"nominal bits are capped by the actual visible candidate count n, so increasing k has no effect on steps whose candidate set is already saturated below the new cutoff"
+6,6,"nominal bits are capped by the actual visible candidate count n, so increasing k has no effect on steps whose candidate set is already saturated below the new cutoff"
+8,8,"nominal bits are capped by the actual visible candidate count n, so increasing k has no effect on steps whose candidate set is already saturated below the new cutoff"
+10,10,"nominal bits are capped by the actual visible candidate count n, so increasing k has no effect on steps whose candidate set is already saturated below the new cutoff"
+20,20,"nominal bits are capped by the actual visible candidate count n, so increasing k has no effect on steps whose candidate set is already saturated below the new cutoff"
