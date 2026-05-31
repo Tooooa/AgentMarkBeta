@@ -72,93 +72,69 @@ This is the fixed 3.2 rerun that should remain the canonical source for erasure
 claims. It was mirrored locally together with the new data so that the whole
 Stage 3 robustness package can be analyzed from one local root.
 
-## Stage 3.3 Semantic Rewrite Reruns
+## Stage 3.3 ToolBench Matched Top-k Rerun
 
-There are two useful but different 3.3 rerun directories.
-
-### Full-Steps R1 Keep-Packets
-
-Source directory:
-
-`stage3_semantic_rewrite_full_steps_lmh_r1_keep_packets`
-
-Scope:
-
-- Dataset: all
-- Records selected: 480
-- Step rows: 10350
-- Task rows: 2601
-- Failures: 0
-- Strengths: light, medium, heavy
-- Top-k: 3, 5, 10
-- Rerank repeats: 1
-- Keep packets: true
-
-Weighted top-10 strict/rank diagnostics:
-
-| Dataset | Strength | Traj. | Strict recovery | Top-1 match | Top-10 overlap | Kendall tau | Packets |
-|---|---|---:|---:|---:|---:|---:|---:|
-| ALFWorld | light | 106 | 0.000 | 0.158 | 0.638 | 0.248 | 1.877 |
-| ALFWorld | medium | 106 | 0.000 | 0.165 | 0.640 | 0.253 | 2.057 |
-| ALFWorld | heavy | 106 | 0.000 | 0.163 | 0.637 | 0.247 | 1.868 |
-| ToolBench | light | 183 | 0.000 | 0.360 | 0.637 | 0.216 | 1.454 |
-| ToolBench | medium | 183 | 0.000 | 0.389 | 0.637 | 0.215 | 1.454 |
-| ToolBench | heavy | 183 | 0.000 | 0.399 | 0.637 | 0.245 | 1.596 |
-
-ToolBench pooled recovery in this run is sensitive to the top-$k$ choice:
-
-| Strength | $k=3$ | $k=5$ | $k=10$ |
-|---|---:|---:|---:|
-| Heavy | 1.000 | 1.000 | 0.000 |
-| Light | 0.000 | 0.000 | 0.000 |
-| Medium | 0.000 | 0.000 | 0.000 |
-
-This run is useful for rank-stability diagnostics and packet inspection. It
-also suggests that a conservative top-$k$ gate can sometimes avoid conflicts
-introduced by larger candidate sets. However, because the positive recovery is
-limited to the heavy/top-3/top-5 cells in this run, the cleaner positive
-ToolBench claim should use the r3 pooled W300 rerun below.
-
-### ToolBench LMH R3 Pooled W300
+The latest 3.3 rerun supersedes the older semantic-rewrite table for the main
+paper claim.
 
 Source directory:
 
-`stage3_semantic_rewrite_toolbench_lmh_r3_pooled_w300`
+`toolbench_rank_topk_matched`
 
 Scope:
 
 - Dataset: ToolBench
-- Records selected: 360
-- Step rows: 3231
-- Task rows: 1647
-- Failures: 0
-- Strengths: light, medium, heavy
+- Model: DeepSeek v3.2
+- Splits: G1_instruction, G1_category, G1_tool, G2_category,
+  G2_instruction, G3_instruction
 - Top-k: 3, 5, 10
-- Rerank repeats: 3
+- Runs/seeds: 1, 2, 3
+- Task limit: 20 per split
+- Jobs completed/succeeded: 1080/1080
+- Failures: 0
 
-Weighted top-10 strict/rank diagnostics:
+Strict single-trajectory recovery remains packet-limited:
 
-| Dataset | Strength | Traj. | Strict recovery | Top-1 match | Top-10 overlap | Kendall tau | Packets |
-|---|---|---:|---:|---:|---:|---:|---:|
-| ToolBench | light | 183 | 0.011 | 0.395 | 0.595 | 0.189 | 2.016 |
-| ToolBench | medium | 183 | 0.011 | 0.382 | 0.595 | 0.203 | 2.038 |
-| ToolBench | heavy | 183 | 0.011 | 0.414 | 0.596 | 0.221 | 1.962 |
+| $k$ | Traj. | Strict recovery | Mean dedup packets | Mean accepted steps |
+|---:|---:|---:|---:|---:|
+| 3 | 360 | 0.000 | 0.631 | 0.631 |
+| 5 | 360 | 0.008 | 1.061 | 0.878 |
+| 10 | 360 | 0.028 | 1.625 | 1.189 |
 
-Top-10 pooled recovery:
+All-split pooled recovery by individual run:
 
-| Dataset | Strength | Pool | Runs | Pooled recovery | Packets | Conflicts |
-|---|---|---|---:|---:|---:|---:|
-| ToolBench | light | all splits | 1 | 1.000 | 45.0 | 14.0 |
-| ToolBench | medium | all splits | 1 | 1.000 | 45.0 | 13.0 |
-| ToolBench | heavy | all splits | 1 | 1.000 | 45.0 | 14.0 |
+| $k$ | Run 1 | Run 2 | Run 3 | Per-run success | Dedup packets by run |
+|---:|---:|---:|---:|---:|---|
+| 3 | 1.000 | 0.000 | 0.000 | 1/3 | 17 / 6 / 6 |
+| 5 | 1.000 | 0.000 | 1.000 | 2/3 | 12 / 7 / 12 |
+| 10 | 1.000 | 1.000 | 1.000 | 3/3 | 13 / 14 / 15 |
+
+Pooling all splits and all runs succeeds for every tested top-k with no packet
+conflicts:
+
+| $k$ | Traj. | Pooled recovery | Packets | Dedup packets | Conflicts | Stream keys |
+|---:|---:|---:|---:|---:|---:|---:|
+| 3 | 360 | 1.000 | 227 | 29 | 0 | 3 |
+| 5 | 360 | 1.000 | 382 | 31 | 0 | 3 |
+| 10 | 360 | 1.000 | 585 | 42 | 0 | 3 |
+
+Sampled all-level audit-window curve:
+
+| $k$ | Pool 10 | Pool 15 | Pool 20 | Pool 30 |
+|---:|---:|---:|---:|---:|
+| 3 | 0.590 | 0.905 | 0.985 | 1.000 |
+| 5 | 0.860 | 0.965 | 0.990 | 1.000 |
+| 10 | 0.950 | 0.995 | 1.000 | 1.000 |
 
 Writing implication:
 
-- Use the ToolBench LMH R3 pooled W300 run for the positive 3.3 semantic-rewrite
-  recovery claim.
-- Use the full-steps R1 keep-packets run as a caveat/rank-stability diagnostic,
-  especially if discussing ALFWorld. Do not claim ALFWorld semantic-rewrite
-  recovery from the current 3.3 artifacts.
+- Use this matched-top-k run for the main 3.3 ToolBench table.
+- The honest interpretation is not "single ToolBench task attribution is now
+  solved." It is: after matching the embedder and verifier top-k, ToolBench is
+  still packet-limited at the task level, but pooled audit-window recovery is
+  reliable, especially at k=10.
+- The older `stage3_semantic_rewrite_*` directories are retained as diagnostic
+  artifacts, but they should not drive the main 3.3 paper claim.
 
 ## L5 Real Cross-Model Top-k Rerank/Decode
 
@@ -221,6 +197,6 @@ Writing implication:
      pool size 20.
    - ALFWorld strict and pooled recovery remain weak except Gemini-to-DeepSeek
      ID pooled recovery.
-4. For 3.3 semantic rewrite, use the ToolBench LMH R3 pooled W300 run for the
-   positive pooled recovery claim and explicitly state that ALFWorld rewrite
-   recovery is not established by the current artifacts.
+4. For 3.3, use the new `toolbench_rank_topk_matched` matched-top-k rerun for
+   the positive ToolBench pooled recovery claim. Keep the semantic-rewrite
+   directories as diagnostics only unless a separate rewrite claim is needed.
