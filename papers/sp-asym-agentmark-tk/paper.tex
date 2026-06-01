@@ -12,6 +12,8 @@
 \usepackage{url}
 \usepackage[hidelinks]{hyperref}
 \usepackage{enumitem}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 
 \newcommand{\framework}{AsymMark}
 \newcommand{\ours}{AsymMark-R}
@@ -270,6 +272,19 @@ Whenever $q_\ell$ is odd, the selected path entered the odd group and one bit wa
 \label{fig:dec}
 \end{figure}
 
+\subsection{A Second Invariant Example}
+\label{sec:second-invariant}
+
+% Plan: Use a constructive method paragraph to show that the framework is not tied to probability rank.
+\framework{} is not tied to rank order as its only possible invariant. As a minimal second instance, consider an unordered-set keyed partition channel. The verifier observes the selected behavior $\hat b_t$ and the unordered top-$k$ candidate set $S_t$, but not the order induced by $P_t$. The embedder and verifier derive a canonical order
+\begin{equation}
+  \pi_t=\operatorname{sort}_{a\in S_t}\bigl(\operatorname{HMAC}(K_{\mathrm{sh}},h_t,a)\bigr)
+\end{equation}
+using the shared key, logged context, and action identifier. The encoder then applies the same binary primitive to the canonical sequence $\pi_t$ rather than to the probability rank order $\sigma_t$; the verifier reconstructs $\pi_t$ from set membership alone and decodes from the position of $\hat b_t$ in that keyed order. The invariant is therefore unordered set membership plus keyed canonicalization, not calibrated probabilities or rank order.
+
+% Plan: State the exact scope of the second instance so it supports framework novelty without overclaiming.
+This instance is mainly a constructive witness for the framework definition. On balanced candidate distributions, keyed even/odd partitions have matched group mass and preserve the source distribution while remaining invariant to arbitrary permutations of the verifier's set view. Our synthetic sanity check over 20,000 balanced eight-action steps obtains exact step decoding, zero bit errors, and no failures under shuffled verifier order, with empirical selection JSD $5.1\times10^{-5}$ from the source distribution. We do not use this unordered-set instance as the main evaluated system: for skewed real behavior distributions, additional group-balancing or rejection logic would be needed to preserve both capacity and distribution fidelity. The rank instance remains the deployed operating point in this paper because it gives a stronger and naturally exposed invariant for ALFWorld and ToolBench.
+
 \subsection{Coding Layer}
 
 Per-step embedding capacity varies with $P_t$, $k$, and trajectory length. To avoid requiring a contiguous bitstream, \ours{} uses deterministic RLNC over GF(2), following the standard random linear network coding principle~\cite{ho2006random}. For payload $m\in\{0,1\}^L$, the $i$-th coded bit is
@@ -511,6 +526,40 @@ Dataset & Method & Exact & Top-10 & Top-6 & Top-2 & Sel. only \\
 \end{tabular}}
 \end{table}
 
+% Plan: Add the audit-window result that directly tests whether pooling rescues the symmetric baseline under rank-only verification.
+The same mechanism appears more clearly in pooled audit windows. Figure~\ref{fig:rank-only-pooled} compares ALFWorld/DeepSeek/ID top-10 recovery as the verifier pools 1--50 trajectories from the same audit configuration. \agentmark{} reaches perfect recovery by pool size 5 when exact probabilities are available, confirming that the baseline is not packet-limited in its native channel. Under a rank-only surrogate that keeps only the top-10 order and assigns monotone linear pseudo-probabilities before running the \agentmark{} differential decoder, pooling does not rescue the baseline: recovery remains between 0.013 and 0.247 over the plotted window. In contrast, \ours{} rises from 0.080 at one trajectory to 0.613 at 10, 0.780 at 20, and 0.807 at 50. The point is not that \ours{} dominates exact-channel \agentmark{}; it is that the rank-only decoder matches the verifier channel, while a probability-bin decoder continues to accumulate conflicting equations even when the audit window grows.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=\columnwidth,
+  height=0.62\columnwidth,
+  xmin=1,
+  xmax=50,
+  ymin=0,
+  ymax=1.05,
+  xlabel={pooled trajectories},
+  ylabel={payload recovery},
+  xtick={1,10,20,30,50},
+  ytick={0,0.25,0.5,0.75,1.0},
+  grid=both,
+  legend style={font=\scriptsize, at={(0.03,0.97)}, anchor=north west, draw=none, fill=white, fill opacity=0.85, text opacity=1},
+  tick label style={font=\scriptsize},
+  label style={font=\scriptsize},
+]
+\addplot+[mark=*, thick] coordinates {(1,0.693) (2,0.893) (3,0.947) (5,1.000) (8,1.000) (10,1.000) (15,1.000) (20,1.000) (30,1.000) (50,1.000)};
+\addlegendentry{\agentmark{} exact}
+\addplot+[mark=square*, thick] coordinates {(1,0.013) (2,0.020) (3,0.027) (5,0.087) (8,0.140) (10,0.133) (15,0.200) (20,0.167) (30,0.247) (50,0.140)};
+\addlegendentry{\agentmark{} rank-only}
+\addplot+[mark=triangle*, thick] coordinates {(1,0.080) (2,0.193) (3,0.327) (5,0.400) (8,0.507) (10,0.613) (15,0.727) (20,0.780) (30,0.840) (50,0.807)};
+\addlegendentry{\ours{} rank-only}
+\end{axis}
+\end{tikzpicture}
+\caption{Rank-only pooled recovery on ALFWorld/DeepSeek/ID, top-10 verifier view. The plotted window stops at 50 trajectories to show the audit-window regime before very large pools require conflict-aware aggregation.}
+\label{fig:rank-only-pooled}
+\end{figure}
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_channel_ladder_ceff.png}
@@ -651,7 +700,8 @@ Tool-use traces are shorter and often contain fewer semantically viable actions 
 Unlike exact probability equality, rank consistency can be measured directly during verification. A verifier can report top-$k$ agreement, Kendall tau distance, or adjacent-swap rates to calibrate confidence.
 
 \textbf{Rank is one invariant, not the whole framework.}
-\framework{} is defined by the separation between a policy-preserving embedding channel and a verifier-reconstructible decoding invariant. Top-$k$ rank order is the invariant we implement and evaluate because it is naturally exposed by restricted agent APIs and sufficient to recover the interleaved partition path. Other candidate invariants could instantiate the same framework in future work, including coarse quantized probability buckets, signs of pairwise comparisons or Kendall-style order constraints, and top-1 plus unordered candidate-set information. These alternatives may trade capacity, stability, and verifier cost differently; this paper focuses on the rank instance because it gives a clean first operating point.
+% Plan: Connect the synthetic second instance to the broader framework claim while keeping the benchmark claim on the rank system.
+\framework{} is defined by the separation between a policy-preserving embedding channel and a verifier-reconstructible decoding invariant. Top-$k$ rank order is the invariant we implement and evaluate because it is naturally exposed by restricted agent APIs and sufficient to recover the interleaved partition path. Section~\ref{sec:second-invariant} gives a second constructive instance: an unordered-set keyed partition that decodes from set membership plus keyed canonicalization on a balanced synthetic channel. This does not replace the rank system in our experiments, but it demonstrates that the framework is not merely a wrapper around a single rank primitive. Other candidate invariants could instantiate the same template in future work, including coarse quantized probability buckets, signs of pairwise comparisons, and Kendall-style order constraints. These alternatives may trade capacity, stability, and verifier cost differently; this paper focuses on the rank instance because it gives a clean first operating point on real agent benchmarks.
 
 \textbf{Why not fully asymmetric verification?}
 A verifier that sees only the selected action has too little information to distinguish a keyed watermark from ordinary policy variation without shifting the agent's behavior distribution. The selected-only negative-control view in our evaluation reflects this limit. \ours{} therefore takes a middle position: it does not require calibrated probabilities, but it does require a reproducible candidate ranking. This is a practical assumption for many audited agents because tool schemas, admissible environment actions, and candidate lists are often easier to reconstruct than exact sampling probabilities.
@@ -811,6 +861,7 @@ The reported tables are tied to postprocessed artifacts as follows.
 \begin{itemize}[leftmargin=*]
   \item Utility and JSD: \path{utility_main.csv}, \path{behavior_jsd_clean.csv}.
   \item Capacity and top-$k$: \path{capacity_proxy_payload8_logged_channels.csv}, \path{topk_ablation_main.csv}.
+  \item Rank-only pooled contrast and unordered-set sanity check: \path{followup_partial_channel/rank_only_pooled_curve_summary.csv}, \path{followup_partial_channel/unordered_set_keyed_partition_summary.json}.
   \item Additional channel diagnostics: \path{additional_experiments/lemma1_bin_instability_summary.csv}, \path{additional_experiments/channel_ladder_main.csv}, \path{additional_experiments/alfworld_topk_extended.csv}, \path{additional_experiments/cnom_repeated_value_audit.csv}, and \path{additional_experiments/cnom_candidate_saturation_explanation.csv}.
   \item Prop.~2 step-flip grid: \path{additional_experiments/prop2_step_flip_summary.csv}, \path{additional_experiments/prop2_step_flip_fit.json}, and \path{additional_experiments/prop2_medium_audit_window.csv}.
   \item Strict recovery: \path{strict_rlnc_recovery_main.csv}, \path{strict_rlnc_recovery_global.csv}.
