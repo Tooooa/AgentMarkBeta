@@ -214,47 +214,47 @@ Let $\sigma_t$ be the descending rank ordering of $P_t$. At step $t$, let $n_t=\
 \end{enumerate}
 Interleaving is important. A top-half/bottom-half split would place most mass in the first group, producing low embedding opportunity. Even/odd splitting balances mass while preserving a rank path that the verifier can recover.
 
-\begin{figure}[t]
-\centering
-\fbox{\begin{minipage}{0.94\columnwidth}
-\footnotesize
-\textbf{Algorithm 1: One-step rank encoding.}\\
-\textbf{Input:} distribution $P_t$, context $h_t$, key $K_{\mathrm{sh}}$, payload stream $M$, pointer $\ell$, top-$k$.\\
-1. Derive DRBG $\DRBG_t$ from $(K_{\mathrm{sh}},h_t)$.\\
-2. Sort behaviors: $\sigma_t\leftarrow\operatorname{argsort}(P_t)$.\\
-3. Set $n_t=\min(k,|\B_t|)$. With probability $1-\sum_{i\leq n_t}P_t(\sigma_t(i))$, sample from the tail and return no bits.\\
-4. Normalize the top-$n_t$ distribution $D$.\\
-5. While $|D|>1$: split $D$ into even/odd ranks; run \BinEnc{} on the group masses; consume a message bit only when \BinEnc{} enters the odd group; recurse into the chosen group.\\
-6. Advance unused DRBG calls until exactly $\lceil\log_2 n_t\rceil$ calls are consumed.\\
-\textbf{Output:} selected behavior and consumed coded bits.
-\end{minipage}}
-\caption{Encoder sketch. The encoder uses probability values only to preserve the marginal behavior distribution.}
-\label{fig:enc}
-\end{figure}
-
 \subsection{Rank Decoder}
 
 Given selected behavior $\hat b_t$ and top-$k$ order $\sigma_t$, the decoder sets $n_t=\min(k,|\sigma_t|)$ and finds the zero-indexed rank $q$ of $\hat b_t$ within the visible prefix. If $\hat b_t$ is outside that prefix, the step yields no bits. Otherwise, the decoder reconstructs the path by repeatedly reading the parity of $q$:
 \begin{equation}
   q_0=q,\quad q_{\ell+1}=\lfloor q_{\ell}/2\rfloor.
 \end{equation}
-Whenever $q_\ell$ is odd, the selected path entered the odd group and one bit was embedded. The value of that bit is determined by the same DRBG value used at level $\ell$: the implementation decodes it as $1$ if $r_\ell<0.5$ and $0$ otherwise. The decoder consumes exactly $\lceil\log_2 n_t\rceil$ DRBG values per step, matching the encoder's fixed synchronization budget. The common shorthand $\lceil\log_2 k\rceil$ is the saturated-candidate upper bound when $n_t=k$.
+Whenever $q_\ell$ is odd, the selected path entered the odd group and one bit was embedded. The value of that bit is determined by the same DRBG value used at level $\ell$: the implementation decodes it as $1$ if $r_\ell<0.5$ and $0$ otherwise. The decoder consumes exactly $\lceil\log_2 n_t\rceil$ DRBG values per step, matching the encoder's fixed synchronization budget. The common shorthand $\lceil\log_2 k\rceil$ is the saturated-candidate upper bound when $n_t=k$. Figure~\ref{fig:rank-codec} summarizes the one-step encoder and decoder side by side.
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\fbox{\begin{minipage}{0.94\columnwidth}
+\fbox{\begin{minipage}{0.96\textwidth}
 \footnotesize
-\textbf{Algorithm 2: One-step rank decoding.}\\
-\textbf{Input:} selected behavior $\hat b_t$, top-$k$ order $\sigma_t$, context $h_t$, key $K_{\mathrm{sh}}$.\\
-1. Set $n_t=\min(k,|\sigma_t|)$ and derive the same DRBG sequence $r_0,\ldots,r_{\lceil\log_2 n_t\rceil-1}$.\\
-2. If $\hat b_t\notin\sigma_t[1:n_t]$, return the empty string.\\
-3. Let $q$ be the zero-indexed rank of $\hat b_t$.\\
-4. While $q\neq0$: if $q$ is odd, append $1$ when the corresponding $r_i<0.5$ and $0$ otherwise; set $q\leftarrow\lfloor q/2\rfloor$.\\
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Encoder: uses probabilities to preserve policy}\\
+\textbf{Input:} $P_t$, context $h_t$, key $K_{\mathrm{sh}}$, coded stream $M$, top-$k$.\\
+1. Derive $\DRBG_t$ from $(K_{\mathrm{sh}},h_t)$.\\
+2. Sort behaviors: $\sigma_t\leftarrow\operatorname{argsort}(P_t)$; set $n_t=\min(k,|\B_t|)$.\\
+3. Sample tail with probability $1-\sum_{i\leq n_t}P_t(\sigma_t(i))$; tail emits no bits.\\
+4. Inside top-$n_t$, normalize $P_t$ and recursively split ranks into even/odd groups.\\
+5. Run \BinEnc{} on group masses; consume a coded bit only when the selected path enters the odd group.\\
+6. Advance unused DRBG calls to the fixed budget $\lceil\log_2 n_t\rceil$.\\
+\textbf{Output:} selected behavior $\hat b_t$ and consumed coded bits.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Decoder: uses ranks, never probabilities}\\
+\textbf{Input:} $\hat b_t$, verifier top-$k$ order $\sigma'_t$, context $h_t$, key $K_{\mathrm{sh}}$.\\
+1. Set $n_t=\min(k,|\sigma'_t|)$ and derive the same DRBG sequence.\\
+2. If $\hat b_t\notin\sigma'_t[1:n_t]$, return no bits.\\
+3. Let $q$ be the zero-indexed rank of $\hat b_t$ in $\sigma'_t$.\\
+4. Reconstruct the path by parity: odd $q$ means the encoder entered the odd group and emitted one bit.\\
+5. Decode that bit from the corresponding DRBG draw; set $q\leftarrow\lfloor q/2\rfloor$ and repeat.\\
+6. Consume exactly $\lceil\log_2 n_t\rceil$ DRBG calls, matching the encoder.\\
 \textbf{Output:} decoded coded bits for step $t$.
+\end{minipage}
+
+\vspace{0.5em}
+\textbf{Shared alignment.} Both sides share $(K_{\mathrm{sh}},h_t)$ and the fixed DRBG budget; only the encoder needs calibrated probabilities. Correct decoding requires the verifier to reconstruct the same top-$k$ rank path, after which RLNC pools decoded bits across the audit window.
 \end{minipage}}
-\caption{Decoder sketch. No numeric probability appears in the decoder.}
-\label{fig:dec}
-\end{figure}
+\caption{One-step rank codec. The encoder uses probability masses only to sample from the original behavior policy, while the verifier decodes from the selected behavior's top-$k$ rank path.}
+\label{fig:rank-codec}
+\end{figure*}
 
 \subsection{A Second Invariant Example}
 \label{sec:second-invariant}
