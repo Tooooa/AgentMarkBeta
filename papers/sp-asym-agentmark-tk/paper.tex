@@ -94,7 +94,7 @@ The weakness is not merely numerical. Many verification interfaces intentionally
 
 This observation is especially natural for agents. Candidate behaviors are usually semantic alternatives produced by a planning prompt: a tool call, a navigation operation, a search/refine step, or a social action. A downstream auditor may be able to ask a model to rank plausible next behaviors from the same logged context even if the exact sampling distribution is hidden. In this sense, behavior-level verification has a useful middle ground that token-level watermarking often lacks: ranks are easier to reproduce than calibrated probabilities, and more informative than the selected action alone.
 
-Table~\ref{tab:positioning} summarizes the resulting hierarchy. AgentMark is the symmetric behavioral-watermarking framework, and \agentmark{} is its full-probability instance. \framework{} is the weakly asymmetric counterpart: it keeps the policy-preserving behavior carrier but allows the decoder to depend on a verifier-reconstructible invariant rather than exact probability replay. \ours{} is the rank-order instance of this framework, not a claim that the rank primitive itself is new.
+This gives a three-level hierarchy. AgentMark is the symmetric behavioral-watermarking framework, and \agentmark{} is its full-probability instance. \framework{} is the weakly asymmetric counterpart: it keeps the same behavior-trajectory carrier and preserves the behavior policy $P_t$, but allows the decoder to depend on a verifier-reconstructible invariant rather than exact probability replay. \ours{} is the rank-order instance of this framework, using top-$k$ rank $\sigma_t$ as the verifier channel rather than claiming the rank primitive itself is new.
 
 \subsection{Weak Asymmetry}
 
@@ -231,22 +231,6 @@ Interleaving is important. A top-half/bottom-half split would place most mass in
 \caption{Encoder sketch. The encoder uses probability values only to preserve the marginal behavior distribution.}
 \label{fig:enc}
 \end{figure}
-
-\begin{table}[t]
-\centering
-\caption{Framework and instance positioning. \agentmark{} is the full-probability instance of the symmetric AgentMark framework; \ours{} is the rank-order instance of \framework{}.}
-\label{tab:positioning}
-\resizebox{\columnwidth}{!}{\begin{tabular}{llll}
-\toprule
-Layer & Symmetric side & Weak-asymmetric side & Verifier channel \\
-\midrule
-Framework & AgentMark & \framework{} & Exact channel vs. invariant \\
-Instance & \agentmark{} & \ours{} & Exact $P_t$ vs. top-$k$ rank $\sigma_t$ \\
-Carrier & Agent behaviors & Agent behaviors & Behavior trajectory \\
-Preserved object & Behavior policy $P_t$ & Behavior policy $P_t$ & Distribution-preserving \\
-\bottomrule
-\end{tabular}}
-\end{table}
 
 \subsection{Rank Decoder}
 
@@ -403,21 +387,7 @@ We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023t
 
 Unless otherwise stated, recovery rates are computed from the available offline decoder artifacts. Capacity tables are bit-level channel proxies over logged trajectories and should not be conflated with deployment attribution. Payload recovery is reported as cumulative audit-window recovery: packets from trajectories in the same dataset/model/split/run/configuration are combined before RLNC decoding. This matches the pooled recovery curve in Fig.~\ref{fig:rank-only-pooled} and treats logged trajectories as packet sources for the same cumulative audit window. The 8-bit proxy payload used in the capacity diagnostics is deliberately short so that channel differences are visible on benchmark-length traces; deployment attribution should use longer registered payloads and the false-positive accounting in Section~\ref{sec:false-positive-results}.
 
-Table~\ref{tab:coverage} summarizes the evaluation coverage. Utility and stealth metrics use the available methods, with vanilla reported separately in Appendix~\ref{app:vanilla-baseline}. Decode-capable counts apply to the two watermarking methods because vanilla, clean, and RG trajectories do not carry payload metadata. The two watermarked methods are balanced within each dataset, which avoids comparing rank and symmetric decoders on different trajectory pools.
-
-\begin{table}[t]
-\centering
-\caption{Evaluation coverage after postprocessing.}
-\label{tab:coverage}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lrrr}
-\toprule
-Dataset & Model/split groups & Completed runs & Decode-capable trajectories \\
-\midrule
-ALFWorld & 4 & 3/3 per group & 3,288 (1,644 per watermark) \\
-ToolBench & 2 & 18/18 per group & 1,440 (720 per watermark) \\
-\bottomrule
-\end{tabular}}
-\end{table}
+Evaluation coverage after postprocessing is balanced across the two watermarking methods. ALFWorld contributes four model/split groups with 3/3 completed runs per group and 3,288 decode-capable trajectories, split evenly as 1,644 per watermark. ToolBench contributes two model/split groups with 18/18 completed runs per group and 1,440 decode-capable trajectories, split evenly as 720 per watermark. Utility and stealth metrics use the available methods, with vanilla reported separately in Appendix~\ref{app:vanilla-baseline}; decode-capable counts apply only to the two watermarking methods because vanilla, clean, and RG trajectories do not carry payload metadata.
 
 \subsection{Evaluation Protocol}
 
