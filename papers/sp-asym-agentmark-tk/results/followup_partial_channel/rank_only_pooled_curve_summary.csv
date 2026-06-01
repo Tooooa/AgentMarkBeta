@@ -1,0 +1,49 @@
+view,view_label,model,split,pool_size,sample_repeats,success_mean,success_std,dedup_packet_mean,conflicts_mean
+agentmark,AgentMark-F exact probabilities,deepseek,ID,1,150,0.693333,0.462655,20.633333,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,2,150,0.893333,0.309723,30.906667,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,3,150,0.946667,0.22545,33.506667,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,5,150,1.0,0.0,39.906667,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,8,150,1.0,0.0,50.6,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,10,150,1.0,0.0,52.333333,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,15,150,1.0,0.0,56.84,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,20,150,1.0,0.0,61.64,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,30,150,1.0,0.0,65.153333,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,50,150,1.0,0.0,67.66,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,80,150,1.0,0.0,71.186667,0.0
+agentmark,AgentMark-F exact probabilities,deepseek,ID,100,150,1.0,0.0,72.693333,0.0
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,1,150,0.013333,0.115082,10.193333,0.0
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,2,150,0.02,0.140469,18.673333,1.4
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,3,150,0.026667,0.161647,21.393333,2.793333
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,5,150,0.086667,0.282289,25.206667,7.646667
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,8,150,0.14,0.348149,24.466667,13.28
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,10,150,0.133333,0.341073,27.1,16.206667
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,15,150,0.2,0.40134,26.86,24.36
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,20,150,0.166667,0.373927,25.58,30.22
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,30,150,0.246667,0.432515,20.993333,36.793333
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,50,150,0.14,0.348149,18.62,46.866667
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,80,150,0.12,0.32605,15.133333,53.633333
+agentmark_rank_only,AgentMark-F rank-only linear top-10 surrogate,deepseek,ID,100,150,0.066667,0.250279,13.386667,56.86
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,1,150,0.08,0.272202,4.22,0.0
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,2,150,0.193333,0.396235,7.3,0.153333
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,3,150,0.326667,0.470565,10.513333,0.54
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,5,150,0.4,0.491539,12.84,1.226667
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,8,150,0.506667,0.50163,16.706667,2.94
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,10,150,0.613333,0.488618,17.786667,3.866667
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,15,150,0.726667,0.447164,20.033333,6.06
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,20,150,0.78,0.415634,21.486667,8.086667
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,30,150,0.84,0.367834,21.706667,11.506667
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,50,150,0.806667,0.396235,21.92,17.073333
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,80,150,0.6,0.491539,19.453333,23.42
+rank,AsymAgentMark-TK top-10 rank,deepseek,ID,100,150,0.493333,0.50163,19.046667,25.753333
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,1,150,0.0,0.0,2.093333,0.0
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,2,150,0.006667,0.08165,3.533333,0.113333
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,3,150,0.0,0.0,4.56,0.333333
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,5,150,0.006667,0.08165,7.393333,0.833333
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,8,150,0.006667,0.08165,9.34,2.08
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,10,150,0.006667,0.08165,10.193333,2.826667
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,15,150,0.0,0.0,11.453333,4.513333
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,20,150,0.0,0.0,11.293333,6.4
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,30,150,0.006667,0.08165,11.54,9.413333
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,50,150,0.0,0.0,11.253333,14.306667
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,80,150,0.0,0.0,9.866667,18.073333
+rank_targeted_swap,AsymAgentMark-TK targeted rank swap b=1,deepseek,ID,100,150,0.0,0.0,9.026667,20.133333

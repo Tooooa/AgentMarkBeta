@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560">
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.title{font-size:24px;font-weight:700}.axis{font-size:14px}.tick{font-size:12px;fill:#555}.legend{font-size:14px}.grid{stroke:#ddd;stroke-width:1}.line{fill:none;stroke-width:3}.dot{stroke:white;stroke-width:1.5}</style>
+<text class="title" x="490.0" y="34" text-anchor="middle">Targeted rank-perturbation stress test</text>
+<line x1="82" y1="62" x2="82" y2="488" stroke="#222"/>
+<line x1="82" y1="488" x2="946" y2="488" stroke="#222"/>
+<line class="grid" x1="82" y1="488.0" x2="946" y2="488.0"/>
+<text class="tick" x="70" y="492.0" text-anchor="end">0.00</text>
+<line class="grid" x1="82" y1="381.5" x2="946" y2="381.5"/>
+<text class="tick" x="70" y="385.5" text-anchor="end">0.25</text>
+<line class="grid" x1="82" y1="275.0" x2="946" y2="275.0"/>
+<text class="tick" x="70" y="279.0" text-anchor="end">0.50</text>
+<line class="grid" x1="82" y1="168.5" x2="946" y2="168.5"/>
+<text class="tick" x="70" y="172.5" text-anchor="end">0.75</text>
+<line class="grid" x1="82" y1="62.0" x2="946" y2="62.0"/>
+<text class="tick" x="70" y="66.0" text-anchor="end">1.00</text>
+<text class="tick" x="90.6" y="512" text-anchor="middle">1</text>
+<text class="tick" x="168.4" y="512" text-anchor="middle">10</text>
+<text class="tick" x="254.8" y="512" text-anchor="middle">20</text>
+<text class="tick" x="514.0" y="512" text-anchor="middle">50</text>
+<text class="tick" x="946.0" y="512" text-anchor="middle">100</text>
+<text class="axis" x="490.0" y="540" text-anchor="middle">pooled trajectories per audit window</text>
+<text class="axis" x="22" y="280.0" transform="rotate(-90 22 280.0)" text-anchor="middle">payload recovery rate</text>
+<path class="line" d="M90.6,453.9 L99.3,405.6 L107.9,348.8 L125.2,317.6 L151.1,272.2 L168.4,226.7 L211.6,178.4 L254.8,155.7 L341.2,130.2 L514.0,144.4 L773.2,232.4 L946.0,277.8" stroke="#0072B2"/>
+<circle class="dot" cx="90.6" cy="453.9" r="4" fill="#0072B2"/>
+<circle class="dot" cx="99.3" cy="405.6" r="4" fill="#0072B2"/>
+<circle class="dot" cx="107.9" cy="348.8" r="4" fill="#0072B2"/>
+<circle class="dot" cx="125.2" cy="317.6" r="4" fill="#0072B2"/>
+<circle class="dot" cx="151.1" cy="272.2" r="4" fill="#0072B2"/>
+<circle class="dot" cx="168.4" cy="226.7" r="4" fill="#0072B2"/>
+<circle class="dot" cx="211.6" cy="178.4" r="4" fill="#0072B2"/>
+<circle class="dot" cx="254.8" cy="155.7" r="4" fill="#0072B2"/>
+<circle class="dot" cx="341.2" cy="130.2" r="4" fill="#0072B2"/>
+<circle class="dot" cx="514.0" cy="144.4" r="4" fill="#0072B2"/>
+<circle class="dot" cx="773.2" cy="232.4" r="4" fill="#0072B2"/>
+<circle class="dot" cx="946.0" cy="277.8" r="4" fill="#0072B2"/>
+<line x1="695" y1="114" x2="732" y2="114" stroke="#0072B2" stroke-width="3"/>
+<text class="legend" x="740" y="119">AsymAgentMark-TK</text>
+<path class="line" d="M90.6,488.0 L99.3,485.2 L107.9,488.0 L125.2,485.2 L151.1,485.2 L168.4,485.2 L211.6,488.0 L254.8,488.0 L341.2,485.2 L514.0,488.0 L773.2,488.0 L946.0,488.0" stroke="#CC79A7"/>
+<circle class="dot" cx="90.6" cy="488.0" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="99.3" cy="485.2" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="107.9" cy="488.0" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="125.2" cy="485.2" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="151.1" cy="485.2" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="168.4" cy="485.2" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="211.6" cy="488.0" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="254.8" cy="488.0" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="341.2" cy="485.2" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="514.0" cy="488.0" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="773.2" cy="488.0" r="4" fill="#CC79A7"/>
+<circle class="dot" cx="946.0" cy="488.0" r="4" fill="#CC79A7"/>
+<line x1="695" y1="136" x2="732" y2="136" stroke="#CC79A7" stroke-width="3"/>
+<text class="legend" x="740" y="141">AsymAgentMark-TK targeted swap</text>
+<text class="tick" x="82" y="516">Dataset: ALFWorld, model=deepseek, split=ID, top-k=10</text>
+</svg>

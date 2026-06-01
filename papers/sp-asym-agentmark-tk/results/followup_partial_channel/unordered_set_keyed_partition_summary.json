@@ -1,0 +1,33 @@
+{
+  "invariant": "unordered_set_keyed_partition",
+  "trials": 20000,
+  "actions": 8,
+  "decoded_bits": 30009,
+  "decode_success_rate": 1.0,
+  "bit_error_rate": 0.0,
+  "length_mismatches": 0,
+  "shuffle_invariance_failures": 0,
+  "mean_bits_per_step": 1.50045,
+  "selection_jsd_vs_source": 5.1e-05,
+  "source_probs": {
+    "a0": 0.125,
+    "a1": 0.125,
+    "a2": 0.125,
+    "a3": 0.125,
+    "a4": 0.125,
+    "a5": 0.125,
+    "a6": 0.125,
+    "a7": 0.125
+  },
+  "empirical_probs": {
+    "a0": 0.1263,
+    "a1": 0.1229,
+    "a2": 0.12315,
+    "a3": 0.12725,
+    "a4": 0.1276,
+    "a5": 0.1242,
+    "a6": 0.1218,
+    "a7": 0.1268
+  },
+  "interpretation": "Minimal positive instance on a balanced pseudo distribution: the verifier reconstructs a keyed canonical order from the unordered top-k set; no probability rank is used."
+}
