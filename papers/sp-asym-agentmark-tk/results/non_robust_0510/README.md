@@ -38,21 +38,21 @@
 | ALFWorld | Clean | 4 | 80.04 | 10.51 | 16.23 |
 | ALFWorld | Red-Green | 4 | 74.90 | 13.08 | 17.58 |
 | ALFWorld | AgentMark-F | 4 | 79.43 | 10.73 | 16.58 |
-| ALFWorld | AsymAgentMark-TK | 4 | 78.58 | 10.02 | 16.40 |
+| ALFWorld | AsymMark-R | 4 | 78.58 | 10.02 | 16.40 |
 | ToolBench | Vanilla | 2 | 84.10 | 0.82 | 4.06 |
 | ToolBench | Clean | 2 | 75.65 | 2.42 | 5.32 |
 | ToolBench | Red-Green | 2 | 75.14 | 3.21 | 4.78 |
 | ToolBench | AgentMark-F | 2 | 74.70 | 0.23 | 4.54 |
-| ToolBench | AsymAgentMark-TK | 2 | 77.06 | 0.49 | 5.07 |
+| ToolBench | AsymMark-R | 2 | 77.06 | 0.49 | 5.07 |
 
 ### Strict RLNC recovery main
 
 | Dataset | Method | Cells | Payload Recovery (%) | Recovery Cell Std (%) | Dedup Packets |
 | --- | --- | --- | --- | --- | --- |
 | ALFWorld | AgentMark-F | 4 | 75.75 | 7.69 | 29.21 |
-| ALFWorld | AsymAgentMark-TK | 4 | 34.81 | 13.39 | 11.31 |
+| ALFWorld | AsymMark-R | 4 | 34.81 | 13.39 | 11.31 |
 | ToolBench | AgentMark-F | 12 | 9.58 | 6.48 | 2.78 |
-| ToolBench | AsymAgentMark-TK | 12 | 1.94 | 1.72 | 1.47 |
+| ToolBench | AsymMark-R | 12 | 1.94 | 1.72 | 1.47 |
 
 ### Strict RLNC global recovery
 
@@ -60,25 +60,25 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | overall | ALL | ALL | ALL | 1901 | 4728 | 40.2073 |
 | by_method | ALL | AgentMark-F | ALL | 1314 | 2364 | 55.5838 |
-| by_method | ALL | AsymAgentMark-TK | ALL | 587 | 2364 | 24.8308 |
+| by_method | ALL | AsymMark-R | ALL | 587 | 2364 | 24.8308 |
 | by_dataset | ALFWorld | ALL | ALL | 1818 | 3288 | 55.2920 |
 | by_dataset | ToolBench | ALL | ALL | 83 | 1440 | 5.7639 |
 | by_dataset_method | ALFWorld | AgentMark-F | ALL | 1245 | 1644 | 75.7299 |
-| by_dataset_method | ALFWorld | AsymAgentMark-TK | ALL | 573 | 1644 | 34.8540 |
+| by_dataset_method | ALFWorld | AsymMark-R | ALL | 573 | 1644 | 34.8540 |
 | by_dataset_method | ToolBench | AgentMark-F | ALL | 69 | 720 | 9.5833 |
-| by_dataset_method | ToolBench | AsymAgentMark-TK | ALL | 14 | 720 | 1.9444 |
+| by_dataset_method | ToolBench | AsymMark-R | ALL | 14 | 720 | 1.9444 |
 | by_method_model | ALL | AgentMark-F | deepseek | 613 | 1182 | 51.8613 |
 | by_method_model | ALL | AgentMark-F | gemini-flash | 701 | 1182 | 59.3063 |
-| by_method_model | ALL | AsymAgentMark-TK | deepseek | 205 | 1182 | 17.3435 |
-| by_method_model | ALL | AsymAgentMark-TK | gemini-flash | 382 | 1182 | 32.3181 |
+| by_method_model | ALL | AsymMark-R | deepseek | 205 | 1182 | 17.3435 |
+| by_method_model | ALL | AsymMark-R | gemini-flash | 382 | 1182 | 32.3181 |
 | by_dataset_method_model | ALFWorld | AgentMark-F | deepseek | 570 | 822 | 69.3431 |
 | by_dataset_method_model | ALFWorld | AgentMark-F | gemini-flash | 675 | 822 | 82.1168 |
-| by_dataset_method_model | ALFWorld | AsymAgentMark-TK | deepseek | 195 | 822 | 23.7226 |
-| by_dataset_method_model | ALFWorld | AsymAgentMark-TK | gemini-flash | 378 | 822 | 45.9854 |
+| by_dataset_method_model | ALFWorld | AsymMark-R | deepseek | 195 | 822 | 23.7226 |
+| by_dataset_method_model | ALFWorld | AsymMark-R | gemini-flash | 378 | 822 | 45.9854 |
 | by_dataset_method_model | ToolBench | AgentMark-F | deepseek | 43 | 360 | 11.9444 |
 | by_dataset_method_model | ToolBench | AgentMark-F | gemini-flash | 26 | 360 | 7.2222 |
-| by_dataset_method_model | ToolBench | AsymAgentMark-TK | deepseek | 10 | 360 | 2.7778 |
-| by_dataset_method_model | ToolBench | AsymAgentMark-TK | gemini-flash | 4 | 360 | 1.1111 |
+| by_dataset_method_model | ToolBench | AsymMark-R | deepseek | 10 | 360 | 2.7778 |
+| by_dataset_method_model | ToolBench | AsymMark-R | gemini-flash | 4 | 360 | 1.1111 |
 
 ### Top-k ablation main
 

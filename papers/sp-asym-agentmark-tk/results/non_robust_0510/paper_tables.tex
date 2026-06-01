@@ -11,12 +11,12 @@ ALFWorld & Vanilla & 69.10 & 6.91 & 16.54 \\
 ALFWorld & Clean & 80.04 & 10.51 & 16.23 \\
 ALFWorld & Red-Green & 74.90 & 13.08 & 17.58 \\
 ALFWorld & AgentMark-F & 79.43 & 10.73 & 16.58 \\
-ALFWorld & AsymAgentMark-TK & 78.58 & 10.02 & 16.40 \\
+ALFWorld & AsymMark-R & 78.58 & 10.02 & 16.40 \\
 ToolBench & Vanilla & 84.10 & 0.82 & 4.06 \\
 ToolBench & Clean & 75.65 & 2.42 & 5.32 \\
 ToolBench & Red-Green & 75.14 & 3.21 & 4.78 \\
 ToolBench & AgentMark-F & 74.70 & 0.23 & 4.54 \\
-ToolBench & AsymAgentMark-TK & 77.06 & 0.49 & 5.07 \\
+ToolBench & AsymMark-R & 77.06 & 0.49 & 5.07 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -31,9 +31,9 @@ ToolBench & AsymAgentMark-TK & 77.06 & 0.49 & 5.07 \\
 Dataset & Method & Recovery (\%) & Std & Packets \\
 \midrule
 ALFWorld & AgentMark-F & 75.75 & 7.69 & 29.21 \\
-ALFWorld & AsymAgentMark-TK & 34.81 & 13.39 & 11.31 \\
+ALFWorld & AsymMark-R & 34.81 & 13.39 & 11.31 \\
 ToolBench & AgentMark-F & 9.58 & 6.48 & 2.78 \\
-ToolBench & AsymAgentMark-TK & 1.94 & 1.72 & 1.47 \\
+ToolBench & AsymMark-R & 1.94 & 1.72 & 1.47 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -41,7 +41,7 @@ ToolBench & AsymAgentMark-TK & 1.94 & 1.72 & 1.47 \\
 \begin{table}[t]
 \centering
 \small
-\caption{Top-k ablation for AsymAgentMark-TK.}
+\caption{Top-k ablation for AsymMark-R.}
 \label{tab:topk-0510}
 \begin{tabular}{lllll}
 \toprule
@@ -73,9 +73,9 @@ ToolBench & 20 & 3.47 & 50.46 & 0.056 \\
 Dataset & Method & Config & Match (\%) & $\log_{10} p$ \\
 \midrule
 ALFWorld & AgentMark-F & L0\_exact\_probs & 100.00 & -15.051 \\
-ALFWorld & AsymAgentMark-TK & top10 & 95.50 & -11.850 \\
+ALFWorld & AsymMark-R & top10 & 95.50 & -11.850 \\
 ToolBench & AgentMark-F & L0\_exact\_probs & 100.00 & -7.743 \\
-ToolBench & AsymAgentMark-TK & top10 & 100.00 & -6.556 \\
+ToolBench & AsymMark-R & top10 & 100.00 & -6.556 \\
 \bottomrule
 \end{tabular}
 \end{table}

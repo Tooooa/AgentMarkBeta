@@ -1,6 +1,6 @@
 # 论文手画图规划
 
-本文的图不应该只是把算法步骤画出来，而要服务一条主线：AgentMark-F 在 exact-probability channel 下很强，但真实审计经常只有 top-k rank；AsymAgentMark-TK 的贡献是把 decoder statistic 从 probability bin 换成 rank path，从而修复 verifier-channel robustness 缺口。
+本文的图不应该只是把算法步骤画出来，而要服务一条主线：AgentMark-F 在 exact-probability channel 下很强，但真实审计经常只有 top-k rank；AsymMark-R 的贡献是把 decoder statistic 从 probability bin 换成 rank path，从而修复 verifier-channel robustness 缺口。
 
 ## 总体建议
 
@@ -226,8 +226,8 @@
 
 - AgentMark-F exact channel 强；
 - AgentMark-F top-10 rank-only collapse；
-- AsymAgentMark-TK exact channel 稍弱；
-- AsymAgentMark-TK top-10 保留更多信号。
+- AsymMark-R exact channel 稍弱；
+- AsymMark-R top-10 保留更多信号。
 
 ### 预期内容
 

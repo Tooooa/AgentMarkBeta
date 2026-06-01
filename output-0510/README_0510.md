@@ -1,6 +1,6 @@
 # output-0510 干净实验目录
 
-本目录是按 AsymAgentMark-TK 实验设计整理后的最终干净数据入口。这里不再保留旧数据与补跑数据并列的混合结构；每个 task/split 只暴露一份最终被统一审计接受的合规记录。原先不合规或缺失的数据，已由 `output_supplement_0426_fix` 中的补跑合规结果替换。
+本目录是按 AsymMark-R 实验设计整理后的最终干净数据入口。这里不再保留旧数据与补跑数据并列的混合结构；每个 task/split 只暴露一份最终被统一审计接受的合规记录。原先不合规或缺失的数据，已由 `output_supplement_0426_fix` 中的补跑合规结果替换。
 
 ## 当前阶段状态
 
@@ -18,7 +18,7 @@
 
 ## 实验口径
 
-- 方法：`vanilla`、`clean`、`rg`、`agentmark`、`rank`，分别对应 A0 Vanilla、A1 Clean、A2 Red-Green、A3 AgentMark-F、A4 AsymAgentMark-TK/Ours。
+- 方法：`vanilla`、`clean`、`rg`、`agentmark`、`rank`，分别对应 A0 Vanilla、A1 Clean、A2 Red-Green、A3 AgentMark-F、A4 AsymMark-R/Ours。
 - 模型：`gemini-flash` = Gemini Flash 2.0，`deepseek` = DeepSeek v3.2；历史 `deepseek-chat` 结果按 v3.2 口径保留。
 - ALFWorld：按实际可加载 canonical 范围，ID `0-139` 共 140 条，OOD `0-133` 共 134 条，每个 split 3 轮。
 - ToolBench：6 个 split，每 split 20 条，每个方法/模型 3 轮。

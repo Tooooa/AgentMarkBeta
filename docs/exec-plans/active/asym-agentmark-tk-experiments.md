@@ -1,14 +1,14 @@
-# AsymAgentMark-TK 后续实验执行计划
+# AsymMark-R 后续实验执行计划
 
 ## 状态
 - 状态：第 2 周后处理与 A3/A4 RLNC 恢复已完成
 - 实验目录：`/root/autodl-tmp/AgentMarkcg/AgentMarkBeta`
-- 外部设计文档：`/root/autodl-tmp/output-0510/docs/AsymAgentMark-TK 实验设计细节 3980516290a282a3b00c818c4f23654f.md`
+- 外部设计文档：`/root/autodl-tmp/output-0510/docs/AsymMark-R 实验设计细节 3980516290a282a3b00c818c4f23654f.md`
 - 轨迹根目录：`/root/autodl-tmp/output-0510`
 - 输出根目录：`output/asym_agentmark_tk/`
 
 ## 当前结论
-- 已接入 ALFWorld 的 `rank` 采样路由，使 A4 `AsymAgentMark-TK` 不再退回 differential。
+- 已接入 ALFWorld 的 `rank` 采样路由，使 A4 `AsymMark-R` 不再退回 differential。
 - 已新增只读分析入口 `experiments/asym_agentmark_tk/scripts/analyze_available_trajectories.py`，用于扫描现有输出并生成覆盖率、效用保持和 JSD 口径的统一报告。
 - 已新增 Stage A 运行入口 `experiments/asym_agentmark_tk/scripts/run_stage_a_matrix.py`，用于按方法、模型、数据集、轮次生成轨迹；API key 只从环境变量读取，不写入生成配置。
 - 2026-05-10 已基于 `/root/autodl-tmp/output-0510` 完成第 2 周离线后处理：阶段 B、阶段 C 后处理部分、阶段 D 的 4.1。

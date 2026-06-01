@@ -1,4 +1,4 @@
-# AsymAgentMark-TK Capacity and Perception Artifacts
+# AsymMark-R Capacity and Perception Artifacts
 
 - Input root: `/root/autodl-tmp/output-0510`
 - Output dir: `/root/autodl-tmp/output-0510/asym_agentmark_tk`
@@ -15,7 +15,7 @@
 ## Capacity Metrics
 
 - `capacity_l0_l6_proxy.*` is a bit-level offline channel proxy for L0-L6 and Top-k trend analysis.
-- `topk_ablation.*` is the AsymAgentMark-TK/rank-only Top-k ablation.
+- `topk_ablation.*` is the AsymMark-R/rank-only Top-k ablation.
 - `capacity_rlnc_exact_recovery.*` is the strict A3/A4 RLNC bit-exact payload recovery table and must not be mixed with proxy capacity claims.
 - Proxy `C_eff` is reported as `c_eff_proxy_bits = c_nom_proxy_bits * payload_recovery_rate`, where `c_nom_proxy_bits` is the mean decoded proxy bits per trajectory available from logged metadata.
 

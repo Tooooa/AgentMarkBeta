@@ -39,9 +39,9 @@ L2 top-8 and L4 top-4 were already present in the canonical non-robust artifact;
 | Dataset | Method | L0 Ceff | L1 Ceff | L2 Ceff | L3 Ceff | L4 Ceff | L5 Ceff | L6 Ceff |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | ALFWorld | AgentMark-F | 19.692 | 0.333 | 0.106 | 0.089 | 0.040 | 0.032 | 0.000 |
-| ALFWorld | AsymAgentMark-TK | 7.707 | 1.000 | 0.606 | 0.364 | 0.131 | 0.053 | 0.000 |
+| ALFWorld | AsymMark-R | 7.707 | 1.000 | 0.606 | 0.364 | 0.131 | 0.053 | 0.000 |
 | ToolBench | AgentMark-F | 0.248 | 0.009 | 0.000 | 0.000 | 0.004 | 0.000 | 0.000 |
-| ToolBench | AsymAgentMark-TK | 0.053 | 0.050 | 0.032 | 0.010 | 0.009 | 0.000 | 0.000 |
+| ToolBench | AsymMark-R | 0.053 | 0.050 | 0.032 | 0.010 | 0.009 | 0.000 | 0.000 |
 
 ## D. ALFWorld k* extension
 

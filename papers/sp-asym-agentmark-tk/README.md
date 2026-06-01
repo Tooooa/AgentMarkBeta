@@ -1,4 +1,4 @@
-# AsymAgentMark-TK S&P Paper Package
+# AsymMark-R S&P Paper Package
 
 This directory contains a submission-oriented draft for an IEEE S&P-style
 security paper on weakly asymmetric behavioral watermarking for LLM agents.

@@ -1,4 +1,4 @@
-# AsymAgentMark-TK 论文故事线梳理
+# AsymMark-R 论文故事线梳理
 
 ## 一句话主线
 
@@ -28,7 +28,7 @@
 
 AgentMark-F 的故事是：LLM agent 每步诱导一个行为分布 `P_t`，水印采样器必须保持 `Pr[\hat b_t=b]=P_t(b)`，否则长期任务效用会被水印扰动。它用 differential recombination 和 cyclic shift 在概率分布上切 bin，然后嵌入多 bit。这个方案的优势是 exact-channel 下容量高；弱点是 decoder 也必须重建相同的 `P_t` 和相同的 bin 边界。
 
-Rank 方法，也就是当前 `algorithm="rank"` 的 AsymAgentMark-TK，在算法原语上承接弱非对称隐写的 rank construction；相对 AgentMark-F，它改变的是行为水印的编解码结构本身，而不是只改 decoder。代码路径是：
+Rank 方法，也就是当前 `algorithm="rank"` 的 AsymMark-R，在算法原语上承接弱非对称隐写的 rank construction；相对 AgentMark-F，它改变的是行为水印的编解码结构本身，而不是只改 decoder。代码路径是：
 
 - `agentmark/core/watermark_sampler.py` 中的 `Dist`、`BinEncStep`、`RankEncStep`、`RankDecStep`；
 - `sample_behavior_rank` 与 `rank_based_decoder` 作为 SDK 适配接口；
@@ -37,7 +37,7 @@ Rank 方法，也就是当前 `algorithm="rank"` 的 AsymAgentMark-TK，在算�
 
 关键技术差异如下：
 
-| 维度 | AgentMark-F | AsymAgentMark-TK |
+| 维度 | AgentMark-F | AsymMark-R |
 | --- | --- | --- |
 | 编码结构 | 概率差分重组 + cyclic shift | top-k 排名排序 + 奇偶递归二叉树 |
 | 发送端输入 | 完整 `P_t` | 完整 `P_t` |
@@ -88,7 +88,7 @@ LLM agent 的关键产物是 trajectory：工具调用、子目标选择、环�
 
 - Utility：rank 水印在 ALFWorld/ToolBench 上与 clean/AgentMark-F 接近。
 - Stealth/JSD：行为分布相对 clean 没有明显异常。
-- Capacity proxy：exact-channel 下 AgentMark-F 更强；rank-only 下 AgentMark-F collapse，AsymAgentMark-TK 保留信号。
+- Capacity proxy：exact-channel 下 AgentMark-F 更强；rank-only 下 AgentMark-F collapse，AsymMark-R 保留信号。
 - Top-k ablation：k 越大容量越高，但 rank 稳定风险也更高。
 - Rank noise/erasure：明确边界是 rank swap 和短轨迹方程不足。
 
@@ -121,7 +121,7 @@ LLM agent 的关键产物是 trajectory：工具调用、子目标选择、环�
 
 标题建议保留：
 
-> AsymAgentMark-TK: Weakly Asymmetric Behavioral Watermarking for LLM Agents
+> AsymMark-R: Weakly Asymmetric Behavioral Watermarking for LLM Agents
 
 摘要第一句就要把载体讲清楚：agent provenance must cover tool calls, subgoal choices, and embodied actions, not only text. 第二段写 rank-only verifier。第三段给结果，但必须标注 current postprocessed/offline proxy，避免 reviewers 抓“8-bit payload 不够生产认证”的漏洞。
 

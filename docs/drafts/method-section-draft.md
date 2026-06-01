@@ -6,13 +6,13 @@
 >
 > - **AgentMark**: ACL 前作的 general paradigm（Huang et al. 2026）
 > - **AgentMark-F**: ACL 的具体实例化（FDPSS-style, 对称方案）
-> - **AsymAgentMark**: 本文的 general paradigm（非对称 AgentMark）
-> - **AsymAgentMark-T**: 本文的具体实例化（Top-k rank-based binary splitting）
+> - **AsymMark**: 本文的 general paradigm（非对称 AgentMark）
+> - **AsymMark-R**: 本文的具体实例化（Top-k rank-based binary splitting）
 >
 > **与 ACL 前作的核心区别**：
 >
 > - ACL (AgentMark-F): 对称方案，encoder/decoder 都需要精确概率分布 $P_t$
-> - Ours (AsymAgentMark-T): 弱非对称方案，encoder 需要 $P_t$，decoder 仅需 rank ordering $\sigma_t$
+> - Ours (AsymMark-R): 弱非对称方案，encoder 需要 $P_t$，decoder 仅需 rank ordering $\sigma_t$
 > - 新的威胁模型：adversary 可以扰动概率值（temperature/quantization/fine-tuning）
 
 ---
@@ -49,19 +49,19 @@ This assumption is empirically well-supported: rank ordering is stable under tem
 
 ---
 
-## 4. AsymAgentMark: Asymmetric Behavioral Watermarking
+## 4. AsymMark: Asymmetric Behavioral Watermarking
 
-We propose **AsymAgentMark**, an *asymmetric* extension of the AgentMark paradigm. While both AsymAgentMark and AgentMark-F share the distribution-preservation goal, AsymAgentMark **redesigns both the encoder and decoder**: the encoder replaces differential recombination with a binary partition tree over rank-sorted behaviors, and the decoder exploits the tree's structural property to extract bits from rank positions alone, without probability values. This co-design is essential—AgentMark-F's differential recombination encodes bits into probability-dependent bins that cannot be recovered from rank information alone, so asymmetric decoding requires a fundamentally different encoding scheme.
+We propose **AsymMark**, an *asymmetric* extension of the AgentMark paradigm. While both AsymMark and AgentMark-F share the distribution-preservation goal, AsymMark **redesigns both the encoder and decoder**: the encoder replaces differential recombination with a binary partition tree over rank-sorted behaviors, and the decoder exploits the tree's structural property to extract bits from rank positions alone, without probability values. This co-design is essential—AgentMark-F's differential recombination encodes bits into probability-dependent bins that cannot be recovered from rank information alone, so asymmetric decoding requires a fundamentally different encoding scheme.
 
-We present a concrete instantiation, **AsymAgentMark-T**, which operates on the top-$k$ ranked behaviors via recursive binary splitting. The "-T" denotes top-$k$ rank-based encoding: the encoder restricts attention to the $k$ highest-probability behaviors, embeds bits within this subset, and falls back to standard sampling for tail behaviors. This top-$k$ focus both concentrates embedding capacity on the most informative actions and aligns naturally with common inference-time truncation strategies.
+We present a concrete instantiation, **AsymMark-R**, which operates on the top-$k$ ranked behaviors via recursive binary splitting. The "-T" denotes top-$k$ rank-based encoding: the encoder restricts attention to the $k$ highest-probability behaviors, embeds bits within this subset, and falls back to standard sampling for tail behaviors. This top-$k$ focus both concentrates embedding capacity on the most informative actions and aligns naturally with common inference-time truncation strategies.
 
 **Core insight.** The binary partition tree maps each behavior to a unique leaf via interleaved splitting. The path from root to leaf is fully determined by the behavior's rank in the sorted ordering—the rank expressed in binary *is* the path. This structural correspondence is what enables asymmetric decoding: the encoder uses probability values to make distribution-preserving group selections (via $\mathsf{BinEnc}$), while the decoder reads the same path back from the rank alone.
 
 ### 4.1 Overview
 
-> **[Figure 2 规划]**：与 ACL Figure 2 对称的布局。左侧 Agent Workflow 保持一致（沿用 ACL 的 agent loop 示意）。右侧 AsymAgentMark-T 替换原有的 DiffRecombine + CyclicShift 模块，改为：Sort by rank → Top-k selection → Binary Partition Tree → BinEnc per level。底部新增一个对比框："Decoder requires: AgentMark-F needs $P_t$ (exact) vs. AsymAgentMark-T needs $\sigma_t$ (rank only)"，用颜色区分。
+> **[Figure 2 规划]**：与 ACL Figure 2 对称的布局。左侧 Agent Workflow 保持一致（沿用 ACL 的 agent loop 示意）。右侧 AsymMark-R 替换原有的 DiffRecombine + CyclicShift 模块，改为：Sort by rank → Top-k selection → Binary Partition Tree → BinEnc per level。底部新增一个对比框："Decoder requires: AgentMark-F needs $P_t$ (exact) vs. AsymMark-R needs $\sigma_t$ (rank only)"，用颜色区分。
 
-Figure 2 illustrates AsymAgentMark-T within the agent workflow. At each round $t$:
+Figure 2 illustrates AsymMark-R within the agent workflow. At each round $t$:
 
 1. The agent elicits an explicit behavior distribution $P_t$ over $\mathcal{B}_t$ (identical to AgentMark-F).
 2. The encoder sorts $\mathcal{B}_t$ by descending probability, selects the top-$k$ behaviors, and embeds bits via recursive binary splitting over this subset ($\mathsf{RankEnc}$). If the sampled action falls outside the top-$k$, no bits are embedded for that step.
@@ -71,7 +71,7 @@ The keyed pseudorandomness mechanism is identical to AgentMark-F (Eq. 9 of Huang
 
 ### 4.2 Rank-Based Distribution-Preserving Encoding
 
-AsymAgentMark-T replaces AgentMark-F's differential recombination with a binary partition tree over the top-$k$ rank-sorted distribution. The construction has two levels: a binary/Users/local/AgentMarkBeta/docs/drafts/method-section-draft.md encoding primitive ($\mathsf{BinEnc}$) and a recursive wrapper ($\mathsf{RankEnc}$).
+AsymMark-R replaces AgentMark-F's differential recombination with a binary partition tree over the top-$k$ rank-sorted distribution. The construction has two levels: a binary/Users/local/AgentMarkBeta/docs/drafts/method-section-draft.md encoding primitive ($\mathsf{BinEnc}$) and a recursive wrapper ($\mathsf{RankEnc}$).
 
 #### Binary Encoding Primitive
 
@@ -87,9 +87,9 @@ The encoder selects the high-mass group if $r_m < S_{\text{hi}}$ (embedding 0 bi
 
 #### Recursive Encoding with Top-$k$ Selection
 
-> **[Figure 3 规划]**：5-action 示例，与 ACL 的 differential recombination 示例并排对比。左列标 "AgentMark-F: DiffRecombine → Bins → CyclicShift"，右列标 "AsymAgentMark-T: Top-k → Sort → Binary Partition Tree"。底部 highlight：同一个 action 被选中后，AgentMark-F 解码需要精确概率重建 bin，AsymAgentMark-T 解码只需 rank 位置。
+> **[Figure 3 规划]**：5-action 示例，与 ACL 的 differential recombination 示例并排对比。左列标 "AgentMark-F: DiffRecombine → Bins → CyclicShift"，右列标 "AsymMark-R: Top-k → Sort → Binary Partition Tree"。底部 highlight：同一个 action 被选中后，AgentMark-F 解码需要精确概率重建 bin，AsymMark-R 解码只需 rank 位置。
 
-**Algorithm 1: AsymAgentMark-T $\mathsf{Encode}$ (one step)**
+**Algorithm 1: AsymMark-R $\mathsf{Encode}$ (one step)**
 
 ```
 Require: P_t over B_t, context (t, h_t), shared secret K_sh,
@@ -112,7 +112,7 @@ Ensure:  selected behavior b̂_t, embedded bits s_t, updated ℓ
 14: return b̂_t, s_t, ℓ
 ```
 
-**Top-$k$ selection (lines 3–6).** Rather than encoding over the full behavior set, AsymAgentMark-T restricts to the $k$ highest-probability behaviors. This design is motivated by three considerations: (1) *rank stability*—the top-$k$ ranks are the most robust to probability perturbation, since the probability gap between top-ranked behaviors is typically larger than among tail behaviors; (2) *inference alignment*—many agent deployments already apply top-$k$ truncation, making this a natural fit; (3) *embedding concentration*—the top-$k$ behaviors carry the majority of probability mass, so restricting to them sacrifices little capacity while improving robustness. When $k = |\mathcal{B}_t|$, AsymAgentMark-T reduces to full-distribution encoding.
+**Top-$k$ selection (lines 3–6).** Rather than encoding over the full behavior set, AsymMark-R restricts to the $k$ highest-probability behaviors. This design is motivated by three considerations: (1) *rank stability*—the top-$k$ ranks are the most robust to probability perturbation, since the probability gap between top-ranked behaviors is typically larger than among tail behaviors; (2) *inference alignment*—many agent deployments already apply top-$k$ truncation, making this a natural fit; (3) *embedding concentration*—the top-$k$ behaviors carry the majority of probability mass, so restricting to them sacrifices little capacity while improving robustness. When $k = |\mathcal{B}_t|$, AsymMark-R reduces to full-distribution encoding.
 
 **Interleaved partition.** At each level, we partition the sorted distribution into even-indexed and odd-indexed elements. Since the distribution is sorted descending, the even-indexed group (containing ranks 0, 2, 4, ...) always has total mass $\geq$ the odd-indexed group (ranks 1, 3, 5, ...). This interleaving ensures approximately balanced group masses, maximizing the per-level embedding opportunity. A naive top-half/bottom-half split would create a dominant high-mass group, causing $\mathsf{BinEnc}$ to almost always select it with near-zero embedding rate.
 
@@ -120,11 +120,11 @@ Ensure:  selected behavior b̂_t, embedded bits s_t, updated ℓ
 
 ### 4.3 Weakly Asymmetric Decoding
 
-The central contribution of AsymAgentMark is a **co-designed encoder–decoder pair** where the encoder's binary partition tree structure directly enables a decoder that requires strictly less information. The encoder's tree design is not incidental—it is the structural prerequisite that makes asymmetric decoding possible.
+The central contribution of AsymMark is a **co-designed encoder–decoder pair** where the encoder's binary partition tree structure directly enables a decoder that requires strictly less information. The encoder's tree design is not incidental—it is the structural prerequisite that makes asymmetric decoding possible.
 
 **Key observation.** The binary partition tree maps each behavior to a unique leaf. The path from root to a behavior's leaf is fully determined by the behavior's rank within the top-$k$ set: at each level, membership in the high-mass or low-mass group corresponds to whether the current index is even or odd—i.e., the parity of the rank at that level. Therefore, the rank in binary *is* the encoding path. This property is unique to the interleaved binary partition; AgentMark-F's differential bins do not admit such rank-based path recovery.
 
-**Algorithm 2: AsymAgentMark-T $\mathsf{Decode}$ (one step)**
+**Algorithm 2: AsymMark-R $\mathsf{Decode}$ (one step)**
 
 ```
 Require: b̂_t, rank ordering σ_t, context (t, h_t), shared secret K_sh,
@@ -156,9 +156,9 @@ Ensure:  extracted bitstring s_t
 
 ### 4.4 Comparison with AgentMark-F
 
-Both AgentMark-F and AsymAgentMark-T are distribution-preserving instantiations of the AgentMark paradigm. They differ in the decomposition strategy, the decoder information requirement, and the resulting robustness profile:
+Both AgentMark-F and AsymMark-R are distribution-preserving instantiations of the AgentMark paradigm. They differ in the decomposition strategy, the decoder information requirement, and the resulting robustness profile:
 
-|                         | AgentMark-F (Huang et al., 2026)           | AsymAgentMark-T (Ours)                               |
+|                         | AgentMark-F (Huang et al., 2026)           | AsymMark-R (Ours)                               |
 | ----------------------- | ------------------------------------------ | ---------------------------------------------------- |
 | **Decomposition** | Differential recombination → uniform bins | Top-$k$ rank-sorted binary partition tree          |
 | **Encoder input** | $P_t$ (exact probabilities)              | $P_t$ (exact probabilities)                        |
@@ -168,19 +168,19 @@ Both AgentMark-F and AsymAgentMark-T are distribution-preserving instantiations 
 | **Robustness**    | Erasure/truncation (via RLNC)              | Erasure + distribution perturbation                  |
 | **Vulnerability** | Probability perturbation breaks bin sync   | Rank-swap attacks (within top-$k$) break rank sync |
 
-**When to prefer which.** AgentMark-F achieves higher embedding rates in controlled environments where exact $P_t$ is available at decode time (e.g., the embedder and verifier share the same API and configuration). AsymAgentMark-T is preferred when the verifier cannot guarantee exact $P_t$—the common case in open-world deployments where agents are re-served, fine-tuned, or accessed through different API configurations. The top-$k$ restriction further improves robustness by focusing on the most rank-stable behaviors.
+**When to prefer which.** AgentMark-F achieves higher embedding rates in controlled environments where exact $P_t$ is available at decode time (e.g., the embedder and verifier share the same API and configuration). AsymMark-R is preferred when the verifier cannot guarantee exact $P_t$—the common case in open-world deployments where agents are re-served, fine-tuned, or accessed through different API configurations. The top-$k$ restriction further improves robustness by focusing on the most rank-stable behaviors.
 
-**Compatibility with RLNC.** AsymAgentMark-T is fully compatible with the RLNC erasure coding layer of AgentMark-F. The per-step embedded bits $s_t$ from $\mathsf{Encode}$ can serve as RLNC coded packets in the same way as AgentMark-F's cyclic-shift output (Section 4.3 of Huang et al., 2026).
+**Compatibility with RLNC.** AsymMark-R is fully compatible with the RLNC erasure coding layer of AgentMark-F. The per-step embedded bits $s_t$ from $\mathsf{Encode}$ can serve as RLNC coded packets in the same way as AgentMark-F's cyclic-shift output (Section 4.3 of Huang et al., 2026).
 
 ### 4.5 Security Properties
 
-AsymAgentMark-T achieves the same security guarantees as AgentMark-F, through a different construction:
+AsymMark-R achieves the same security guarantees as AgentMark-F, through a different construction:
 
-**Distribution preservation.** $\mathsf{BinEnc}$ with uniform message bits produces a marginal that exactly matches $P_t$ over the top-$k$ set (Proposition 1; proof in Appendix B). Combined with the probability-proportional tail fallback (Algorithm 1, line 4–5), the overall marginal matches $P_t$ across all behaviors. Both AsymAgentMark-T and AgentMark-F satisfy the same distribution-preservation property (Eq. 1), but through entirely different mechanisms: AgentMark-F via differential recombination over probability-dependent uniform bins, AsymAgentMark-T via recursive $\mathsf{BinEnc}$ over a rank-sorted binary partition tree.
+**Distribution preservation.** $\mathsf{BinEnc}$ with uniform message bits produces a marginal that exactly matches $P_t$ over the top-$k$ set (Proposition 1; proof in Appendix B). Combined with the probability-proportional tail fallback (Algorithm 1, line 4–5), the overall marginal matches $P_t$ across all behaviors. Both AsymMark-R and AgentMark-F satisfy the same distribution-preservation property (Eq. 1), but through entirely different mechanisms: AgentMark-F via differential recombination over probability-dependent uniform bins, AsymMark-R via recursive $\mathsf{BinEnc}$ over a rank-sorted binary partition tree.
 
 **Undetectability.** Under the PRF assumption on HMAC-SHA512, the DRBG output is computationally indistinguishable from uniform random bits, making the watermarked behavior sequence indistinguishable from unwatermarked sampling. This follows directly from the Meteor DRBG security argument [Kaptchuk et al., 2021] and the FDPSS framework [Liao et al., 2025].
 
-**New: Perturbation robustness.** By Theorem 1, AsymAgentMark-T additionally guarantees correct decoding under any distribution perturbation that preserves the top-$k$ rank ordering—a property that AgentMark-F does not possess. The top-$k$ restriction strengthens this guarantee: the probability gaps among the most dominant behaviors are typically larger, making their ranks more resistant to perturbation. We quantify this boundary (i.e., the minimum probability gap required for top-$k$ rank stability under temperature scaling and quantization) in Section 5.
+**New: Perturbation robustness.** By Theorem 1, AsymMark-R additionally guarantees correct decoding under any distribution perturbation that preserves the top-$k$ rank ordering—a property that AgentMark-F does not possess. The top-$k$ restriction strengthens this guarantee: the probability gaps among the most dominant behaviors are typically larger, making their ranks more resistant to perturbation. We quantify this boundary (i.e., the minimum probability gap required for top-$k$ rank stability under temperature scaling and quantization) in Section 5.
 
 ---
 
@@ -196,7 +196,7 @@ AsymAgentMark-T achieves the same security guarantees as AgentMark-F, through a 
 
 > **TODO for next revision:**
 >
-> - [ ] 画 Figure 2 (System Overview, with AgentMark-F vs AsymAgentMark-T decoder comparison)
+> - [ ] 画 Figure 2 (System Overview, with AgentMark-F vs AsymMark-R decoder comparison)
 > - [ ] 画 Figure 3 (Top-k Binary Partition Tree 示例, side-by-side with differential recombination)
 > - [ ] 补充 tie-breaking 讨论（概率相等时 rank 不稳定）
 > - [ ] 确认 Section 3 与 ACL paper 的 notation 完全一致
