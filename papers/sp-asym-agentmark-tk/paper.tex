@@ -13,7 +13,8 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{enumitem}
 
-\newcommand{\ours}{AsymAgentMark-TK}
+\newcommand{\framework}{AsymMark}
+\newcommand{\ours}{AsymMark-R}
 \newcommand{\agentmark}{AgentMark-F}
 \newcommand{\Enc}{\ensuremath{\mathsf{Enc}}}
 \newcommand{\Dec}{\ensuremath{\mathsf{Dec}}}
@@ -24,7 +25,7 @@
 \newcommand{\B}{\mathcal{B}}
 \newcommand{\Ceff}{\ensuremath{C_{\mathrm{eff}}}}
 
-\title{\ours: Weakly Asymmetric Behavioral Watermarking for LLM Agents}
+\title{\framework: Weakly Asymmetric Behavioral Watermarking for LLM Agents}
 
 \author{}
 
@@ -34,7 +35,7 @@
 \begin{abstract}
 Autonomous large language model (LLM) agents increasingly act through tool calls, subgoal choices, and embodied decisions, so provenance must cover behavior trajectories, not final text alone. Distribution-preserving behavioral watermarks address this setting, but the leading construction is symmetric: decoding requires the verifier to reconstruct the same per-step probabilities used at embedding time. We argue that this is an incomplete robustness target. Real audit interfaces often expose rounded top-$k$ APIs, refreshed models, or proxy scorers that preserve the order of plausible behaviors while perturbing their probabilities. We show that this is a structural verifier-channel failure mode rather than an implementation detail: under rank-stable top-$k$ truncation, a symmetric probability-bin decoder still flips decoded bits on a large fraction of steps, up to 51\% at top-4 on ALFWorld, even though the selected behavior and top-$k$ ranking are unchanged.
 
-We propose \ours{}, a weakly asymmetric behavioral watermark that uses probability values only to preserve the embedder's behavior distribution, while making the recoverable code depend on the invariant that survives common audit interfaces: rank order. Rank is a middle channel, more stable than calibrated probabilities and more informative than the selected action alone. We score schemes by effective capacity, $\Ceff=C_{\mathrm{nom}}\times\mathrm{DSR}$, which separates the embedder's nominal opportunity from the capacity that survives the verifier's view, and we validate a rank-noise path-corruption boundary empirically. On ALFWorld and ToolBench across DeepSeek and Gemini Flash, \ours{} preserves task utility and behavior-frequency stealth, retains rank-only provenance signal where exact-probability decoding collapses, and recovers diagnostic payloads over pooled audit windows via RLNC. Behavioral watermarking should therefore make verifier-channel knowledge a first-class robustness dimension, decoding from the invariant that survives rather than the probabilities that do not.
+We propose \framework{}, a weakly asymmetric behavioral watermarking framework that decouples the policy-preserving embedding channel from a verifier-reconstructible decoding invariant. A valid invariant must be reconstructible from the verifier's restricted view, independent of the numeric probabilities used to preserve the embedder's behavior distribution, and sufficient to index a shared partition path. We instantiate the framework as \ours{}, which uses top-$k$ rank order as that invariant. Rank is a middle channel, more stable than calibrated probabilities and more informative than the selected action alone. We score schemes by effective capacity, $\Ceff=C_{\mathrm{nom}}\times\mathrm{DSR}$, which separates the embedder's nominal opportunity from the capacity that survives the verifier's view, and we validate a rank-noise path-corruption boundary empirically. On ALFWorld and ToolBench across DeepSeek and Gemini Flash, \ours{} preserves task utility and behavior-frequency stealth, retains rank-only provenance signal where exact-probability decoding collapses, and recovers diagnostic payloads over pooled audit windows via RLNC. Behavioral watermarking should therefore make verifier-channel knowledge a first-class robustness dimension, decoding from the invariant that survives rather than the probabilities that do not.
 \end{abstract}
 
 \section{Introduction}
@@ -48,9 +49,9 @@ However, \agentmark{} is symmetric: decoding requires the verifier to reconstruc
 
 This is not only an implementation inconvenience; it is a structural verifier-channel failure mode. \agentmark{}'s differential bins are functions of probability masses. Two distributions can induce the same top-$k$ order but move a cumulative boundary across a rank position, causing the same selected behavior to decode to a different bin. Thus a state-of-the-art exact-channel behavioral watermark can look strong under its native metric yet fail in the practically important rank-only audit channel. The lesson is broader than one implementation: behavioral watermarking should measure the channel available to the verifier, not only the capacity available to the embedder.
 
-This paper asks whether behavioral provenance can be robust to verifier perturbations that preserve rank order but not calibrated probabilities. We show, in a scoped weak-asymmetry setting, that the answer can be yes by importing the principle of weakly asymmetric steganography~\cite{weakasym2026} into LLM-agent behavior channels. In our setting, the embedder has the full behavior distribution $P_t$, but the verifier observes only partial channel knowledge: the top-$k$ rank ordering $\sigma_t$. This setting is weaker than exact-probability verification but stronger than fully asymmetric verification with no channel knowledge. It matches common audit interfaces that expose candidate rankings without calibrated probabilities. The central insight is that rank is a useful intermediate channel: it is more stable than calibrated probability values and more informative than the selected action alone.
+This paper asks whether behavioral provenance can be robust when the verifier has partial channel knowledge rather than calibrated probabilities. We formulate \framework{}, a weakly asymmetric behavioral watermarking framework for agent trajectories. In this framework, the embedder may use the full behavior distribution $P_t$ to preserve the agent policy, while the verifier decodes from an invariant that can be reconstructed from its restricted view. This setting is weaker than exact-probability verification but stronger than fully asymmetric verification with no channel knowledge. The rank-order view is the first concrete instance: common audit interfaces often expose candidate rankings without calibrated probabilities, and rank is more stable than calibrated probability values while still more informative than the selected action alone.
 
-We present \ours, a top-$k$ rank-based behavioral watermark. The rank-splitting primitive is not claimed as a new steganographic primitive; it is adapted from weakly asymmetric rank-based steganography~\cite{weakasym2026}. Our contribution is to instantiate that partial-channel idea in AgentMark's behavior channel, where candidate actions rather than text tokens carry provenance, and to specify the synchronization, coding, and audit protocol needed for logged agent trajectories. The encoder sorts behaviors by probability and recursively partitions the top-$k$ list into even and odd ranks. At each level, a binary distribution-preserving primitive uses probability masses to choose a group without changing the marginal policy. The decoder, by contrast, never uses probability values: the selected behavior's rank determines the path through the same interleaved partition tree, and odd branches reveal embedded bits. A fixed-budget deterministic random bit generator (DRBG) schedule ensures that encoder and decoder consume the same pseudorandomness even when no bit is embedded at a level.
+We instantiate the framework as \ours{}, a top-$k$ rank-based behavioral watermark. The rank-splitting primitive is not claimed as a new steganographic primitive; it is adapted from weakly asymmetric rank-based steganography~\cite{weakasym2026}. Our contribution is to make the weak-asymmetry abstraction explicit for AgentMark's behavior channel, where candidate actions rather than text tokens carry provenance, and to specify the synchronization, coding, and audit protocol needed for logged agent trajectories. The encoder sorts behaviors by probability and recursively partitions the top-$k$ list into even and odd ranks. At each level, a binary distribution-preserving primitive uses probability masses to choose a group without changing the marginal policy. The decoder, by contrast, never uses probability values: the selected behavior's rank determines the path through the same interleaved partition tree, and odd branches reveal embedded bits. A fixed-budget deterministic random bit generator (DRBG) schedule ensures that encoder and decoder consume the same pseudorandomness even when no bit is embedded at a level.
 
 We organize the evaluation around effective capacity,
 \begin{equation}
@@ -62,10 +63,10 @@ The claim is intentionally scoped. The paper establishes a channel-knowledge tra
 
 Our contributions are:
 \begin{itemize}[leftmargin=*]
+  \item \textbf{Weakly asymmetric behavioral watermarking framework.} We formulate \framework{} as a framework that decouples the policy-preserving embedding channel from a verifier-reconstructible decoding invariant. The invariant must be recoverable from the verifier's restricted view, independent of calibrated probability values, and sufficient to index the decoder's partition path. This framing makes verifier-channel knowledge an explicit design object rather than an implicit replay assumption.
+  \item \textbf{Rank instantiation and audit protocol.} We instantiate \framework{} as \ours{}, using top-$k$ rank order as the decoding invariant. The rank primitive is adapted from weakly asymmetric steganography~\cite{weakasym2026}; the new contribution is its agent-behavior instantiation with fixed $\lceil\log_2 n_t\rceil$ DRBG synchronization and deterministic RLNC over logged trajectories.
   \item \textbf{Verifier-channel failure mode, formalized and measured.} We identify probability-bin instability as a distinct robustness dimension, formalize it in Lemma~1, and empirically quantify it: under rank-stable top-$k$ truncation, \agentmark{}'s bins still change on 13.7\% of ALFWorld DeepSeek steps at top-10 and 56.8\% at top-4, with matching decoded-bit flips of 11.1\% and 51.3\%. We also measure rank-noise path corruption against the Proposition~2 empirical envelope in Fig.~\ref{fig:prop2-noise}.
-  \item \textbf{Effective-capacity yardstick.} We adopt $\Ceff=C_{\mathrm{nom}}\times\mathrm{DSR}$ to score a watermark by the capacity that survives the verifier's channel rather than only the embedder's channel, making exact-probability and rank-only collapse directly comparable.
-  \item \textbf{Weak-asymmetric agent watermark instantiation and protocol.} We port the weakly asymmetric rank primitive~\cite{weakasym2026}, which we do not claim as new, into AgentMark's behavior channel and specify the audit protocol around it: top-$k$ verifier views, fixed $\lceil\log_2 n_t\rceil$ DRBG synchronization, and deterministic RLNC over logged trajectories.
-  \item \textbf{Audit-window evidence model.} We separate strict per-trajectory attribution from pooled audit-window recovery and give the packet-scarcity bound in Proposition~3, explaining why short ToolBench traces can be weak individually yet recover when pooled.
+  \item \textbf{Effective-capacity and audit-window evidence model.} We adopt $\Ceff=C_{\mathrm{nom}}\times\mathrm{DSR}$ to score capacity that survives the verifier's channel, and separate strict per-trajectory attribution from pooled audit-window recovery through the packet-scarcity bound in Proposition~3.
   \item \textbf{Four-axis evaluation with live cross-model calibration.} We evaluate on ALFWorld~\cite{shridhar2021alfworld} and ToolBench~\cite{qin2023toolllm} across DeepSeek and Gemini Flash along capacity, stealth, robustness, and evidence-strength axes. Beyond offline channel sweeps, the live ToolBench cross-model rerank study exposes a direction-dependent operating point: DeepSeek-to-Gemini is best at top-3, while Gemini-to-DeepSeek is best at top-5 (Fig.~\ref{fig:l5-rank-depth}).
 \end{itemize}
 
@@ -91,11 +92,11 @@ The weakness is not merely numerical. Many verification interfaces intentionally
 
 This observation is especially natural for agents. Candidate behaviors are usually semantic alternatives produced by a planning prompt: a tool call, a navigation operation, a search/refine step, or a social action. A downstream auditor may be able to ask a model to rank plausible next behaviors from the same logged context even if the exact sampling distribution is hidden. In this sense, behavior-level verification has a useful middle ground that token-level watermarking often lacks: ranks are easier to reproduce than calibrated probabilities, and more informative than the selected action alone.
 
-Table~\ref{tab:positioning} summarizes the resulting distinction. \ours{} is not a replacement for text watermarking; it targets the behavior carrier that remains after plans are compiled into tool calls or environment actions. It is also not a capacity improvement over symmetric AgentMark when exact probabilities are available. Its purpose is to preserve AgentMark's behavior-policy guarantee while weakening the verifier's channel requirement.
+Table~\ref{tab:positioning} summarizes the resulting hierarchy. AgentMark is the symmetric behavioral-watermarking framework, and \agentmark{} is its full-probability instance. \framework{} is the weakly asymmetric counterpart: it keeps the policy-preserving behavior carrier but allows the decoder to depend on a verifier-reconstructible invariant rather than exact probability replay. \ours{} is the rank-order instance of this framework, not a claim that the rank primitive itself is new.
 
 \subsection{Weak Asymmetry}
 
-Provably secure steganography traditionally separates symmetric settings, where sender and receiver share channel distributions, from asymmetric settings, where the receiver has no channel oracle~\cite{hopper2002provably,kaptchuk2021meteor}. Weak asymmetry occupies the middle ground: the sender has the full channel, while the receiver has partial but nontrivial channel knowledge~\cite{weakasym2026}. We instantiate this idea for behavioral watermarking. The embedder uses $P_t$ to preserve the agent policy; the verifier uses only $\sigma_t=\operatorname{argsort}_k(P_t)$ to decode.
+Provably secure steganography traditionally separates symmetric settings, where sender and receiver share channel distributions, from asymmetric settings, where the receiver has no channel oracle~\cite{hopper2002provably,kaptchuk2021meteor}. Weak asymmetry occupies the middle ground: the sender has the full channel, while the receiver has partial but nontrivial channel knowledge~\cite{weakasym2026}. We lift this idea from a single rank primitive to an agent-watermarking framework. The embedder uses $P_t$ to preserve the agent policy; the verifier uses a lower-dimensional invariant that is easier to reconstruct than calibrated probabilities. In \ours{}, that invariant is $\sigma_t=\operatorname{argsort}_k(P_t)$.
 
 \section{Problem Formulation}
 \label{sec:formulation}
@@ -104,12 +105,15 @@ Provably secure steganography traditionally separates symmetric settings, where 
 
 For a trajectory of length $T$, each step $t$ has a behavior set $\B_t=\{b_{t,1},\ldots,b_{t,N_t}\}$ and a behavior distribution $P_t$ induced by the agent and environment context. A watermarking key $K_{\mathrm{sh}}$ and step context $h_t$ derive per-step pseudorandomness. The embedder encodes a payload $m\in\{0,1\}^L$ into selected behaviors $\hat b_1,\ldots,\hat b_T$ while preserving $P_t$ at each step.
 
-The verifier observes a possibly incomplete set of indices $I\subseteq\{1,\ldots,T\}$ and, for each observed step, the selected behavior $\hat b_t$ plus channel side information. In the symmetric setting, the side information is $P_t$ or an exact reconstruction. In our setting, it is the top-$k$ ordering $\sigma_t$.
+The verifier observes a possibly incomplete set of indices $I\subseteq\{1,\ldots,T\}$ and, for each observed step, the selected behavior $\hat b_t$ plus channel side information. In the symmetric setting, the side information is $P_t$ or an exact reconstruction. In the weakly asymmetric setting, the side information is a verifier-reconstructible invariant; in \ours{}, it is the top-$k$ ordering $\sigma_t$.
 
 \textbf{Verifier knowledge.}
 We distinguish three verifier views. In the \emph{exact view}, the verifier receives $P_t$ and can run the same decoder as the embedder. In the \emph{rank view}, the verifier receives only $\sigma_t^k=(b_{(1)},\ldots,b_{(k)})$, the ordered list of the top-$k$ behaviors. In the \emph{selected-only view}, the verifier receives only $\hat b_t$ and no usable channel side information. The exact view is a useful upper bound; the rank view is the deployment target of \ours{}; the selected-only view is a negative control showing that behavioral provenance cannot be recovered from actions alone without some channel side information.
 
 For evaluation we instantiate these views as a channel-knowledge ladder. $L0$ is exact probability access. $L1$--$L5$ progressively restrict the verifier to top-$10$, top-$8$, top-$6$, top-$4$, and top-$2$ ordered candidates. $L6$ is the selected-only negative control. This ladder is not a claim that every API exposes exactly these levels; it is a controlled way to ask how usable capacity changes as the verifier loses calibrated probability information.
+
+\textbf{Decodable invariants.}
+\framework{} separates the embedding channel from the decoding channel through a per-step invariant $z_t=\phi(P_t,\B_t)$. A useful weak-asymmetric invariant must satisfy three conditions. First, it must be reconstructible from the verifier's restricted view, such as a rounded top-$k$ API or proxy scorer. Second, it must be independent of the numeric probability values used by the embedder to preserve $\Pr[\hat b_t=b]=P_t(b)$. Third, it must be sufficient to index the shared partition path that turns a selected behavior into coded bits. Top-$k$ rank order satisfies these conditions for \ours{}: the verifier can reconstruct an ordered candidate list, probability-value perturbations do not change the path when the order is stable, and the selected behavior's rank identifies the even/odd partition decisions. Other invariants are possible in principle; Section~\ref{sec:discussion} returns to this broader design space.
 
 \textbf{Rank consistency.}
 For two distributions $P_t$ and $P'_t$ over the same candidate list, define top-$k$ rank consistency as
@@ -131,7 +135,7 @@ The audit boundary is therefore explicit. The verifier needs a trajectory log wh
 A scheme should satisfy:
 \begin{itemize}[leftmargin=*]
   \item \textbf{Utility preservation}: $\Pr[\hat b_t=b]=P_t(b)$ per step.
-  \item \textbf{Weak-asymmetric correctness}: if $\operatorname{argsort}_k(P'_t)=\operatorname{argsort}_k(P_t)$, decoding from $P'_t$'s order returns the same bits as decoding from $P_t$'s order.
+  \item \textbf{Weak-asymmetric correctness}: if the verifier reconstructs the same invariant $z_t$ as the embedder, decoding returns the same bits; for \ours{}, this means $\operatorname{argsort}_k(P'_t)=\operatorname{argsort}_k(P_t)$.
   \item \textbf{Low false positives}: for a fixed pre-registered $L$-bit claim, a clean or unrelated trajectory should recover that exact payload with probability $2^{-L}$ when decoded bits are independent of the claim.
   \item \textbf{Erasure tolerance}: payload recovery should degrade gracefully when only a subset of steps is observed.
 \end{itemize}
@@ -148,7 +152,7 @@ For an audited trajectory, the verifier decodes a multiset of coded bits and att
 
 \subsection{Overview}
 
-\ours{} has four components, summarized in Fig.~\ref{fig:system}. First, the agent elicits or estimates $P_t$ over candidate behaviors, following AgentMark's black-box-compatible behavior-distribution interface~\cite{agentmark2026}. Second, the encoder sorts behaviors by descending probability and restricts embedding to the top-$k$ region. Third, it applies the interleaved rank split from weakly asymmetric steganography~\cite{weakasym2026} to behavior candidates rather than text symbols, preserving the behavior distribution while making the selected rank decodable. Fourth, deterministic RLNC maps the payload into a stream of coded bits so that the verifier can solve for the payload after observing enough independent coded bits.
+\ours{}, the rank instance of \framework{}, has four components, summarized in Fig.~\ref{fig:system}. First, the agent elicits or estimates $P_t$ over candidate behaviors, following AgentMark's black-box-compatible behavior-distribution interface~\cite{agentmark2026}. Second, the encoder computes the rank invariant by sorting behaviors and restricting embedding to the top-$k$ region. Third, it applies the interleaved rank split from weakly asymmetric steganography~\cite{weakasym2026} to behavior candidates rather than text symbols, preserving the behavior distribution while making the selected rank decodable. Fourth, deterministic RLNC maps the payload into a stream of coded bits so that the verifier can solve for the payload after observing enough independent coded bits.
 
 \begin{figure*}[t]
 \centering
@@ -183,7 +187,7 @@ Reconstruct only the top-$k$ order $\sigma'_t$ from a restricted API or proxy mo
 Decode bits from the rank of $\hat b_t$; solve RLNC equations for the payload.
 \end{tabular}
 \end{minipage}}
-\caption{System view of weakly asymmetric behavioral watermarking. The embedder needs calibrated probabilities to preserve utility; the verifier needs only rank order for decoding, plus enough observed coded bits for RLNC recovery.}
+\caption{System view of \ours{}, the rank-order instance of \framework{}. The embedder needs calibrated probabilities to preserve utility; the verifier needs only the rank invariant for decoding, plus enough observed coded bits for RLNC recovery.}
 \label{fig:system}
 \end{figure*}
 
@@ -228,15 +232,16 @@ Interleaving is important. A top-half/bottom-half split would place most mass in
 
 \begin{table}[t]
 \centering
-\caption{Positioning against nearby watermarking settings.}
+\caption{Framework and instance positioning. \agentmark{} is the full-probability instance of the symmetric AgentMark framework; \ours{} is the rank-order instance of \framework{}.}
 \label{tab:positioning}
 \resizebox{\columnwidth}{!}{\begin{tabular}{llll}
 \toprule
-Scheme & Carrier & Preserved object & Verifier channel \\
+Layer & Symmetric side & Weak-asymmetric side & Verifier channel \\
 \midrule
-Token watermarks & Text tokens & Text distribution & Generated text/statistic \\
-\agentmark{} & Agent behaviors & Behavior policy $P_t$ & Exact $P_t$ \\
-\ours{} & Agent behaviors & Behavior policy $P_t$ & Top-$k$ rank $\sigma_t$ \\
+Framework & AgentMark & \framework{} & Exact channel vs. invariant \\
+Instance & \agentmark{} & \ours{} & Exact $P_t$ vs. top-$k$ rank $\sigma_t$ \\
+Carrier & Agent behaviors & Agent behaviors & Behavior trajectory \\
+Preserved object & Behavior policy $P_t$ & Behavior policy $P_t$ & Distribution-preserving \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -645,6 +650,9 @@ Tool-use traces are shorter and often contain fewer semantically viable actions 
 \textbf{Rank consistency is observable.}
 Unlike exact probability equality, rank consistency can be measured directly during verification. A verifier can report top-$k$ agreement, Kendall tau distance, or adjacent-swap rates to calibrate confidence.
 
+\textbf{Rank is one invariant, not the whole framework.}
+\framework{} is defined by the separation between a policy-preserving embedding channel and a verifier-reconstructible decoding invariant. Top-$k$ rank order is the invariant we implement and evaluate because it is naturally exposed by restricted agent APIs and sufficient to recover the interleaved partition path. Other candidate invariants could instantiate the same framework in future work, including coarse quantized probability buckets, signs of pairwise comparisons or Kendall-style order constraints, and top-1 plus unordered candidate-set information. These alternatives may trade capacity, stability, and verifier cost differently; this paper focuses on the rank instance because it gives a clean first operating point.
+
 \textbf{Why not fully asymmetric verification?}
 A verifier that sees only the selected action has too little information to distinguish a keyed watermark from ordinary policy variation without shifting the agent's behavior distribution. The selected-only negative-control view in our evaluation reflects this limit. \ours{} therefore takes a middle position: it does not require calibrated probabilities, but it does require a reproducible candidate ranking. This is a practical assumption for many audited agents because tool schemas, admissible environment actions, and candidate lists are often easier to reconstruct than exact sampling probabilities.
 
@@ -658,13 +666,13 @@ A practical verifier should not treat every low-confidence trajectory as a negat
 The evaluation establishes the channel-knowledge tradeoff: rank-only verification can preserve useful signal when exact-probability verification is unavailable. The strongest current results are diagnostic and pooled: strict single-trajectory recovery is limited by packet scarcity, while pooled evidence recovers once enough trajectories or audit-window steps are available. A production deployment should add three engineering checks before relying on decoded payloads for attribution: live end-to-end RLNC recovery, calibrated cross-model rank reconstruction for the deployed verifier model or API, and pre-registered decision thresholds for positive, inconclusive, and negative outcomes. These checks are operational rather than conceptual, but they are important for turning weak-asymmetric provenance into an audit procedure.
 
 \textbf{What the contribution is not.}
-\ours{} is not a claim that rank-only decoding dominates symmetric decoding on every metric. It intentionally gives up exact-channel capacity to remove a verifier-channel assumption that is fragile in realistic audits. The contribution is the robustness boundary and the corresponding repair: when calibrated probabilities cannot be trusted but top-$k$ ranks can, decode from the invariant that survives.
+\framework{} is not a rebranding of the rank primitive from weakly asymmetric steganography, and \ours{} is not a claim that rank-only decoding dominates symmetric decoding on every metric. The primitive is borrowed; the contribution is the agent-watermarking framework around verifier-reconstructible invariants, plus the rank instance, robustness boundary, and audit protocol. \ours{} intentionally gives up exact-channel capacity to remove a verifier-channel assumption that is fragile in realistic audits: when calibrated probabilities cannot be trusted but top-$k$ ranks can, decode from the invariant that survives.
 
 \section{Related Work}
 \label{sec:related-work}
 
 \textbf{LLM and agent watermarking.}
-Token-level LLM watermarking modifies or tests generated text distributions~\cite{kirchenbauer2023watermark,dathathri2024synthid}. Follow-up work studies reliability under paraphrasing, mixed documents, and edit-style perturbations~\cite{kirchenbauer2024reliability,kuditipudi2024robust}. These methods are complementary to behavioral watermarking because agents often compile natural-language plans into structured actions, where the final text may no longer carry the decision signal. AgentMark~\cite{agentmark2026} is the closest prior work and establishes distribution-preserving behavioral watermarking. \ours{} keeps its utility-preservation objective but weakens the verifier's channel requirement. The novelty is to make verifier-channel knowledge an explicit design and evaluation axis rather than assuming the verifier can replay the embedder's probability channel.
+Token-level LLM watermarking modifies or tests generated text distributions~\cite{kirchenbauer2023watermark,dathathri2024synthid}. Follow-up work studies reliability under paraphrasing, mixed documents, and edit-style perturbations~\cite{kirchenbauer2024reliability,kuditipudi2024robust}. These methods are complementary to behavioral watermarking because agents often compile natural-language plans into structured actions, where the final text may no longer carry the decision signal. AgentMark~\cite{agentmark2026} is the closest prior work and establishes distribution-preserving behavioral watermarking; \agentmark{} is its exact-probability instance. \framework{} is the weakly asymmetric counterpart: it keeps the policy-preserving objective but makes verifier-channel knowledge an explicit design and evaluation axis rather than assuming the verifier can replay the embedder's probability channel.
 
 \textbf{Behavior-level provenance for agents.}
 Recent agent watermarking work shows that the behavior trajectory itself can carry provenance evidence. Agent Guide biases an agent toward keyed behavior subsets and detects the resulting trajectory statistic~\cite{agentguide2025}; it is simple and model-agnostic, but its watermark signal comes from an intentional behavior-distribution shift. AgentMark~\cite{agentmark2026} instead preserves the per-step behavior distribution and embeds payload bits through symmetric differential recombination, making it the direct predecessor of this paper. Sequential behavioral watermarking further encodes signals across action transitions and detects them in a position-agnostic way~\cite{seqwm2026}. These lines are complementary to our channel-knowledge question. \ours{} is not another detector statistic over selected actions; it asks what channel information the verifier must reconstruct to decode a distribution-preserving behavioral payload. Its answer is top-$k$ rank order rather than exact probability values.
@@ -673,7 +681,7 @@ Recent agent watermarking work shows that the behavior trajectory itself can car
 Most text-watermark robustness work asks whether a detector can still identify generated text after rewriting or mixing. Our robustness target is different: the observed behavior may be unchanged, but the verifier's reconstruction of the behavior distribution may differ from the embedder's. This makes probability-value perturbation a channel-knowledge problem rather than an output-editing problem. \ours{} addresses this by designing the decoded statistic to be rank position, not a probability-dependent bin.
 
 \textbf{Steganography and distribution-preserving sampling.}
-Provably secure steganography formalizes indistinguishability between cover and stego content~\cite{hopper2002provably}. Meteor provides a practical cryptographic construction for realistic distributions~\cite{kaptchuk2021meteor}, while later work improves payload embedding under language-model channels through undetectable or sparse-sampling constructions~\cite{christ2024undetectable,zamir2024steganography,sparsamp2025}. Weakly asymmetric steganography studies receivers with partial channel knowledge and gives the rank-based construction that we rely on~\cite{weakasym2026}. \ours{} does not claim this rank primitive as original; it adapts the primitive from token/text channels to planning-behavior channels, couples it with AgentMark's distribution-preserving behavior interface and RLNC recovery layer, and evaluates the resulting verifier-knowledge tradeoff on agent trajectories.
+Provably secure steganography formalizes indistinguishability between cover and stego content~\cite{hopper2002provably}. Meteor provides a practical cryptographic construction for realistic distributions~\cite{kaptchuk2021meteor}, while later work improves payload embedding under language-model channels through undetectable or sparse-sampling constructions~\cite{christ2024undetectable,zamir2024steganography,sparsamp2025}. Weakly asymmetric steganography studies receivers with partial channel knowledge and gives the rank-based construction that \ours{} relies on~\cite{weakasym2026}. We do not claim this rank primitive as original. The framework-level contribution is to identify verifier-reconstructible invariants as the missing layer for behavioral watermarking; the instance-level contribution is to adapt the rank primitive from token/text channels to planning-behavior channels, couple it with AgentMark's distribution-preserving behavior interface and RLNC recovery layer, and evaluate the resulting verifier-knowledge tradeoff on agent trajectories.
 
 \textbf{Erasure coding for partial logs.}
 Random linear network coding is a standard way to recover a payload from any sufficiently independent subset of coded symbols~\cite{ho2006random}. In behavioral watermarking, this abstraction is useful because trajectories are naturally partial: failed steps, missing telemetry, and verifier-side top-$k$ misses all become erasures. Our contribution is not a new erasure code; it is the rank-only step decoder that supplies coded bits to the existing erasure-tolerant layer.
@@ -716,9 +724,9 @@ Watermarking creates governance risks as well as benefits. A false or overconfid
 \section{Conclusion}
 \label{sec:conclusion}
 
-Behavioral provenance for LLM agents should not depend on a verifier reproducing exact per-step probabilities. This paper identifies probability-bin instability as a verifier-channel failure mode for symmetric behavioral watermarking and shows that top-$k$ rank order can retain useful watermark signal while preserving the agent's marginal behavior policy. By replacing probability-dependent bins with a rank-decodable binary partition tree, \ours{} trades some exact-channel nominal capacity for usable effective capacity under realistic partial-channel verification. This weakly asymmetric view makes behavioral watermarking better aligned with how agents are actually audited: decode from the invariant that survives.
+Behavioral provenance for LLM agents should not depend on a verifier reproducing exact per-step probabilities. This paper identifies probability-bin instability as a verifier-channel failure mode for symmetric behavioral watermarking and formulates \framework{}, a weakly asymmetric framework that decouples the policy-preserving embedding channel from a verifier-reconstructible decoding invariant. Its rank instance, \ours{}, shows that top-$k$ rank order can retain useful watermark signal while preserving the agent's marginal behavior policy. By replacing probability-dependent bins with a rank-decodable binary partition tree, \ours{} trades some exact-channel nominal capacity for usable effective capacity under realistic partial-channel verification. This weakly asymmetric view makes behavioral watermarking better aligned with how agents are actually audited: decode from the invariant that survives.
 
-These results establish partial-channel feasibility. Exact-channel \agentmark{} remains attractive when the original behavior probabilities are available; \ours{} targets the common audit setting where only ranks can be reconstructed reliably. Closing the remaining deployment gap requires longer live trajectories, end-to-end coded-payload recovery, and cross-model rank calibration.
+These results establish partial-channel feasibility. Exact-channel \agentmark{} remains attractive when the original behavior probabilities are available; \framework{} targets audit settings where the verifier can reconstruct an invariant but not the full distribution, and \ours{} instantiates that idea with ranks. Closing the remaining deployment gap requires longer live trajectories, end-to-end coded-payload recovery, and cross-model rank calibration.
 
 \appendices
 
