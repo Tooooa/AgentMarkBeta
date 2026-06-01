@@ -452,7 +452,7 @@ The central empirical comparison is not simply whether \ours{} has higher recove
 
 \subsection{Undetectability Axis: Utility Preservation}
 
-Table~\ref{tab:utility} reports average task success and steps. On ALFWorld, \ours{} reaches 78.6\% success versus 80.0\% for clean and 79.4\% for \agentmark{}. On ToolBench, \ours{} reaches 77.1\%. The source utility artifact records run-level variation: ALFWorld rank groups have standard deviations up to 2.89 percentage points, while ToolBench rank entries are about 11 percentage points because they aggregate six heterogeneous splits. We therefore interpret these aggregates conservatively: rank encoding stays close to the ALFWorld clean and symmetric pipelines and does not exhibit the large utility tax associated with naive behavior bias, but small one- or two-point differences are not treated as significant.
+Table~\ref{tab:utility} reports average task success and steps for the watermarking and bias baselines. On ALFWorld, \ours{} reaches 78.6\% success versus 80.0\% for clean and 79.4\% for \agentmark{}. On ToolBench, \ours{} reaches 77.1\%. The source utility artifact records run-level variation: ALFWorld rank groups have standard deviations up to 2.89 percentage points, while ToolBench rank entries are about 11 percentage points because they aggregate six heterogeneous splits. We therefore interpret these aggregates conservatively: rank encoding stays close to the ALFWorld clean and symmetric pipelines and does not exhibit the large utility tax associated with naive behavior bias, but small one- or two-point differences are not treated as significant. Vanilla agent utility is reported separately in Appendix~\ref{app:vanilla-baseline}.
 
 \begin{table}[t]
 \centering
@@ -462,15 +462,13 @@ Table~\ref{tab:utility} reports average task success and steps. On ALFWorld, \ou
 \toprule
 Dataset & Method & Success & Steps & Groups \\
 \midrule
-\multirow{5}{*}{ALFWorld}
-& Vanilla & 69.1 & 16.54 & 4 \\
+\multirow{4}{*}{ALFWorld}
 & Clean & 80.0 & 16.23 & 4 \\
 & RG & 74.9 & 17.58 & 4 \\
 & \agentmark{} & 79.4 & 16.58 & 4 \\
 & \ours{} & 78.6 & 16.40 & 4 \\
 \midrule
-\multirow{4}{*}{ToolBench}
-& Vanilla & 84.1 & 4.06 & 2 \\
+\multirow{3}{*}{ToolBench}
 & RG & 75.1 & 4.78 & 2 \\
 & \agentmark{} & 74.7 & 4.54 & 2 \\
 & \ours{} & 77.1 & 5.07 & 2 \\
@@ -486,11 +484,11 @@ We compare empirical action distributions against clean trajectories using Jense
 \centering
 \caption{Mean JSD to clean behavior frequency. Lower is closer to clean.}
 \label{tab:jsd}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrr}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrr}
 \toprule
-Dataset & \agentmark{} & \ours{} & RG & Vanilla \\
+Dataset & \agentmark{} & \ours{} & RG \\
 \midrule
-ALFWorld & 0.122 & 0.121 & 0.134 & 0.564 \\
+ALFWorld & 0.122 & 0.121 & 0.134 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -846,6 +844,25 @@ ALFWorld & \agentmark{} & OOD & 1.00 & 1.00 & 1.00 \\
 ALFWorld & \ours{} & OOD & 1.00 & 1.00 & 1.00 \\
 ToolBench & \agentmark{} & all splits & 1.00 & 1.00 & 1.00 \\
 ToolBench & \ours{} & all splits & 1.00 & 1.00 & 1.00 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\section{Vanilla Baseline}
+\label{app:vanilla-baseline}
+
+Vanilla agent results are kept separate from the paired ALFWorld/ToolBench comparison tables because they are not watermarking or behavior-bias configurations. In the canonical 0510 utility artifact, the vanilla agent reaches 69.1\% success with 16.54 steps on ALFWorld and 84.1\% success with 4.06 steps on ToolBench.
+
+\begin{table}[h]
+\centering
+\caption{Vanilla agent utility, reported separately from the main paired comparison tables.}
+\label{tab:vanilla-baseline}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrr}
+\toprule
+Dataset & Success & Steps & Groups \\
+\midrule
+ALFWorld & 69.1 & 16.54 & 4 \\
+ToolBench & 84.1 & 4.06 & 2 \\
 \bottomrule
 \end{tabular}}
 \end{table}
