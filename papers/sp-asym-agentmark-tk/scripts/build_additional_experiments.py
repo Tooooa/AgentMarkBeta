@@ -624,28 +624,35 @@ def make_channel_ladder_svg(rows: list[dict[str, Any]]) -> str:
     x_offsets = {"ALFWorld": 95, "ToolBench": 725}
     y0 = 95
     colors = {"AgentMark-F": "#D55E00", "AsymAgentMark-TK": "#0072B2"}
-    max_y = max(float(r["c_eff_proxy_bits"]) for r in rows) or 1.0
-    max_y = math.ceil(max_y)
+    l0_by_series = {
+        (r["dataset"], r["method"]): float(r["c_eff_proxy_bits"])
+        for r in rows
+        if int(r["level"]) == 0
+    }
+
+    def retained(row: dict[str, Any]) -> float:
+        base = l0_by_series.get((row["dataset"], row["method"]), 0.0)
+        return float(row["c_eff_proxy_bits"]) / base if base > 0 else 0.0
 
     def x(level: int, x0: int) -> float:
         return x0 + level / 6 * panel_w
 
     def y(value: float) -> float:
-        return y0 + panel_h - value / max_y * panel_h
+        return y0 + panel_h - value * panel_h
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#FFFFFF"/>',
         '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.title{font-size:30px;font-weight:700}.label{font-size:21px}.tick{font-size:16px;fill:#555}.legend{font-size:19px}</style>',
-        '<text class="title" x="650" y="42" text-anchor="middle">Effective capacity over verifier-channel degradation</text>',
+        '<text class="title" x="650" y="42" text-anchor="middle">Relative capacity retained under verifier-channel degradation</text>',
     ]
     for dataset, x0 in x_offsets.items():
         parts.append(f'<text class="label" x="{x0 + panel_w/2}" y="{y0 - 28}" text-anchor="middle">{dataset}</text>')
         parts.append(f'<rect x="{x0}" y="{y0}" width="{panel_w}" height="{panel_h}" fill="none" stroke="#333"/>')
         for frac in (0, 0.25, 0.5, 0.75, 1.0):
-            yy = y(frac * max_y)
+            yy = y(frac)
             parts.append(f'<line x1="{x0}" x2="{x0 + panel_w}" y1="{yy}" y2="{yy}" stroke="#E8E8E8"/>')
-            parts.append(f'<text class="tick" x="{x0 - 10}" y="{yy + 5}" text-anchor="end">{frac * max_y:.1f}</text>')
+            parts.append(f'<text class="tick" x="{x0 - 10}" y="{yy + 5}" text-anchor="end">{frac:.2f}</text>')
         for level in range(7):
             xx = x(level, x0)
             parts.append(f'<line x1="{xx}" x2="{xx}" y1="{y0}" y2="{y0 + panel_h}" stroke="#F2F2F2"/>')
@@ -653,11 +660,12 @@ def make_channel_ladder_svg(rows: list[dict[str, Any]]) -> str:
         for method, color in colors.items():
             pts = [r for r in rows if r["dataset"] == dataset and r["method"] == method]
             pts = sorted(pts, key=lambda r: int(r["level"]))
-            coords = [(x(int(r["level"]), x0), y(float(r["c_eff_proxy_bits"]))) for r in pts]
+            coords = [(x(int(r["level"]), x0), y(retained(r))) for r in pts]
             d = " ".join(("M" if i == 0 else "L") + f"{xx:.1f},{yy:.1f}" for i, (xx, yy) in enumerate(coords))
             parts.append(f'<path d="{d}" fill="none" stroke="{color}" stroke-width="3.5"/>')
             for xx, yy in coords:
                 parts.append(f'<circle cx="{xx:.1f}" cy="{yy:.1f}" r="4.2" fill="{color}"/>')
+        parts.append(f'<text class="tick" x="{x0 + panel_w/2}" y="{y0 + panel_h + 50}" text-anchor="middle">retained proxy Ceff = Ceff(level) / Ceff(L0)</text>')
     legend_x, legend_y = 455, 565
     for i, (method, color) in enumerate(colors.items()):
         xbase = legend_x + i * 230
