@@ -30,6 +30,15 @@ class CommunicationTask:
     agent_reply: str
 
 
+@dataclass(frozen=True)
+class ChangeLogEntry:
+    page_id: str
+    summary: str
+    location: str
+    reason: str
+    status: str
+
+
 def _title_prop(page: dict[str, Any], name: str) -> str:
     values = page.get("properties", {}).get(name, {}).get("title", [])
     return "".join(item.get("plain_text", item.get("text", {}).get("content", "")) for item in values)
@@ -76,6 +85,22 @@ Notion 沟通区任务：
 5. 修改后在最终回复里说明：是否修改了 paper.tex、修改位置、修改理由。
 6. 回复使用中文，简洁但足够让 Notion AI/用户继续协作。
 """
+
+
+def change_entry_to_task(entry: ChangeLogEntry) -> CommunicationTask:
+    title = (
+        "请根据 Notion 修改日志写回本地 LaTeX。\n"
+        f"章节 / 位置：{entry.location or '未指定'}\n"
+        f"改动摘要：{entry.summary}\n"
+        f"理由：{entry.reason or '未填写'}"
+    )
+    return CommunicationTask(
+        page_id=entry.page_id,
+        title=title,
+        status=entry.status,
+        proposer="修改日志",
+        agent_reply="",
+    )
 
 
 def run_claude_code(task: CommunicationTask, paper_dir: Path, timeout: int = 600, allow_write: bool = False) -> str:
@@ -138,6 +163,25 @@ def pending_tasks(api: Any, chat_db_id: str) -> list[CommunicationTask]:
     return tasks
 
 
+def pending_changelog_entries(api: Any, changelog_db_id: str) -> list[ChangeLogEntry]:
+    pages = api.query_database(
+        changelog_db_id,
+        {"property": "同步状态", "status": {"equals": "待同步"}},
+    )
+    entries: list[ChangeLogEntry] = []
+    for page in pages:
+        entries.append(
+            ChangeLogEntry(
+                page_id=page["id"],
+                summary=_title_prop(page, "改动摘要"),
+                location=_rich_text_prop(page, "章节 / 位置"),
+                reason=_rich_text_prop(page, "理由"),
+                status=_status_prop(page, "同步状态"),
+            )
+        )
+    return entries
+
+
 def set_task_status(api: Any, task: CommunicationTask, status: str, reply: str = "") -> None:
     props: dict[str, Any] = {"状态": status_value(status)}
     if reply:
@@ -180,6 +224,18 @@ def create_changelog(api: Any, changelog_db_id: str, task: CommunicationTask, re
     )
 
 
+def mark_changelog_synced(api: Any, entry: ChangeLogEntry, reply: str) -> None:
+    reason = entry.reason
+    suffix = f"\n\n本地 agent 同步结果：\n{reply[:1200]}"
+    api.update_page(
+        entry.page_id,
+        {
+            "同步状态": status_value("已同步"),
+            "理由": rich_text((reason + suffix).strip()),
+        },
+    )
+
+
 def poll_page_once(
     api: Any,
     paper_dir: Path,
@@ -210,5 +266,33 @@ def poll_page_once(
             set_task_status(api, task, DONE_STATUS, reply=reply or "已处理。")
         except Exception as exc:
             set_task_status(api, task, FAILED_STATUS, reply=f"本地 agent 执行失败：{exc}")
+        processed += 1
+    return processed
+
+
+def sync_changelog_once(
+    api: Any,
+    paper_dir: Path,
+    parent_page_id: str,
+    runner: Callable[[CommunicationTask, Path], str] | None = None,
+) -> int:
+    databases = discover_page_databases(api, parent_page_id)
+    changelog_db_id = databases[CHANGELOG_DB_TITLE]
+    entries = pending_changelog_entries(api, changelog_db_id)
+
+    processed = 0
+    for entry in entries:
+        task = change_entry_to_task(entry)
+        try:
+            if runner is None:
+                reply = run_claude_code(task, paper_dir, allow_write=True)
+            else:
+                reply = runner(task, paper_dir)
+            committed = git_commit_paper(paper_dir, task)
+            if committed:
+                sync_text_page(api, paper_dir, parent_page_id, title=TEXT_PAGE_TITLE)
+            mark_changelog_synced(api, entry, reply or "已处理。")
+        except Exception as exc:
+            mark_changelog_synced(api, entry, f"同步失败：{exc}")
         processed += 1
     return processed

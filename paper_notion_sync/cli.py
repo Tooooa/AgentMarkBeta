@@ -14,6 +14,7 @@ from .state import load_state, save_state, state_path
 from .sync import sync_paper
 from .gateway import poll_once
 from .page_agent import poll_page_once
+from .page_agent import sync_changelog_once
 from .text_page import sync_text_page
 
 
@@ -130,6 +131,14 @@ def cmd_page_agent(args: argparse.Namespace) -> int:
         time.sleep(args.interval)
 
 
+def cmd_sync_changes(args: argparse.Namespace) -> int:
+    paper_dir = resolve_paper_dir(args.paper_dir)
+    api = NotionAPI(get_token())
+    count = sync_changelog_once(api, paper_dir, parent_page_id=args.parent_page)
+    print(f"processed {count} pending changelog item(s)")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="paper-notion-sync")
     parser.add_argument("--paper-dir", default=None, help="Paper directory. Defaults to papers/sp-asym-agentmark-tk.")
@@ -161,6 +170,10 @@ def build_parser() -> argparse.ArgumentParser:
     page_agent_parser.add_argument("--commit", action="store_true", help="Commit paper.tex changes after a write-local task.")
     page_agent_parser.add_argument("--sync-text", action="store_true", help="Refresh the Notion paper text page after committed edits.")
     page_agent_parser.set_defaults(func=cmd_page_agent)
+
+    sync_changes_parser = sub.add_parser("sync-changes", help="Apply pending Modification Log entries to local LaTeX.")
+    sync_changes_parser.add_argument("--parent-page", required=True, help="Notion parent page id.")
+    sync_changes_parser.set_defaults(func=cmd_sync_changes)
 
     status_parser = sub.add_parser("status", help="Show local sync state.")
     status_parser.set_defaults(func=cmd_status)
