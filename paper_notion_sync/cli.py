@@ -120,8 +120,9 @@ def cmd_page_agent(args: argparse.Namespace) -> int:
             api,
             paper_dir,
             parent_page_id=args.parent_page,
-            commit_changes=not args.no_commit,
-            sync_text=not args.no_sync_text,
+            allow_write=args.write_local,
+            commit_changes=args.commit,
+            sync_text=args.sync_text,
         )
         print(f"processed {count} pending communication task(s)")
         if args.once:
@@ -156,8 +157,9 @@ def build_parser() -> argparse.ArgumentParser:
     page_agent_parser.add_argument("--parent-page", required=True, help="Notion parent page id.")
     page_agent_parser.add_argument("--once", action="store_true", help="Process pending tasks once and exit.")
     page_agent_parser.add_argument("--interval", type=int, default=30, help="Polling interval in seconds.")
-    page_agent_parser.add_argument("--no-commit", action="store_true", help="Do not auto-commit paper.tex changes.")
-    page_agent_parser.add_argument("--no-sync-text", action="store_true", help="Do not refresh the Notion paper text page after edits.")
+    page_agent_parser.add_argument("--write-local", action="store_true", help="Allow Claude Code to edit local paper files.")
+    page_agent_parser.add_argument("--commit", action="store_true", help="Commit paper.tex changes after a write-local task.")
+    page_agent_parser.add_argument("--sync-text", action="store_true", help="Refresh the Notion paper text page after committed edits.")
     page_agent_parser.set_defaults(func=cmd_page_agent)
 
     status_parser = sub.add_parser("status", help="Show local sync state.")

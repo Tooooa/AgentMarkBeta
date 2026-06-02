@@ -50,8 +50,13 @@ def _select_prop(page: dict[str, Any], name: str) -> str:
     return value.get("name", "") if value else ""
 
 
-def build_claude_prompt(task: CommunicationTask, paper_dir: Path) -> str:
+def build_claude_prompt(task: CommunicationTask, paper_dir: Path, allow_write: bool = False) -> str:
     paper_tex = paper_dir / "paper.tex"
+    write_rule = (
+        f"本次允许运行本地写回：如果任务明确要求写回本地 LaTeX，可以修改 {paper_tex.name}。"
+        if allow_write
+        else "本次只允许审阅和回复：不要修改任何本地文件；如果需要改论文，请把建议写清楚，让 Notion AI/用户登记到「修改日志」后再由写回流程处理。"
+    )
     return f"""你是本地论文协作 agent，运行模型为 mimo-v2.5-pro。
 
 你正在协作的论文仓库是：
@@ -65,16 +70,19 @@ Notion 沟通区任务：
 
 执行规则：
 1. 先理解任务，再决定是否需要修改本地文件。
-2. 如果任务只是审阅、解释、给建议，请只给出清晰回复，不要修改文件。
-3. 如果任务要求写回本地 LaTeX、同步 Notion 正文改动、应用修改、改 paper.tex，才可以修改 {paper_tex.name}。
+2. {write_rule}
+3. 如果任务只是审阅、解释、给建议，请只给出清晰回复。
 4. 只允许改论文正文相关内容，默认不要改实验数据、代码、图片和无关文件。
 5. 修改后在最终回复里说明：是否修改了 paper.tex、修改位置、修改理由。
 6. 回复使用中文，简洁但足够让 Notion AI/用户继续协作。
 """
 
 
-def run_claude_code(task: CommunicationTask, paper_dir: Path, timeout: int = 600) -> str:
-    prompt = build_claude_prompt(task, paper_dir)
+def run_claude_code(task: CommunicationTask, paper_dir: Path, timeout: int = 600, allow_write: bool = False) -> str:
+    prompt = build_claude_prompt(task, paper_dir, allow_write=allow_write)
+    allowed_tools = "Read,Glob,Grep"
+    if allow_write:
+        allowed_tools = "Read,Edit,MultiEdit,Glob,Grep"
     cmd = [
         "claude",
         "--print",
@@ -83,7 +91,7 @@ def run_claude_code(task: CommunicationTask, paper_dir: Path, timeout: int = 600
         "--permission-mode",
         "acceptEdits",
         "--allowedTools",
-        "Read,Edit,MultiEdit,Glob,Grep",
+        allowed_tools,
         "--output-format",
         "json",
         prompt,
@@ -176,9 +184,10 @@ def poll_page_once(
     api: Any,
     paper_dir: Path,
     parent_page_id: str,
-    runner: Callable[[CommunicationTask, Path], str] = run_claude_code,
-    commit_changes: bool = True,
-    sync_text: bool = True,
+    runner: Callable[[CommunicationTask, Path], str] | None = None,
+    allow_write: bool = False,
+    commit_changes: bool = False,
+    sync_text: bool = False,
 ) -> int:
     databases = discover_page_databases(api, parent_page_id)
     chat_db_id = databases[CHAT_DB_TITLE]
@@ -189,7 +198,10 @@ def poll_page_once(
     for task in tasks:
         set_task_status(api, task, RUNNING_STATUS)
         try:
-            reply = runner(task, paper_dir)
+            if runner is None:
+                reply = run_claude_code(task, paper_dir, allow_write=allow_write)
+            else:
+                reply = runner(task, paper_dir)
             committed = git_commit_paper(paper_dir, task) if commit_changes else False
             if committed and sync_text:
                 sync_text_page(api, paper_dir, parent_page_id, title=TEXT_PAGE_TITLE)

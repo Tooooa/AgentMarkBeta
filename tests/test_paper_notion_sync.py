@@ -293,7 +293,7 @@ def test_sync_text_page_reuses_existing_child_page(tmp_path: Path) -> None:
     assert api.replaced[-1][1][1]["heading_1"]["rich_text"][0]["text"]["content"] == "Intro"
 
 
-def test_build_claude_prompt_mentions_latex_writeback_contract(tmp_path: Path) -> None:
+def test_build_claude_prompt_defaults_to_read_only_contract(tmp_path: Path) -> None:
     task = CommunicationTask(
         page_id="task-page",
         title="请把 introduction 第二段写回 LaTeX",
@@ -306,8 +306,24 @@ def test_build_claude_prompt_mentions_latex_writeback_contract(tmp_path: Path) -
 
     assert "mimo-v2.5-pro" in prompt
     assert "paper.tex" in prompt
-    assert "如果任务要求写回本地 LaTeX" in prompt
+    assert "不要修改任何本地文件" in prompt
+    assert "修改日志" in prompt
     assert task.title in prompt
+
+
+def test_build_claude_prompt_can_allow_latex_writeback(tmp_path: Path) -> None:
+    task = CommunicationTask(
+        page_id="task-page",
+        title="请把 introduction 第二段写回 LaTeX",
+        status="待回答",
+        proposer="AI",
+        agent_reply="",
+    )
+
+    prompt = build_claude_prompt(task, tmp_path, allow_write=True)
+
+    assert "允许运行本地写回" in prompt
+    assert "可以修改 paper.tex" in prompt
 
 
 def test_poll_page_once_updates_reply_and_status(tmp_path: Path) -> None:
