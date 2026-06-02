@@ -2,6 +2,7 @@ from pathlib import Path
 
 from paper_notion_sync.latex import extract_sections
 from paper_notion_sync.latex import extract_title
+from paper_notion_sync.notion_api import NotionAPI
 from paper_notion_sync.schemas import build_database_plan
 from paper_notion_sync.schemas import materialize_properties
 from paper_notion_sync.sync import sync_paper
@@ -42,6 +43,27 @@ class FakeNotion:
 
     def replace_page_content(self, page_id, blocks):
         self.replaced.append((page_id, blocks))
+
+
+class FakeBlockNotion(NotionAPI):
+    def __init__(self) -> None:
+        self.deleted = []
+        self.appended = []
+
+    def list_block_children(self, block_id):
+        return [
+            {"id": "active-block"},
+            {"id": "archived-block", "archived": True},
+            {"id": "trashed-block", "in_trash": True},
+        ]
+
+    def request(self, method, path, payload=None):
+        if method == "DELETE":
+            self.deleted.append(path)
+            return {}
+
+    def append_blocks(self, block_id, blocks):
+        self.appended.append((block_id, blocks))
 
 
 def test_extract_sections_includes_labels_and_stable_hashes(tmp_path: Path) -> None:
@@ -108,6 +130,15 @@ def test_materialized_relation_uses_notion_dual_property_shape() -> None:
             "dual_property": {},
         }
     }
+
+
+def test_replace_page_content_skips_archived_blocks() -> None:
+    api = FakeBlockNotion()
+
+    api.replace_page_content("page-id", [{"type": "paragraph", "paragraph": {"rich_text": []}}])
+
+    assert api.deleted == ["/blocks/active-block"]
+    assert api.appended[0][0] == "page-id"
 
 
 def test_task_resolution_uses_local_whitelist_not_notion_commands() -> None:

@@ -215,6 +215,12 @@ class NotionAPI:
 
     def replace_page_content(self, page_id: str, blocks: list[dict[str, Any]]) -> None:
         for block in self.list_block_children(page_id):
-            self.request("DELETE", f"/blocks/{block['id']}")
+            if block.get("archived") or block.get("in_trash"):
+                continue
+            try:
+                self.request("DELETE", f"/blocks/{block['id']}")
+            except RuntimeError as exc:
+                if "archived" not in str(exc).lower():
+                    raise
         if blocks:
             self.append_blocks(page_id, blocks)
