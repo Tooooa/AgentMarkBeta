@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import subprocess
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -15,6 +16,9 @@ from .text_page import sync_text_page
 CHAT_DB_TITLE = "沟通区"
 CHANGELOG_DB_TITLE = "修改日志"
 TEXT_PAGE_TITLE = "论文正文"
+PROJECT_ROOT = Path("/Users/local/AgentMarkBeta")
+REMOTE_DATA_DIR = PROJECT_ROOT / "实验数据" / "remote_data" / "output-0510"
+MEMORY_PATH = ".paper_notion_sync/claude_memory.md"
 PENDING_STATUS = "待回答"
 RUNNING_STATUS = "讨论中"
 DONE_STATUS = "已回答"
@@ -39,6 +43,12 @@ class ChangeLogEntry:
     status: str
 
 
+@dataclass(frozen=True)
+class AgentReply:
+    reply: str
+    memory: str = ""
+
+
 def _title_prop(page: dict[str, Any], name: str) -> str:
     values = page.get("properties", {}).get(name, {}).get("title", [])
     return "".join(item.get("plain_text", item.get("text", {}).get("content", "")) for item in values)
@@ -59,8 +69,41 @@ def _select_prop(page: dict[str, Any], name: str) -> str:
     return value.get("name", "") if value else ""
 
 
+def memory_file(paper_dir: Path) -> Path:
+    return paper_dir / MEMORY_PATH
+
+
+def read_long_memory(paper_dir: Path) -> str:
+    path = memory_file(paper_dir)
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8", errors="ignore").strip()[-8000:]
+
+
+def append_long_memory(paper_dir: Path, memory: str) -> None:
+    memory = memory.strip()
+    if not memory:
+        return
+    path = memory_file(paper_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(f"\n\n## {stamp}\n{memory}\n")
+
+
+def split_agent_reply(text: str) -> AgentReply:
+    markers = ["\nLONG_MEMORY:", "\n长期记忆：", "\n长期记忆:"]
+    for marker in markers:
+        if marker in text:
+            reply, memory = text.split(marker, 1)
+            return AgentReply(reply=reply.strip(), memory=memory.strip())
+    return AgentReply(reply=text.strip(), memory="")
+
+
 def build_claude_prompt(task: CommunicationTask, paper_dir: Path, allow_write: bool = False) -> str:
     paper_tex = paper_dir / "paper.tex"
+    long_memory = read_long_memory(paper_dir)
+    memory_section = long_memory if long_memory else "暂无。"
     write_rule = (
         f"本次允许运行本地写回：如果任务明确要求写回本地 LaTeX，可以修改 {paper_tex.name}。"
         if allow_write
@@ -71,8 +114,17 @@ def build_claude_prompt(task: CommunicationTask, paper_dir: Path, allow_write: b
 你正在协作的论文仓库是：
 {paper_dir}
 
+项目根目录是：
+{PROJECT_ROOT}
+
+服务器实验数据镜像目录是：
+{REMOTE_DATA_DIR}
+
 主 LaTeX 文件是：
 {paper_tex}
+
+给未来自己的长期记忆：
+{memory_section}
 
 Notion 沟通区任务：
 {task.title}
@@ -82,8 +134,10 @@ Notion 沟通区任务：
 2. {write_rule}
 3. 如果任务只是审阅、解释、给建议，请只给出清晰回复。
 4. 只允许改论文正文相关内容，默认不要改实验数据、代码、图片和无关文件。
-5. 修改后在最终回复里说明：是否修改了 paper.tex、修改位置、修改理由。
-6. 回复使用中文，简洁但足够让 Notion AI/用户继续协作。
+5. 如果需要参考实验结果，优先读取服务器数据镜像目录；如果需要继续跑服务器实验，先在回复中提出计划，不要默认启动长任务。
+6. 修改后在最终回复里说明：是否修改了 paper.tex、修改位置、修改理由。
+7. 回复使用中文，简洁但足够让 Notion AI/用户继续协作。
+8. 可选：如果你希望给之后的自己留一条长期记忆，请在回复末尾单独追加一段，以 `LONG_MEMORY:` 开头。不要把普通回复内容放进 LONG_MEMORY。
 """
 
 
@@ -113,6 +167,10 @@ def run_claude_code(task: CommunicationTask, paper_dir: Path, timeout: int = 600
         "--print",
         "--model",
         "mimo-v2.5-pro",
+        "--add-dir",
+        str(PROJECT_ROOT),
+        "--add-dir",
+        str(REMOTE_DATA_DIR),
         "--permission-mode",
         "acceptEdits",
         "--allowedTools",
@@ -258,6 +316,9 @@ def poll_page_once(
                 reply = run_claude_code(task, paper_dir, allow_write=allow_write)
             else:
                 reply = runner(task, paper_dir)
+            parsed = split_agent_reply(reply)
+            append_long_memory(paper_dir, parsed.memory)
+            reply = parsed.reply
             committed = git_commit_paper(paper_dir, task) if commit_changes else False
             if committed and sync_text:
                 sync_text_page(api, paper_dir, parent_page_id, title=TEXT_PAGE_TITLE)
@@ -288,6 +349,9 @@ def sync_changelog_once(
                 reply = run_claude_code(task, paper_dir, allow_write=True)
             else:
                 reply = runner(task, paper_dir)
+            parsed = split_agent_reply(reply)
+            append_long_memory(paper_dir, parsed.memory)
+            reply = parsed.reply
             committed = git_commit_paper(paper_dir, task)
             if committed:
                 sync_text_page(api, paper_dir, parent_page_id, title=TEXT_PAGE_TITLE)

@@ -6,7 +6,9 @@ from paper_notion_sync.latex_text import latex_to_plain_notion_blocks
 from paper_notion_sync.notion_api import NotionAPI
 from paper_notion_sync.page_agent import CommunicationTask
 from paper_notion_sync.page_agent import build_claude_prompt
+from paper_notion_sync.page_agent import read_long_memory
 from paper_notion_sync.page_agent import poll_page_once
+from paper_notion_sync.page_agent import split_agent_reply
 from paper_notion_sync.page_agent import sync_changelog_once
 from paper_notion_sync.schemas import build_database_plan
 from paper_notion_sync.schemas import materialize_properties
@@ -306,9 +308,12 @@ def test_build_claude_prompt_defaults_to_read_only_contract(tmp_path: Path) -> N
     prompt = build_claude_prompt(task, tmp_path)
 
     assert "mimo-v2.5-pro" in prompt
+    assert "/Users/local/AgentMarkBeta" in prompt
+    assert "/Users/local/AgentMarkBeta/实验数据/remote_data/output-0510" in prompt
     assert "paper.tex" in prompt
     assert "不要修改任何本地文件" in prompt
     assert "修改日志" in prompt
+    assert "LONG_MEMORY" in prompt
     assert task.title in prompt
 
 
@@ -325,6 +330,13 @@ def test_build_claude_prompt_can_allow_latex_writeback(tmp_path: Path) -> None:
 
     assert "允许运行本地写回" in prompt
     assert "可以修改 paper.tex" in prompt
+
+
+def test_split_agent_reply_extracts_optional_long_memory() -> None:
+    parsed = split_agent_reply("回复正文。\nLONG_MEMORY: 以后优先检查 Introduction 贡献表述。")
+
+    assert parsed.reply == "回复正文。"
+    assert parsed.memory == "以后优先检查 Introduction 贡献表述。"
 
 
 def test_poll_page_once_updates_reply_and_status(tmp_path: Path) -> None:
@@ -350,7 +362,7 @@ def test_poll_page_once_updates_reply_and_status(tmp_path: Path) -> None:
         api,
         tmp_path,
         parent_page_id="parent-id",
-        runner=lambda task, paper_dir: "这段需要更明确地说明贡献。",
+        runner=lambda task, paper_dir: "这段需要更明确地说明贡献。\nLONG_MEMORY: Introduction 容易需要强化贡献。",
         commit_changes=False,
     )
 
@@ -363,6 +375,7 @@ def test_poll_page_once_updates_reply_and_status(tmp_path: Path) -> None:
     assert status_values == ["讨论中", "已回答"]
     final_props = api.updated[-1][1]
     assert final_props["agent 回复"]["rich_text"][0]["text"]["content"] == "这段需要更明确地说明贡献。"
+    assert "Introduction 容易需要强化贡献" in read_long_memory(tmp_path)
 
 
 def test_sync_changelog_once_marks_pending_log_as_synced(tmp_path: Path) -> None:
