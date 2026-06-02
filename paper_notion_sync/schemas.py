@@ -39,7 +39,13 @@ def select_prop(options: list[str]) -> dict[str, Any]:
 
 
 def relation_prop(database_id: str) -> dict[str, Any]:
-    return {"relation": {"database_id": database_id}}
+    return {
+        "relation": {
+            "database_id": database_id,
+            "type": "dual_property",
+            "dual_property": {},
+        }
+    }
 
 
 def build_database_plan() -> list[DatabaseSpec]:

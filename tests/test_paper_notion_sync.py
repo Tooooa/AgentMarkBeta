@@ -2,6 +2,7 @@ from pathlib import Path
 
 from paper_notion_sync.latex import extract_sections
 from paper_notion_sync.schemas import build_database_plan
+from paper_notion_sync.schemas import materialize_properties
 from paper_notion_sync.sync import sync_paper
 from paper_notion_sync.tasks import build_task_payload, resolve_task_action
 
@@ -83,6 +84,19 @@ def test_database_plan_creates_papers_first_and_relates_dependents() -> None:
     assert "Status" in plan[0].properties
     assert plan[1].relation_to == "papers"
     assert "Task Type" in next(item.properties for item in plan if item.key == "agent_tasks")
+
+
+def test_materialized_relation_uses_notion_dual_property_shape() -> None:
+    spec = build_database_plan()[1]
+    props = materialize_properties(spec, {"papers": "papers-db-id"})
+
+    assert props["Paper"] == {
+        "relation": {
+            "database_id": "papers-db-id",
+            "type": "dual_property",
+            "dual_property": {},
+        }
+    }
 
 
 def test_task_resolution_uses_local_whitelist_not_notion_commands() -> None:

@@ -37,11 +37,20 @@ def cmd_init(args: argparse.Namespace) -> int:
     state.setdefault("databases", {})
 
     database_ids: dict[str, str] = dict(state["databases"])
+    existing_by_title = api.discover_child_databases(args.parent_page)
     for spec in build_database_plan():
         if spec.key in database_ids:
             continue
+        if spec.title in existing_by_title:
+            database_ids[spec.key] = existing_by_title[spec.title]
+            state["databases"] = database_ids
+            save_state(paper_dir, state)
+            print(f"found {spec.title}: {database_ids[spec.key]}")
+            continue
         props = materialize_properties(spec, database_ids)
         database_ids[spec.key] = api.create_database(args.parent_page, spec.title, props)
+        state["databases"] = database_ids
+        save_state(paper_dir, state)
         print(f"created {spec.title}: {database_ids[spec.key]}")
 
     state["databases"] = database_ids

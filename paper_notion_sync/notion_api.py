@@ -145,6 +145,16 @@ class NotionAPI:
         )
         return result["id"]
 
+    def discover_child_databases(self, parent_page_id: str) -> dict[str, str]:
+        databases: dict[str, str] = {}
+        for block in self.list_block_children(parent_page_id):
+            if block.get("type") != "child_database":
+                continue
+            title = block.get("child_database", {}).get("title", "")
+            if title:
+                databases[title] = block["id"]
+        return databases
+
     def query_database(self, database_id: str, filter_obj: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         pages: list[dict[str, Any]] = []
         payload: dict[str, Any] = {}
