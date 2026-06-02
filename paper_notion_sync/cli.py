@@ -13,6 +13,7 @@ from .schemas import build_database_plan, materialize_properties
 from .state import load_state, save_state, state_path
 from .sync import sync_paper
 from .gateway import poll_once
+from .page_agent import poll_page_once
 from .text_page import sync_text_page
 
 
@@ -111,6 +112,23 @@ def cmd_sync_text_page(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_page_agent(args: argparse.Namespace) -> int:
+    paper_dir = resolve_paper_dir(args.paper_dir)
+    api = NotionAPI(get_token())
+    while True:
+        count = poll_page_once(
+            api,
+            paper_dir,
+            parent_page_id=args.parent_page,
+            commit_changes=not args.no_commit,
+            sync_text=not args.no_sync_text,
+        )
+        print(f"processed {count} pending communication task(s)")
+        if args.once:
+            return 0
+        time.sleep(args.interval)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="paper-notion-sync")
     parser.add_argument("--paper-dir", default=None, help="Paper directory. Defaults to papers/sp-asym-agentmark-tk.")
@@ -133,6 +151,14 @@ def build_parser() -> argparse.ArgumentParser:
     tasks_parser.add_argument("--once", action="store_true", help="Process the queue once and exit.")
     tasks_parser.add_argument("--interval", type=int, default=30, help="Polling interval in seconds.")
     tasks_parser.set_defaults(func=cmd_tasks)
+
+    page_agent_parser = sub.add_parser("page-agent", help="Poll the existing Notion page communication database.")
+    page_agent_parser.add_argument("--parent-page", required=True, help="Notion parent page id.")
+    page_agent_parser.add_argument("--once", action="store_true", help="Process pending tasks once and exit.")
+    page_agent_parser.add_argument("--interval", type=int, default=30, help="Polling interval in seconds.")
+    page_agent_parser.add_argument("--no-commit", action="store_true", help="Do not auto-commit paper.tex changes.")
+    page_agent_parser.add_argument("--no-sync-text", action="store_true", help="Do not refresh the Notion paper text page after edits.")
+    page_agent_parser.set_defaults(func=cmd_page_agent)
 
     status_parser = sub.add_parser("status", help="Show local sync state.")
     status_parser.set_defaults(func=cmd_status)

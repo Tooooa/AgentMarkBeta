@@ -4,6 +4,9 @@ from paper_notion_sync.latex import extract_sections
 from paper_notion_sync.latex import extract_title
 from paper_notion_sync.latex_text import latex_to_plain_notion_blocks
 from paper_notion_sync.notion_api import NotionAPI
+from paper_notion_sync.page_agent import CommunicationTask
+from paper_notion_sync.page_agent import build_claude_prompt
+from paper_notion_sync.page_agent import poll_page_once
 from paper_notion_sync.schemas import build_database_plan
 from paper_notion_sync.schemas import materialize_properties
 from paper_notion_sync.sync import sync_paper
@@ -16,6 +19,8 @@ class FakeNotion:
         self.pages = []
         self.replaced = []
         self.child_pages = {}
+        self.updated = []
+        self.queries = []
 
     def find_page_by_title(self, database_id, title_property, title):
         for page in self.pages:
@@ -41,8 +46,11 @@ class FakeNotion:
         return page["id"]
 
     def update_page(self, page_id, properties):
-        page = next(page for page in self.pages if page["id"] == page_id)
-        page["properties"].update(properties)
+        self.updated.append((page_id, properties))
+        for page in self.pages:
+            if page["id"] == page_id:
+                page["properties"].update(properties)
+                break
 
     def replace_page_content(self, page_id, blocks):
         self.replaced.append((page_id, blocks))
@@ -54,11 +62,18 @@ class FakeNotion:
     def discover_child_pages(self, parent_page_id):
         return dict(self.child_pages)
 
+    def discover_child_databases(self, parent_page_id):
+        return {"沟通区": "db-chat", "修改日志": "db-log"}
+
     def create_child_page(self, parent_page_id, title, children=None):
         page_id = f"child-{len(self.child_pages) + 1}"
         self.child_pages[title] = page_id
         self.replaced.append((page_id, children or []))
         return page_id
+
+    def query_database(self, database_id, filter_obj=None):
+        self.queries.append((database_id, filter_obj))
+        return [page for page in self.pages if page["database_id"] == database_id]
 
 
 class FakeBlockNotion(NotionAPI):
@@ -276,3 +291,58 @@ def test_sync_text_page_reuses_existing_child_page(tmp_path: Path) -> None:
     assert summary["blocks"] == 3
     assert api.replaced[-1][0] == "existing-child-page"
     assert api.replaced[-1][1][1]["heading_1"]["rich_text"][0]["text"]["content"] == "Intro"
+
+
+def test_build_claude_prompt_mentions_latex_writeback_contract(tmp_path: Path) -> None:
+    task = CommunicationTask(
+        page_id="task-page",
+        title="请把 introduction 第二段写回 LaTeX",
+        status="待回答",
+        proposer="AI",
+        agent_reply="",
+    )
+
+    prompt = build_claude_prompt(task, tmp_path)
+
+    assert "mimo-v2.5-pro" in prompt
+    assert "paper.tex" in prompt
+    assert "如果任务要求写回本地 LaTeX" in prompt
+    assert task.title in prompt
+
+
+def test_poll_page_once_updates_reply_and_status(tmp_path: Path) -> None:
+    (tmp_path / "paper.tex").write_text(r"\title{Demo}" "\n" r"\section{Intro}" "\n" "Hello.", encoding="utf-8")
+    api = FakeNotion()
+    api.child_pages["论文正文"] = "child-paper"
+    api.pages.append(
+        {
+            "id": "task-page",
+            "database_id": "db-chat",
+            "title": "请评价 introduction",
+            "properties": {
+                "问题 / 意见": {"title": [{"plain_text": "请评价 introduction"}]},
+                "状态": {"status": {"name": "待回答"}},
+                "提出者": {"select": {"name": "AI"}},
+                "agent 回复": {"rich_text": []},
+            },
+            "children": [],
+        }
+    )
+
+    processed = poll_page_once(
+        api,
+        tmp_path,
+        parent_page_id="parent-id",
+        runner=lambda task, paper_dir: "这段需要更明确地说明贡献。",
+        commit_changes=False,
+    )
+
+    assert processed == 1
+    status_values = [
+        props["状态"]["status"]["name"]
+        for _, props in api.updated
+        if "状态" in props
+    ]
+    assert status_values == ["讨论中", "已回答"]
+    final_props = api.updated[-1][1]
+    assert final_props["agent 回复"]["rich_text"][0]["text"]["content"] == "这段需要更明确地说明贡献。"

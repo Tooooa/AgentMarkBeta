@@ -33,6 +33,10 @@ def select_value(value: str) -> dict[str, Any]:
     return {"select": {"name": value}} if value else {"select": None}
 
 
+def status_value(value: str) -> dict[str, Any]:
+    return {"status": {"name": value}} if value else {"status": None}
+
+
 def date_value(value: str | None = None) -> dict[str, Any]:
     return {"date": {"start": value or now_iso()}}
 
