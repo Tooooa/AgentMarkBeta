@@ -13,6 +13,7 @@ from .schemas import build_database_plan, materialize_properties
 from .state import load_state, save_state, state_path
 from .sync import sync_paper
 from .gateway import poll_once
+from .text_page import sync_text_page
 
 
 DEFAULT_PAPER_DIR = Path("papers/sp-asym-agentmark-tk")
@@ -96,6 +97,20 @@ def cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sync_text_page(args: argparse.Namespace) -> int:
+    paper_dir = resolve_paper_dir(args.paper_dir)
+    api = NotionAPI(get_token())
+    summary = sync_text_page(
+        api,
+        paper_dir,
+        parent_page_id=args.parent_page,
+        title=args.title,
+        main_tex=args.main_tex,
+    )
+    print(summary)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="paper-notion-sync")
     parser.add_argument("--paper-dir", default=None, help="Paper directory. Defaults to papers/sp-asym-agentmark-tk.")
@@ -108,6 +123,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     sync_parser = sub.add_parser("sync", help="Sync local paper metadata and sections to Notion.")
     sync_parser.set_defaults(func=cmd_sync)
+
+    text_parser = sub.add_parser("sync-text-page", help="Sync paper body into a child page as readable prose.")
+    text_parser.add_argument("--parent-page", required=True, help="Notion parent page id.")
+    text_parser.add_argument("--title", default="论文正文", help="Child page title to create or update.")
+    text_parser.set_defaults(func=cmd_sync_text_page)
 
     tasks_parser = sub.add_parser("tasks", help="Poll and execute queued Notion agent tasks.")
     tasks_parser.add_argument("--once", action="store_true", help="Process the queue once and exit.")

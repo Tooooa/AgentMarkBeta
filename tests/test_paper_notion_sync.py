@@ -2,10 +2,12 @@ from pathlib import Path
 
 from paper_notion_sync.latex import extract_sections
 from paper_notion_sync.latex import extract_title
+from paper_notion_sync.latex_text import latex_to_plain_notion_blocks
 from paper_notion_sync.notion_api import NotionAPI
 from paper_notion_sync.schemas import build_database_plan
 from paper_notion_sync.schemas import materialize_properties
 from paper_notion_sync.sync import sync_paper
+from paper_notion_sync.text_page import sync_text_page
 from paper_notion_sync.tasks import build_task_payload, resolve_task_action
 
 
@@ -13,6 +15,7 @@ class FakeNotion:
     def __init__(self) -> None:
         self.pages = []
         self.replaced = []
+        self.child_pages = {}
 
     def find_page_by_title(self, database_id, title_property, title):
         for page in self.pages:
@@ -47,6 +50,15 @@ class FakeNotion:
     def list_block_children(self, page_id):
         page = next(page for page in self.pages if page["id"] == page_id)
         return page.get("children", [])
+
+    def discover_child_pages(self, parent_page_id):
+        return dict(self.child_pages)
+
+    def create_child_page(self, parent_page_id, title, children=None):
+        page_id = f"child-{len(self.child_pages) + 1}"
+        self.child_pages[title] = page_id
+        self.replaced.append((page_id, children or []))
+        return page_id
 
 
 class FakeBlockNotion(NotionAPI):
@@ -111,6 +123,40 @@ def test_extract_title_expands_simple_newcommand_macros(tmp_path: Path) -> None:
     )
 
     assert extract_title(tex) == "AsymMark: Weakly Asymmetric Behavioral Watermarking"
+
+
+def test_latex_to_plain_notion_blocks_uses_headings_and_keeps_tables_as_latex() -> None:
+    blocks = latex_to_plain_notion_blocks(
+        r"""
+\begin{abstract}
+This is \framework{} in prose.
+\end{abstract}
+\section{Introduction}
+Plain text with \textbf{bold words}.
+\subsection{Results}
+\begin{table}
+\begin{tabular}{lr}
+A & 1 \\
+\end{tabular}
+\end{table}
+More prose.
+""",
+        macros={"framework": "AsymMark"},
+    )
+
+    assert [block["type"] for block in blocks] == [
+        "heading_1",
+        "paragraph",
+        "heading_1",
+        "paragraph",
+        "heading_2",
+        "code",
+        "paragraph",
+    ]
+    assert blocks[0]["heading_1"]["rich_text"][0]["text"]["content"] == "Abstract"
+    assert blocks[1]["paragraph"]["rich_text"][0]["text"]["content"] == "This is AsymMark in prose."
+    assert blocks[5]["code"]["language"] == "latex"
+    assert "\\begin{tabular}" in blocks[5]["code"]["rich_text"][0]["text"]["content"]
 
 
 def test_database_plan_creates_papers_first_and_relates_dependents() -> None:
@@ -214,3 +260,19 @@ def test_sync_paper_skips_unchanged_section_content(tmp_path: Path) -> None:
         for page_id, _ in api.replaced
     ]
     assert replaced_titles == ["Demo Paper"]
+
+
+def test_sync_text_page_reuses_existing_child_page(tmp_path: Path) -> None:
+    (tmp_path / "paper.tex").write_text(
+        r"\title{Demo Paper}" "\n" r"\section{Intro}" "\n" "Hello.",
+        encoding="utf-8",
+    )
+    api = FakeNotion()
+    api.child_pages["论文正文"] = "existing-child-page"
+
+    summary = sync_text_page(api, tmp_path, parent_page_id="parent-id", title="论文正文")
+
+    assert summary["page_id"] == "existing-child-page"
+    assert summary["blocks"] == 3
+    assert api.replaced[-1][0] == "existing-child-page"
+    assert api.replaced[-1][1][1]["heading_1"]["rich_text"][0]["text"]["content"] == "Intro"

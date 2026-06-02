@@ -155,6 +155,16 @@ class NotionAPI:
                 databases[title] = block["id"]
         return databases
 
+    def discover_child_pages(self, parent_page_id: str) -> dict[str, str]:
+        pages: dict[str, str] = {}
+        for block in self.list_block_children(parent_page_id):
+            if block.get("type") != "child_page":
+                continue
+            title = block.get("child_page", {}).get("title", "")
+            if title:
+                pages[title] = block["id"]
+        return pages
+
     def query_database(self, database_id: str, filter_obj: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         pages: list[dict[str, Any]] = []
         payload: dict[str, Any] = {}
@@ -183,6 +193,26 @@ class NotionAPI:
         payload: dict[str, Any] = {
             "parent": {"database_id": database_id},
             "properties": properties,
+        }
+        if children:
+            payload["children"] = children[:MAX_BLOCKS_PER_REQUEST]
+        result = self.request("POST", "/pages", payload)
+        page_id = result["id"]
+        if children and len(children) > MAX_BLOCKS_PER_REQUEST:
+            self.append_blocks(page_id, children[MAX_BLOCKS_PER_REQUEST:])
+        return page_id
+
+    def create_child_page(
+        self,
+        parent_page_id: str,
+        title: str,
+        children: list[dict[str, Any]] | None = None,
+    ) -> str:
+        payload: dict[str, Any] = {
+            "parent": {"type": "page_id", "page_id": parent_page_id},
+            "properties": {
+                "title": [{"type": "text", "text": {"content": title[:1900]}}],
+            },
         }
         if children:
             payload["children"] = children[:MAX_BLOCKS_PER_REQUEST]
