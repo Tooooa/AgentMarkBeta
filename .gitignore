@@ -23,6 +23,8 @@ venv.bak/
 # Data & Output
 # Ignore large data directories or generated outputs if needed
 data/
+.paper_notion_sync/
+papers/**/.paper_notion_sync/
 !experiments/semantic_rewriting/data/
 !agentmark/data/
 output/

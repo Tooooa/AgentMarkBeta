@@ -23,6 +23,24 @@ make
 
 The default target runs `latexmk -pdf paper.tex` and produces `paper.pdf`.
 
+## Notion Paper Iteration
+
+The repository includes a local Notion bridge for the `paper iteration` control
+plane. It keeps the local git repository as the source of truth and mirrors
+paper metadata, LaTeX sections, sync runs, artifacts, and queued agent tasks to
+Notion.
+
+```bash
+export NOTION_TOKEN="ntn_..."
+python3 -m paper_notion_sync.cli --paper-dir /Users/local/AgentMarkBeta/papers/sp-asym-agentmark-tk init --parent-page <notion-page-id>
+python3 -m paper_notion_sync.cli --paper-dir /Users/local/AgentMarkBeta/papers/sp-asym-agentmark-tk sync
+python3 -m paper_notion_sync.cli --paper-dir /Users/local/AgentMarkBeta/papers/sp-asym-agentmark-tk tasks --once
+```
+
+For local AI task execution, set `PAPER_AGENT_COMMAND` to a trusted command.
+The gateway passes a JSON task payload on stdin and never executes shell
+commands stored in Notion task instructions.
+
 ## Repository Audit Trail
 
 - Paper build: `paper.tex`, `references.bib`, `paper.bbl`, and `Makefile` are sufficient to rebuild or audit the PDF.

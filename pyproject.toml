@@ -18,7 +18,9 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/Tooooa/AgentMark"
 
-[tool.setuptools.packages.find]
-include = ["agentmark*"]
-exclude = ["experiments*", "dashboard*", "assets*", "demo_data*", "output*"]
+[project.scripts]
+paper-notion-sync = "paper_notion_sync.cli:main"
 
+[tool.setuptools.packages.find]
+include = ["agentmark*", "paper_notion_sync*"]
+exclude = ["experiments*", "dashboard*", "assets*", "demo_data*", "output*"]
