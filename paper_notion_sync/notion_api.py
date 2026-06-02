@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import socket
 import time
 import urllib.error
 import urllib.request
@@ -84,7 +86,24 @@ class NotionAPI:
         self.token = token
         self.timeout = timeout
 
+    def _install_host_override(self) -> None:
+        """Optionally pin api.notion.com to a known reachable IP for local proxy setups."""
+        host_ip = os.environ.get("NOTION_API_HOST_IP", "").strip()
+        if not host_ip or getattr(socket, "_paper_notion_sync_patched", False):
+            return
+
+        original_getaddrinfo = socket.getaddrinfo
+
+        def patched_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+            if host == "api.notion.com":
+                host = host_ip
+            return original_getaddrinfo(host, port, family, type, proto, flags)
+
+        socket.getaddrinfo = patched_getaddrinfo
+        socket._paper_notion_sync_patched = True
+
     def request(self, method: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        self._install_host_override()
         data = json.dumps(payload).encode("utf-8") if payload is not None else None
         request = urllib.request.Request(
             f"{BASE_URL}{path}",
@@ -107,6 +126,11 @@ class NotionAPI:
                     time.sleep(2**attempt)
                     continue
                 raise RuntimeError(f"Notion API {exc.code}: {body}") from exc
+            except urllib.error.URLError as exc:
+                if attempt < 2:
+                    time.sleep(2**attempt)
+                    continue
+                raise RuntimeError(f"Notion API connection failed: {exc}") from exc
         raise RuntimeError("Notion API retry loop exhausted")
 
     def create_database(self, parent_page_id: str, title: str, properties: dict[str, Any]) -> str:

@@ -37,6 +37,13 @@ python3 -m paper_notion_sync.cli --paper-dir /Users/local/AgentMarkBeta/papers/s
 python3 -m paper_notion_sync.cli --paper-dir /Users/local/AgentMarkBeta/papers/sp-asym-agentmark-tk tasks --once
 ```
 
+If local DNS/proxy rules break terminal access to `api.notion.com`, pin a
+reachable Notion API address for this command:
+
+```bash
+export NOTION_API_HOST_IP="208.103.161.2"
+```
+
 For local AI task execution, set `PAPER_AGENT_COMMAND` to a trusted command.
 The gateway passes a JSON task payload on stdin and never executes shell
 commands stored in Notion task instructions.
