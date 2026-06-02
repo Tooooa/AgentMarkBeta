@@ -41,6 +41,23 @@ def upsert_page(api: Any, database_id: str, title_property: str, title: str, pro
     return api.create_page(database_id, properties, children=children)
 
 
+def upsert_paper_page(
+    api: Any,
+    state: dict[str, Any],
+    database_id: str,
+    title: str,
+    properties: dict[str, Any],
+    children=None,
+) -> str:
+    page_id = state.get("paper_page_id", "")
+    if page_id:
+        api.update_page(page_id, properties)
+        if children is not None:
+            api.replace_page_content(page_id, children)
+        return page_id
+    return upsert_page(api, database_id, "Title", title, properties, children=children)
+
+
 def paper_properties(paper_dir: Path, title: str, main_tex: str, commit: str, pdf_path: Path) -> dict[str, Any]:
     return {
         "Title": title_text(title),
@@ -111,10 +128,10 @@ def sync_paper(api: Any, paper_dir: Path, state: dict[str, Any], main_tex: str =
     paper_db = state["databases"]["papers"]
     sections_db = state["databases"]["paper_sections"]
 
-    paper_page_id = upsert_page(
+    paper_page_id = upsert_paper_page(
         api,
+        state,
         paper_db,
-        "Title",
         title,
         paper_properties(paper_dir, title, main_tex, commit, paper_dir / "paper.pdf"),
         children=[heading_block(title, 1), paragraph_block(f"Synced from {paper_dir}")],

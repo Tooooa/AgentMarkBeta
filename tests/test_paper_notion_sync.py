@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from paper_notion_sync.latex import extract_sections
+from paper_notion_sync.latex import extract_title
 from paper_notion_sync.schemas import build_database_plan
 from paper_notion_sync.schemas import materialize_properties
 from paper_notion_sync.sync import sync_paper
@@ -74,6 +75,16 @@ Design text.
     assert sections[2].label == "sec:design"
     assert len(sections[0].content_hash) == 16
     assert sections[0].content_hash == extract_sections(tex)[0].content_hash
+
+
+def test_extract_title_expands_simple_newcommand_macros(tmp_path: Path) -> None:
+    tex = tmp_path / "paper.tex"
+    tex.write_text(
+        r"\newcommand{\framework}{AsymMark}" "\n" r"\title{\framework: Weakly Asymmetric Behavioral Watermarking}",
+        encoding="utf-8",
+    )
+
+    assert extract_title(tex) == "AsymMark: Weakly Asymmetric Behavioral Watermarking"
 
 
 def test_database_plan_creates_papers_first_and_relates_dependents() -> None:

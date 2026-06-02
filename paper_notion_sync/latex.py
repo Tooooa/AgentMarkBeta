@@ -10,6 +10,7 @@ from pathlib import Path
 
 SECTION_RE = re.compile(r"\\(?P<kind>section|subsection|subsubsection)\*?\{(?P<title>[^{}]+)\}")
 LABEL_RE = re.compile(r"\\label\{([^{}]+)\}")
+NEWCOMMAND_RE = re.compile(r"\\newcommand\{\\([a-zA-Z]+)\}\{([^{}]+)\}")
 
 
 @dataclass(frozen=True)
@@ -27,8 +28,10 @@ class PaperSection:
         return text[:600].strip()
 
 
-def strip_latex(text: str) -> str:
+def strip_latex(text: str, macros: dict[str, str] | None = None) -> str:
     """Return a compact plain-text approximation for summaries."""
+    for name, value in (macros or {}).items():
+        text = text.replace(f"\\{name}", value)
     text = re.sub(r"%.*", "", text)
     text = re.sub(r"\\cite(?:\[[^\]]*\])?\{([^{}]+)\}", r"[\1]", text)
     text = re.sub(r"\\ref\{([^{}]+)\}", r"\1", text)
@@ -38,13 +41,18 @@ def strip_latex(text: str) -> str:
     return text.strip()
 
 
+def extract_simple_macros(text: str) -> dict[str, str]:
+    """Extract simple no-argument macros such as \\newcommand{\\framework}{AsymMark}."""
+    return {match.group(1): match.group(2) for match in NEWCOMMAND_RE.finditer(text)}
+
+
 def extract_title(tex_path: Path) -> str:
     """Extract the first LaTeX title, falling back to the file stem."""
     text = tex_path.read_text(encoding="utf-8", errors="ignore")
     match = re.search(r"\\title\{([^{}]+)\}", text)
     if not match:
         return tex_path.stem
-    return strip_latex(match.group(1))
+    return strip_latex(match.group(1), extract_simple_macros(text))
 
 
 def extract_sections(tex_path: Path) -> list[PaperSection]:
