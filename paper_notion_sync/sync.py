@@ -58,6 +58,30 @@ def upsert_paper_page(
     return upsert_page(api, database_id, "Title", title, properties, children=children)
 
 
+def rich_text_property(page: dict[str, Any], property_name: str) -> str:
+    values = page.get("properties", {}).get(property_name, {}).get("rich_text", [])
+    return "".join(item.get("plain_text", item.get("text", {}).get("content", "")) for item in values)
+
+
+def has_active_children(api: Any, page_id: str) -> bool:
+    try:
+        children = api.list_block_children(page_id)
+    except AttributeError:
+        return True
+    return any(not child.get("archived") and not child.get("in_trash") for child in children)
+
+
+def upsert_section_page(api: Any, database_id: str, section, properties: dict[str, Any], children) -> str:
+    existing = api.find_page_by_title(database_id, "Name", section.title)
+    if existing:
+        old_hash = rich_text_property(existing, "Content Hash")
+        api.update_page(existing["id"], properties)
+        if old_hash != section.content_hash or not has_active_children(api, existing["id"]):
+            api.replace_page_content(existing["id"], children)
+        return existing["id"]
+    return api.create_page(database_id, properties, children=children)
+
+
 def paper_properties(paper_dir: Path, title: str, main_tex: str, commit: str, pdf_path: Path) -> dict[str, Any]:
     return {
         "Title": title_text(title),
@@ -140,11 +164,10 @@ def sync_paper(api: Any, paper_dir: Path, state: dict[str, Any], main_tex: str =
 
     sections = extract_sections(tex_path)
     for section in sections:
-        upsert_page(
+        upsert_section_page(
             api,
             sections_db,
-            "Name",
-            section.title,
+            section,
             section_properties(section, paper_page_id),
             children=section_blocks(section),
         )

@@ -44,6 +44,10 @@ class FakeNotion:
     def replace_page_content(self, page_id, blocks):
         self.replaced.append((page_id, blocks))
 
+    def list_block_children(self, page_id):
+        page = next(page for page in self.pages if page["id"] == page_id)
+        return page.get("children", [])
+
 
 class FakeBlockNotion(NotionAPI):
     def __init__(self) -> None:
@@ -185,3 +189,28 @@ def test_sync_paper_upserts_paper_and_sections(tmp_path: Path) -> None:
     assert summary["sections"] == 1
     assert state["paper_page_id"] == "page-1"
     assert [page["database_id"] for page in api.pages][:2] == ["db-papers", "db-sections"]
+
+
+def test_sync_paper_skips_unchanged_section_content(tmp_path: Path) -> None:
+    (tmp_path / "paper.tex").write_text(
+        r"\title{Demo Paper}" "\n" r"\section{Intro}" "\n" "Hello.",
+        encoding="utf-8",
+    )
+    api = FakeNotion()
+    state = {
+        "databases": {
+            "papers": "db-papers",
+            "paper_sections": "db-sections",
+        },
+        "paper_page_id": "",
+    }
+
+    sync_paper(api, tmp_path, state, main_tex="paper.tex")
+    api.replaced.clear()
+    sync_paper(api, tmp_path, state, main_tex="paper.tex")
+
+    replaced_titles = [
+        next(page["title"] for page in api.pages if page["id"] == page_id)
+        for page_id, _ in api.replaced
+    ]
+    assert replaced_titles == ["Demo Paper"]
