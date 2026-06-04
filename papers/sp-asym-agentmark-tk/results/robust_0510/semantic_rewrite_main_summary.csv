@@ -1,0 +1,4 @@
+rewrite_strength,topk,steps,trajectories,rouge_l,token_jaccard,rank_keep,top1_match,topk_overlap,kendall_tau,strict_dsr,pooled_dsr,pooled_packets,pooled_conflicts
+light,10,359,183,0.519,0.532,0.306,0.393,0.593,0.178,0.011,1.000,45.000,14.000
+medium,10,359,183,0.304,0.316,0.309,0.379,0.593,0.194,0.011,1.000,45.000,13.000
+heavy,10,359,183,0.272,0.271,0.312,0.409,0.594,0.210,0.011,1.000,45.000,14.000

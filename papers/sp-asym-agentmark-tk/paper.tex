@@ -512,6 +512,25 @@ To test Proposition~2 on the quantity it bounds, Fig.~\ref{fig:prop2-noise} dire
 \label{fig:prop2-noise}
 \end{figure}
 
+\subsection{Semantic Rewrite Robustness}
+
+Rank perturbations isolate the channel mechanism, but a verifier may also face behavior serializations that are semantically close while textually changed. Table~\ref{tab:semantic-rewrite} reports the ToolBench semantic-rewrite rerun for \ours{} under the top-10 verifier view. The rewrite strength changes the surface form substantially: token Jaccard falls from .532 under light rewrites to .271 under heavy rewrites. The exact rank path is therefore not preserved at the step level, and single trajectories almost never recover the 8-bit payload. However, the pooled audit window still recovers under all three strengths because the verifier accumulates enough surviving packets across 183 trajectories.
+
+\begin{table*}[t]
+\centering
+\caption{Semantic rewrite robustness for \ours{} on ToolBench, DeepSeek, top-10. Similarity and rank metrics are step-weighted over 359 rewritten steps per strength; strict DSR is single-trajectory payload recovery over 183 trajectories; pooled DSR combines all splits in the audit window.}
+\label{tab:semantic-rewrite}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrrrr}
+\toprule
+Rewrite & ROUGE-L & Jaccard & Rank keep & Top-1 match & Top-10 overlap & Strict DSR & Pooled DSR & Packets/conflicts \\
+\midrule
+Light & .519 & .532 & .306 & .393 & .593 & .011 & 1.000 & 45/14 \\
+Medium & .304 & .316 & .309 & .379 & .593 & .011 & 1.000 & 45/13 \\
+Heavy & .272 & .271 & .312 & .409 & .594 & .011 & 1.000 & 45/14 \\
+\bottomrule
+\end{tabular}}
+\end{table*}
+
 \subsection{\texorpdfstring{Top-$k$}{Top-k} Audit Calibration}
 
 We also run ToolBench cross-model calibration experiments in which the verifier reconstructs top-$k$ ranks with a different model from the embedder. The same-model curve in Fig.~\ref{fig:topk-same-model-pool} checks whether the rank codec has enough packet yield under matched conditions; the cross-model rerank checks whether the verifier model preserves the rank paths well enough for pooled recovery.
@@ -540,7 +559,73 @@ Empirical false-positive trials follow this analytic curve across the tested dat
 
 Bit-level scores require a different interpretation. When a verifier reports a match rate over $n$ decoded coded bits rather than a recovered payload, the appropriate null is a binomial tail $\Pr[X\geq s; X\sim\mathrm{Binom}(n,1/2)]$ for the observed score $s$. This statistic is useful for channel diagnostics and triage before enough independent RLNC equations are available, but it is not a positive attribution decision unless the pre-registered payload itself is recovered.
 
-The confidence-curve diagnostics illustrate this distinction: bit-level evidence can become statistically strong before a full payload is recovered, but it still quantifies channel evidence rather than ownership by itself. It becomes attribution evidence only when the same audit also satisfies claim binding, rank-quality gating, and pooled payload recovery.
+The confidence-curve diagnostics in Fig.~\ref{fig:evidence-confidence} illustrate this distinction: bit-level evidence can become statistically strong before a full payload is recovered, but it still quantifies channel evidence rather than ownership by itself. It becomes attribution evidence only when the same audit also satisfies claim binding, rank-quality gating, and pooled payload recovery.
+
+\begin{figure*}[t]
+\centering
+\begin{minipage}{0.49\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=\textwidth,
+  height=0.58\textwidth,
+  title={ALFWorld},
+  xmin=5,
+  xmax=200,
+  ymin=-62,
+  ymax=1,
+  xlabel={observed coded bits $N$},
+  ylabel={mean $\log_{10} p$},
+  xtick={5,50,100,150,200},
+  ytick={0,-10,-20,-30,-40,-50,-60},
+  grid=both,
+  legend style={font=\scriptsize, at={(0.03,0.03)}, anchor=south west, draw=none, fill=white, fill opacity=0.85, text opacity=1},
+  tick label style={font=\scriptsize},
+  label style={font=\scriptsize},
+  title style={font=\small},
+]
+\addplot+[mark=*, thick] coordinates {(5,-1.505) (10,-3.010) (20,-6.021) (30,-9.031) (50,-15.051) (80,-24.082) (100,-30.103) (150,-45.154) (200,-60.206)};
+\addlegendentry{\agentmark{} exact}
+\addplot+[mark=square*, thick] coordinates {(5,-1.275) (10,-2.517) (20,-4.972) (30,-7.438) (50,-11.850) (80,-18.093) (100,-21.983) (150,-33.390) (200,-44.919)};
+\addlegendentry{\ours{} top-10}
+\addplot[densely dashed, gray] coordinates {(5,-2) (200,-2)};
+\addlegendentry{$\alpha=.01$}
+\end{axis}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}{0.49\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=\textwidth,
+  height=0.58\textwidth,
+  title={ToolBench},
+  xmin=5,
+  xmax=200,
+  ymin=-8.5,
+  ymax=0.5,
+  xlabel={observed coded bits $N$},
+  ylabel={mean $\log_{10} p$},
+  xtick={5,50,100,150,200},
+  ytick={0,-2,-4,-6,-8},
+  grid=both,
+  legend style={font=\scriptsize, at={(0.03,0.03)}, anchor=south west, draw=none, fill=white, fill opacity=0.85, text opacity=1},
+  tick label style={font=\scriptsize},
+  label style={font=\scriptsize},
+  title style={font=\small},
+]
+\addplot+[mark=*, thick] coordinates {(5,-1.505) (10,-3.002) (20,-5.536) (30,-7.233) (50,-7.743) (80,-7.743) (100,-7.743) (150,-7.743) (200,-7.743)};
+\addlegendentry{\agentmark{} exact}
+\addplot+[mark=square*, thick] coordinates {(5,-1.505) (10,-3.002) (20,-5.368) (30,-6.355) (50,-6.556) (80,-6.556) (100,-6.556) (150,-6.556) (200,-6.556)};
+\addlegendentry{\ours{} top-10}
+\addplot[densely dashed, gray] coordinates {(5,-2) (200,-2)};
+\addlegendentry{$\alpha=.01$}
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\caption{Bit-level evidence confidence under the binomial null. Curves aggregate completed model/split cells and report the mean one-sided $\log_{10}p$ value as the verifier observes more decoded coded bits. These curves size evidence windows; positive attribution still requires pre-registered payload recovery.}
+\label{fig:evidence-confidence}
+\end{figure*}
 
 \section{Discussion}
 \label{sec:discussion}
