@@ -514,22 +514,29 @@ To test Proposition~2 on the quantity it bounds, Fig.~\ref{fig:prop2-noise} dire
 
 \subsection{Semantic Rewrite Robustness}
 
-Rank perturbations isolate the channel mechanism, but a verifier may also face behavior serializations that are semantically close while textually changed. Table~\ref{tab:semantic-rewrite} reports the ToolBench semantic-rewrite rerun for \ours{} under the top-10 verifier view. The rewrite strength changes the surface form substantially: token Jaccard falls from .532 under light rewrites to .271 under heavy rewrites. The exact rank path is therefore not preserved at the step level, and single trajectories almost never recover the 8-bit payload. However, the pooled audit window still recovers under all three strengths because the verifier accumulates enough surviving packets across 183 trajectories.
+Rank perturbations isolate the channel mechanism, but a verifier may also face behavior serializations that are semantically close while textually changed. Table~\ref{tab:semantic-rewrite} reports the non-window diagnostics for the ToolBench semantic-rewrite rerun under the top-10 verifier view, while Fig.~\ref{fig:semantic-rewrite-pool} plots the audit-window recovery curve. The rewrite strength changes the surface form substantially: token Jaccard falls from .532 under light rewrites to .271 under heavy rewrites. The exact rank path is therefore not preserved at the step level, and single trajectories almost never recover the 8-bit payload. However, pooled recovery rises as the verifier accumulates surviving packets, reaching 1.0 for all three strengths when the full 183-trajectory audit window is used.
 
 \begin{table*}[t]
 \centering
-\caption{Semantic rewrite robustness for \ours{} on ToolBench, DeepSeek, top-10. Similarity and rank metrics are step-weighted over 359 rewritten steps per strength; strict DSR is single-trajectory payload recovery over 183 trajectories; pooled DSR combines all splits in the audit window.}
+\caption{Semantic rewrite diagnostics for \ours{} on ToolBench, DeepSeek, top-10. Similarity and rank metrics are step-weighted over 359 rewritten steps per strength; strict DSR is single-trajectory payload recovery over 183 trajectories; packets/conflicts are measured on the full pooled audit window.}
 \label{tab:semantic-rewrite}
-\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrrrr}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrrr}
 \toprule
-Rewrite & ROUGE-L & Jaccard & Rank keep & Top-1 match & Top-10 overlap & Strict DSR & Pooled DSR & Packets/conflicts \\
+Rewrite & ROUGE-L & Jaccard & Rank keep & Top-1 match & Top-10 overlap & Strict DSR & Packets/conflicts \\
 \midrule
-Light & .519 & .532 & .306 & .393 & .593 & .011 & 1.000 & 45/14 \\
-Medium & .304 & .316 & .309 & .379 & .593 & .011 & 1.000 & 45/13 \\
-Heavy & .272 & .271 & .312 & .409 & .594 & .011 & 1.000 & 45/14 \\
+Light & .519 & .532 & .306 & .393 & .593 & .011 & 45/14 \\
+Medium & .304 & .316 & .309 & .379 & .593 & .011 & 45/13 \\
+Heavy & .272 & .271 & .312 & .409 & .594 & .011 & 45/14 \\
 \bottomrule
 \end{tabular}}
 \end{table*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_semantic_rewrite_pool_curve.png}
+\caption{Semantic-rewrite pooled recovery for \ours{} on ToolBench, DeepSeek, top-10. Curves show sampled payload recovery as the audit window grows; the final point pools all 183 trajectories and matches the packets/conflicts endpoint in Table~\ref{tab:semantic-rewrite}.}
+\label{fig:semantic-rewrite-pool}
+\end{figure}
 
 \subsection{\texorpdfstring{Top-$k$}{Top-k} Audit Calibration}
 
