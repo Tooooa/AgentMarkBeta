@@ -319,14 +319,17 @@ def make_svg(curve_rows: list[dict[str, object]]) -> str:
 
 
 def make_same_model_svg(curve_rows: list[dict[str, object]]) -> str:
-    width, height = 1500, 620
+    width, height = 1500, 560
     margin_l, margin_r = 90, 30
-    margin_t, margin_b = 90, 95
+    margin_t, margin_b = 60, 95
     panel_w, panel_h = 650, 340
     gap_x = 90
-    colors = {2: "#7A7A7A", 3: "#0072B2", 4: "#D55E00", 5: "#009E73", 10: "#CC79A7"}
-    dash = {2: "5 5", 3: "", 4: "8 4", 5: "", 10: "2 4"}
+    plot_k_values = [3, 4, 5, 10]
+    colors = {3: "#0072B2", 4: "#D55E00", 5: "#009E73", 10: "#CC79A7"}
+    dash = {3: "", 4: "8 4", 5: "", 10: "2 4"}
     labels = {"deepseek": "DeepSeek same-model", "gemini-flash": "Gemini same-model"}
+    xmax_by_model = {"deepseek": 30.0, "gemini-flash": 100.0}
+    xticks_by_model = {"deepseek": [0, 5, 10, 15, 20, 30], "gemini-flash": [0, 20, 40, 60, 80, 100]}
 
     grouped: dict[tuple[str, int], list[dict[str, object]]] = defaultdict(list)
     for row in curve_rows:
@@ -335,7 +338,7 @@ def make_same_model_svg(curve_rows: list[dict[str, object]]) -> str:
     def esc(s: object) -> str:
         return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-    def tx(x: float, x0: float, xmax: float = 100.0) -> float:
+    def tx(x: float, x0: float, xmax: float) -> float:
         return x0 + x / xmax * panel_w
 
     def ty(y: float, y0: float) -> float:
@@ -345,39 +348,39 @@ def make_same_model_svg(curve_rows: list[dict[str, object]]) -> str:
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         '<rect width="100%" height="100%" fill="white"/>',
         '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.title{font-size:30px;font-weight:700}.label{font-size:22px}.tick{font-size:17px;fill:#555}.legend{font-size:19px}.small{font-size:17px}</style>',
-        '<text class="title" x="750" y="42" text-anchor="middle">ToolBench matched top-k pooled recovery</text>',
     ]
 
     for col, model in enumerate(["deepseek", "gemini-flash"]):
         x0 = margin_l + col * (panel_w + gap_x)
         y0 = margin_t
+        xmax = xmax_by_model[model]
         parts.append(f'<text class="label" x="{x0 + panel_w / 2}" y="{y0 - 28}" text-anchor="middle">{esc(labels[model])}</text>')
         parts.append(f'<rect x="{x0}" y="{y0}" width="{panel_w}" height="{panel_h}" fill="none" stroke="#333" stroke-width="1.4"/>')
         for yv in [0, 0.25, 0.5, 0.75, 1.0]:
             y = ty(yv, y0)
             parts.append(f'<line x1="{x0}" x2="{x0 + panel_w}" y1="{y}" y2="{y}" stroke="#E5E5E5"/>')
             parts.append(f'<text class="tick" x="{x0 - 12}" y="{y + 6}" text-anchor="end">{yv:.2g}</text>')
-        for xv in [0, 20, 40, 60, 80, 100]:
-            x = tx(xv, x0)
+        for xv in xticks_by_model[model]:
+            x = tx(xv, x0, xmax)
             parts.append(f'<line x1="{x}" x2="{x}" y1="{y0}" y2="{y0 + panel_h}" stroke="#F0F0F0"/>')
             parts.append(f'<text class="tick" x="{x}" y="{y0 + panel_h + 26}" text-anchor="middle">{xv}</text>')
         parts.append(f'<text class="small" x="{x0 + panel_w/2}" y="{y0 + panel_h + 56}" text-anchor="middle">pooled trajectories</text>')
         parts.append(f'<text class="small" transform="translate({x0 - 65},{y0 + panel_h/2}) rotate(-90)" text-anchor="middle">payload recovery</text>')
 
-        for k in K_VALUES:
-            pts = [r for r in grouped.get((model, k), []) if int(r["pool_size"]) <= 100]
+        for k in plot_k_values:
+            pts = [r for r in grouped.get((model, k), []) if int(r["pool_size"]) <= xmax]
             if not pts:
                 continue
             pts = sorted(pts, key=lambda r: int(r["pool_size"]))
-            coords = [(tx(float(r["pool_size"]), x0), ty(float(r["success_mean"]), y0)) for r in pts]
+            coords = [(tx(float(r["pool_size"]), x0, xmax), ty(float(r["success_mean"]), y0)) for r in pts]
             d = " ".join(("M" if i == 0 else "L") + f"{x:.1f},{y:.1f}" for i, (x, y) in enumerate(coords))
             dash_attr = f' stroke-dasharray="{dash[k]}"' if dash[k] else ""
             parts.append(f'<path d="{d}" fill="none" stroke="{colors[k]}" stroke-width="3.2"{dash_attr}/>')
             for x, y in coords:
                 parts.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3.4" fill="{colors[k]}"/>')
 
-    legend_x, legend_y = 455, 570
-    for idx, k in enumerate(K_VALUES):
+    legend_x, legend_y = 515, 510
+    for idx, k in enumerate(plot_k_values):
         x = legend_x + idx * 120
         dash_attr = f' stroke-dasharray="{dash[k]}"' if dash[k] else ""
         parts.append(f'<line x1="{x}" x2="{x+42}" y1="{legend_y}" y2="{legend_y}" stroke="{colors[k]}" stroke-width="4"{dash_attr}/>')
