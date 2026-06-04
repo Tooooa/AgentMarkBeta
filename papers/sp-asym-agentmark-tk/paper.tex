@@ -501,7 +501,7 @@ This calibration is a real decoding result, not the offline capacity proxy used 
 
 The robustness experiments use pooled recovery throughout. Pooled recovery combines packets from trajectories with the same dataset, model, split, run, and verifier configuration before RLNC decoding. This corresponds to corpus-level auditing or a longer audit window, not to a task-level success rate for isolated trajectories.
 
-The pooled rank-noise and erasure sweeps are intentionally conservative audit-window checks, and they mostly saturate: under DeepSeek top-10 adjacent-swap noise, ALFWorld ID and ToolBench all-split pooling remain at 1.0 through $\epsilon=0.5$, while ALFWorld OOD is the only nontrivial cell, dropping to 0.83 at $\epsilon=0.5$. Under fixed erasure, both watermarking methods recover in every pooled cell even at 90\% step erasure. Appendix~\ref{app:saturated-pooled} keeps the full saturated tables; the main text focuses on the non-pooled path-flip curve below.
+The pooled rank-noise and erasure sweeps are intentionally conservative audit-window checks, and they mostly saturate: under DeepSeek top-10 adjacent-swap noise, ALFWorld ID and ToolBench all-split pooling remain at 1.0 through $\epsilon=0.5$, while ALFWorld OOD is the only nontrivial cell, dropping to 0.83 at $\epsilon=0.5$. Under fixed erasure, both watermarking methods recover in every pooled cell even at 90\% step erasure. Appendix~\ref{app:robustness-diagnostics} records this saturation and reports a medium-window path-consistency diagnostic that avoids the all-pooled endpoint; the main text focuses on the non-pooled path-flip curve below.
 
 To test Proposition~2 on the quantity it bounds, Fig.~\ref{fig:prop2-noise} directly measures the empirical decoded-path flip rate for decodable ToolBench steps under adjacent swaps, and overlays an empirical envelope of the form $1-(1-\epsilon)^{c\lceil\log_2 n_t\rceil}$. The fitted envelope validates the shape and depth dependence of the boundary, not a prior prediction of a universal constant. The main takeaway is qualitative: deeper rank paths expose more branch decisions to local rank disagreement, so path-corruption risk rises with both rank noise and candidate depth.
 
@@ -670,38 +670,26 @@ Temperature rescaling preserves rank order because $p_i^{1/T}/Z$ is monotone in 
 
 The top-$k$ parameter therefore trades nominal capacity against reconstruction risk. Larger $k$ gives more leaves and potentially more decoded bits per step, but it asks the verifier to reconstruct lower-probability ranks. Smaller $k$ is conservative and compatible with restricted APIs, but it may underuse high-entropy trajectories. The deployment choice should maximize calibrated $\Ceff(k)$, not raw decoded length: a deeper top-$k$ view is useful only when its marginal capacity gain exceeds the marginal decode-success loss. The evaluation reports a sweep rather than selecting a universal $k$ because the best choice is environment-dependent.
 
-\section{Saturated Pooled Robustness Tables}
-\label{app:saturated-pooled}
+\section{Robustness Saturation and Medium-Window Diagnostics}
+\label{app:robustness-diagnostics}
+
+The fully pooled robustness checks are retained as audit sanity checks rather than as primary evidence. They are deliberately conservative and mostly saturated: for DeepSeek top-10 adjacent-swap rank noise, ALFWorld ID and ToolBench all-split pooled recovery remain at 1.0 through $\epsilon=0.5$, while ALFWorld OOD falls only at the most severe tested point, to 0.83 at $\epsilon=0.5$. Under fixed step erasure, all reported ALFWorld and ToolBench pooled cells for both \agentmark{} and \ours{} recover at 1.0 through 90\% erasure. Listing those cells as tables adds little beyond showing that the pooled audit window is overpowered for this diagnostic.
+
+Table~\ref{tab:medium-window-noise} instead reports a non-saturated path-consistency view from the fine ToolBench rerun. The metric is not full RLNC payload recovery: it is the probability that a short audit window keeps the decoded rank path unchanged under adjacent swaps. This is closer to the perturbation quantity used in Proposition~2 and exposes the expected decay with noise and window length.
 
 \begin{table}[h]
 \centering
-\caption{Pooled recovery for \ours{} under adjacent-swap ranking noise. DeepSeek, top-10, repeats=10. Values are corpus-level pooled decode success.}
-\label{tab:noise}
-\resizebox{\columnwidth}{!}{\begin{tabular}{llrrrr}
+\caption{Medium-window path consistency under adjacent-swap rank noise. ToolBench, DeepSeek, G1 instruction split, 500 trials per cell. Values are path-window success rates, not full payload recovery.}
+\label{tab:medium-window-noise}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrrrrr}
 \toprule
-Dataset & Split & $\epsilon=0.0$ & $\epsilon=0.1$ & $\epsilon=0.3$ & $\epsilon=0.5$ \\
+& \multicolumn{3}{c}{$\epsilon=0.05$} & \multicolumn{3}{c}{$\epsilon=0.25$} & \multicolumn{3}{c}{$\epsilon=0.50$} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+$k$ & 4-step & 8-step & 12-step & 4-step & 8-step & 12-step & 4-step & 8-step & 12-step \\
 \midrule
-ALFWorld & ID & 1.00 & 1.00 & 1.00 & 1.00 \\
-ALFWorld & OOD & 1.00 & 1.00 & 1.00 & 0.83 \\
-ToolBench & all splits & 1.00 & 1.00 & 1.00 & 1.00 \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-\begin{table}[h]
-\centering
-\caption{Pooled recovery under step erasure after the fixed 3.2 rerun. DeepSeek, top-10. Cells show pooled success at erasure rates 0.0/0.5/0.9.}
-\label{tab:erasure}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lllccc}
-\toprule
-Dataset & Method & Pool & 0.0 & 0.5 & 0.9 \\
-\midrule
-ALFWorld & \agentmark{} & ID & 1.00 & 1.00 & 1.00 \\
-ALFWorld & \ours{} & ID & 1.00 & 1.00 & 1.00 \\
-ALFWorld & \agentmark{} & OOD & 1.00 & 1.00 & 1.00 \\
-ALFWorld & \ours{} & OOD & 1.00 & 1.00 & 1.00 \\
-ToolBench & \agentmark{} & all splits & 1.00 & 1.00 & 1.00 \\
-ToolBench & \ours{} & all splits & 1.00 & 1.00 & 1.00 \\
+3 & .794 & .656 & .504 & .498 & .198 & .090 & .174 & .034 & .004 \\
+5 & .728 & .572 & .406 & .182 & .042 & .016 & .064 & .002 & .000 \\
+10 & .704 & .502 & .388 & .246 & .056 & .016 & .046 & .000 & .000 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -709,18 +697,25 @@ ToolBench & \ours{} & all splits & 1.00 & 1.00 & 1.00 \\
 \section{Vanilla Baseline}
 \label{app:vanilla-baseline}
 
-The vanilla ALFWorld result is reported only as a task-performance sanity check for the explicit prompting and clean AgentMark pipeline used by the main comparisons. On the canonical 0510 ALFWorld artifact, the clean induced pipeline reaches 80.0\% success with 16.23 steps, while the vanilla agent reaches 69.1\% success with 16.54 steps. This comparison is not a watermarking baseline; it shows that the explicit behavior-induction interface used to expose candidate actions does not degrade ALFWorld task performance before watermarking is applied.
+The vanilla ALFWorld result is reported only as a task-performance sanity check for the explicit prompting and clean AgentMark pipeline used by the main comparisons. On the canonical 0510 ALFWorld artifact, the clean induced pipeline reaches 80.0\% success with 16.23 steps, while the vanilla agent reaches 69.1\% success with 16.54 steps. Table~\ref{tab:vanilla-baseline} expands this aggregate by model and split. This comparison is not a watermarking baseline; it shows that the explicit behavior-induction interface used to expose candidate actions does not degrade ALFWorld task performance before watermarking is applied.
 
 \begin{table}[h]
 \centering
-\caption{ALFWorld vanilla sanity check for explicit behavior induction.}
+\caption{ALFWorld vanilla sanity check for explicit behavior induction, expanded by model and split. Success and steps are mean$\pm$standard deviation over the completed runs.}
 \label{tab:vanilla-baseline}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lrrr}
+\resizebox{\columnwidth}{!}{\begin{tabular}{llllrr}
 \toprule
-Method & Success & Steps & Groups \\
+Method & Model & Split & Runs & Success (\%) & Steps \\
 \midrule
-Vanilla & 69.1 & 16.54 & 4 \\
-Clean induced pipeline & 80.0 & 16.23 & 4 \\
+Vanilla & Gemini & ID & 3/3 & 60.95$\pm$1.09 & 18.45$\pm$0.07 \\
+Vanilla & Gemini & OOD & 3/3 & 66.67$\pm$1.55 & 17.67$\pm$0.49 \\
+Vanilla & DeepSeek & ID & 3/3 & 71.67$\pm$1.65 & 15.59$\pm$0.56 \\
+Vanilla & DeepSeek & OOD & 3/3 & 77.11$\pm$0.86 & 14.46$\pm$0.39 \\
+\midrule
+Clean induced & Gemini & ID & 3/3 & 72.62$\pm$0.82 & 17.34$\pm$0.08 \\
+Clean induced & Gemini & OOD & 3/3 & 69.40$\pm$0.00 & 18.76$\pm$0.00 \\
+Clean induced & DeepSeek & ID & 3/3 & 88.57$\pm$0.00 & 14.64$\pm$0.01 \\
+Clean induced & DeepSeek & OOD & 3/3 & 89.55$\pm$0.00 & 14.19$\pm$0.03 \\
 \bottomrule
 \end{tabular}}
 \end{table}
