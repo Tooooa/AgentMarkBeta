@@ -111,10 +111,6 @@ R.~Kuditipudi, J.~Thickstun, T.~Hashimoto, and P.~Liang, ``Robust
   distortion-free watermarks for language models,'' \emph{Transactions on
   Machine Learning Research}, 2024.
 
-\bibitem{seqwm2026}
-H.~An, S.~Park, D.~Kim, and Y.-S. Han, ``Sequential behavioral watermarking for
-  {LLM} agents,'' \emph{arXiv preprint arXiv:2605.11036}, 2026.
-
 \bibitem{christ2024undetectable}
 M.~Christ, S.~Gunn, and O.~Zamir, ``Undetectable watermarks for language
   models,'' in \emph{Proceedings of the Conference on Learning Theory}, 2024.
