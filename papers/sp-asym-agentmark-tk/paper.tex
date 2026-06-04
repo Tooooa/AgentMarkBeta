@@ -486,25 +486,23 @@ The same mechanism appears more clearly in pooled audit windows. Figure~\ref{fig
 
 \subsection{\texorpdfstring{Top-$k$}{Top-k} Calibration}
 
-Increasing $k$ raises both the amount of available rank information and the risk of rank instability, matching Proposition~4's saturation view. In ALFWorld, \ours{}'s payload recovery increases from 0.006 at $k=2$ to 0.313 at $k=20$, and proxy $\Ceff$ increases from 0.046 to 4.511. We extend the ALFWorld offline sweep beyond the table because the logged rank traces are not capped at 20: 65.95\% of decodable steps have more than 20 candidates, and the maximum candidate count is 69. The extended sweep continues to improve, reaching $\Ceff=6.712$ at $k=30$, $\Ceff=7.560$ at $k=40$, and $\Ceff=7.693$ at full rank. Thus the ALFWorld offline proxy still does not exhibit an internal optimum; the best observed operating point is the full logged rank view. This does not contradict the live cross-model calibration result in Fig.~\ref{fig:l5-rank-depth}: the offline sweep is a no-rank-reconstruction-error upper envelope, while the internal optimum appears only when verifier-side rank reconstruction is imperfect and lower ranks begin to introduce conflicting equations. ToolBench improves more modestly, from 0.000 to 0.056 proxy $\Ceff$, reflecting lower behavior entropy and shorter horizons.
+Increasing $k$ raises both the amount of available rank information and the risk of rank instability, matching Proposition~4's saturation view. Table~\ref{tab:topk} reports the matched-top-$k$ ToolBench reruns where the embedder and verifier use the same rank depth and RLNC recovery is evaluated on actual generated trajectories. Single trajectories almost never recover the 8-bit payload because ToolBench traces are short and packet yield is sparse. Pooling all ToolBench splits within each seed produces the audit-window behavior: very small $k$ can be packet-limited, while moderate and larger $k$ provide enough independent packets for same-model recovery.
 
-This ablation is a design diagnostic rather than a winner-take-all tuning result. It supports the weak-asymmetry story by showing where rank information becomes useful and where lower-ranked candidates stop paying for their reconstruction risk; Appendix~\ref{app:rank-stability} gives the corresponding stability rationale. Repeated $C_{\mathrm{nom}}$ values reflect candidate-set saturation: increasing the requested $k$ does not add decoded opportunity when the actual visible candidate set or selected decodable path is unchanged. We therefore compare trends rather than treating third-decimal differences as meaningful.
+This calibration is a real decoding result, not the offline capacity proxy used for Table~\ref{tab:utility}. We keep the ALFWorld top-$k$ sweep out of the table because the local ALFWorld artifact is an offline replay over logged rank traces rather than a matched-top-$k$ rerun. The corresponding proxy still helps explain candidate-set saturation, but it should not be read as task-level or audit-window payload recovery.
 
 \begin{table}[t]
 \centering
-\caption{Top-$k$ ablation for \ours{} in the offline decoder proxy. DSR is proxy payload recovery over pooled audit windows; $C_{\mathrm{nom}}$ and $\Ceff$ summarize mean proxy-bit contribution to those windows.}
+\caption{ToolBench matched-top-$k$ real decoding calibration for \ours{}. Strict recovery is single-trajectory exact payload recovery over 360 trajectories. Pooled recovery is mean$\pm$standard deviation over three seed-level all-split audit windows; packets are mean deduplicated RLNC packets in those pooled windows.}
 \label{tab:topk}
-\resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrrr}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrr}
 \toprule
-Dataset & Metric & $k=2$ & $k=4$ & $k=6$ & $k=8$ & $k=10$ & $k=20$ \\
+$k$ & DS strict & DS pooled & DS pkt & Gemini strict & Gemini pooled & Gemini pkt \\
 \midrule
-ALFWorld & DSR & .006 & .013 & .028 & .048 & .064 & .313 \\
-ALFWorld & $C_{\mathrm{nom}}$ & 8.161 & 12.113 & 12.113 & 13.276 & 13.276 & 13.469 \\
-ALFWorld & $\Ceff$ & .046 & .164 & .372 & .690 & .954 & 4.511 \\
-\midrule
-ToolBench & DSR & .000 & .006 & .010 & .021 & .032 & .035 \\
-ToolBench & $C_{\mathrm{nom}}$ & 1.096 & 1.426 & 1.426 & 1.468 & 1.468 & 1.468 \\
-ToolBench & $\Ceff$ & .000 & .009 & .016 & .032 & .053 & .056 \\
+2 & .000 & .00$\pm$.00 & 2.67 & .000 & .00$\pm$.00 & 2.67 \\
+3 & .000 & .33$\pm$.58 & 9.67 & .000 & .00$\pm$.00 & 5.00 \\
+4 & .003 & .33$\pm$.58 & 8.67 & .022 & .67$\pm$.58 & 9.67 \\
+5 & .008 & .67$\pm$.58 & 10.33 & .003 & .33$\pm$.58 & 7.67 \\
+10 & .028 & 1.00$\pm$.00 & 14.00 & .011 & 1.00$\pm$.00 & 12.00 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -528,23 +526,23 @@ To test Proposition~2 on the quantity it bounds, Fig.~\ref{fig:prop2-noise} dire
 
 We also run ToolBench calibration experiments in which the embedder and verifier use the same top-$k$ depth. This removes a basic confound: if the two sides use different candidate depths, packet scarcity and top-$k$ truncation are entangled. The same-model rerun checks whether the rank codec has enough packet yield under matched conditions; the cross-model rerank checks whether a different verifier model preserves the rank paths well enough for pooled recovery.
 
-Table~\ref{tab:topk-calibration} summarizes the audit-window calibration. With same-model ranking, all tested settings except DeepSeek $k=2$ recover after pooling all splits and seeds, which shows that the codec itself is not the limiting factor at moderate depths. Cross-model verification is more selective: small $k$ can be packet-limited, while larger $k$ can accumulate conflicting packets as lower-ranked candidates become less stable across models. The successful depths are direction-dependent, with DeepSeek-to-Gemini favoring a shallower rank view and Gemini-to-DeepSeek favoring a slightly deeper one.
+Table~\ref{tab:topk-calibration} summarizes the cross-model audit-window calibration. Cross-model verification is more selective than the same-model reruns in Table~\ref{tab:topk}: small $k$ can be packet-limited, while larger $k$ can accumulate conflicting packets as lower-ranked candidates become less stable across models. The successful depths are direction-dependent, with DeepSeek-to-Gemini favoring a shallower rank view and Gemini-to-DeepSeek favoring a slightly deeper one.
 
 \begin{table}[t]
 \centering
-\caption{ToolBench top-$k$ audit calibration. Same-model columns report pooled recovery. Cross-model columns report pooled recovery / packet conflicts, showing where verifier-rank disagreement dominates.}
+\caption{ToolBench cross-model top-$k$ audit calibration. Cells report pooled recovery / packet conflicts, showing where verifier-rank disagreement dominates.}
 \label{tab:topk-calibration}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrr}
+\begin{tabular}{lcc}
 \toprule
-$k$ & DS same & Gemini same & DS$\rightarrow$Gemini & Gemini$\rightarrow$DS \\
+$k$ & DS$\rightarrow$Gemini & Gemini$\rightarrow$DS \\
 \midrule
-2 & .00 & 1.00 & .00/0 & .00/0 \\
-3 & 1.00 & 1.00 & 1.00/15 & .00/5 \\
-4 & 1.00 & 1.00 & .00/14 & .00/17 \\
-5 & 1.00 & 1.00 & .00/12 & 1.00/7 \\
-10 & 1.00 & 1.00 & .00/22 & .00/11 \\
+2 & .00/0 & .00/0 \\
+3 & 1.00/15 & .00/5 \\
+4 & .00/14 & .00/17 \\
+5 & .00/12 & 1.00/7 \\
+10 & .00/22 & .00/11 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
 
 \begin{figure*}[t]
