@@ -236,13 +236,14 @@ def build_l5() -> tuple[list[dict[str, object]], list[dict[str, object]]]:
 
 
 def make_svg(curve_rows: list[dict[str, object]]) -> str:
-    width, height = 1500, 900
+    width, height = 1500, 500
     margin_l, margin_r = 90, 30
-    margin_t, margin_b = 90, 75
-    panel_w, panel_h = 650, 285
-    gap_x, gap_y = 90, 110
-    colors = {2: "#7A7A7A", 3: "#0072B2", 4: "#D55E00", 5: "#009E73", 10: "#CC79A7"}
-    dash = {2: "5 5", 3: "", 4: "8 4", 5: "", 10: "2 4"}
+    margin_t, margin_b = 62, 86
+    panel_w, panel_h = 650, 300
+    gap_x = 90
+    plot_k_values = [3, 5]
+    colors = {3: "#0072B2", 5: "#009E73"}
+    dash = {3: "", 5: "8 4"}
 
     grouped: dict[tuple[str, int], list[dict[str, object]]] = defaultdict(list)
     for row in curve_rows:
@@ -260,25 +261,22 @@ def make_svg(curve_rows: list[dict[str, object]]) -> str:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         '<rect width="100%" height="100%" fill="white"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.title{font-size:30px;font-weight:700}.label{font-size:22px}.tick{font-size:17px;fill:#555}.legend{font-size:19px}.small{font-size:17px}</style>',
-        '<text class="title" x="750" y="42" text-anchor="middle">ToolBench L5 rank-depth calibration</text>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222}.label{font-size:22px}.tick{font-size:17px;fill:#555}.legend{font-size:19px}.small{font-size:17px}.note{font-size:18px;font-weight:700}</style>',
     ]
 
     panels = [
-        ("deepseek->gemini-flash", "Pooled recovery", 0, 1.0),
-        ("gemini-flash->deepseek", "Pooled recovery", 1, 1.0),
-        ("deepseek->gemini-flash", "Mean conflicts", 2, 24.0),
-        ("gemini-flash->deepseek", "Mean conflicts", 3, 24.0),
+        ("deepseek->gemini-flash", "Pooled recovery", 0, "k=3 recovers"),
+        ("gemini-flash->deepseek", "Pooled recovery", 1, "k=5 recovers"),
     ]
 
-    for direction, y_label, idx, ymax in panels:
+    for direction, y_label, idx, note in panels:
         col = idx % 2
-        row = idx // 2
         x0 = margin_l + col * (panel_w + gap_x)
-        y0 = margin_t + row * (panel_h + gap_y)
+        y0 = margin_t
+        ymax = 1.0
         parts.append(f'<text class="label" x="{x0 + panel_w / 2}" y="{y0 - 28}" text-anchor="middle">{esc(LABELS[direction])}</text>')
         parts.append(f'<rect x="{x0}" y="{y0}" width="{panel_w}" height="{panel_h}" fill="none" stroke="#333" stroke-width="1.4"/>')
-        for frac in ([0, 0.25, 0.5, 0.75, 1.0] if ymax == 1.0 else [0, 0.25, 0.5, 0.75, 1.0]):
+        for frac in [0, 0.25, 0.5, 0.75, 1.0]:
             yv = frac * ymax
             y = ty(yv, y0, ymax)
             parts.append(f'<line x1="{x0}" x2="{x0 + panel_w}" y1="{y}" y2="{y}" stroke="#E5E5E5"/>')
@@ -289,13 +287,14 @@ def make_svg(curve_rows: list[dict[str, object]]) -> str:
             parts.append(f'<text class="tick" x="{x}" y="{y0 + panel_h + 26}" text-anchor="middle">{xv}</text>')
         parts.append(f'<text class="small" x="{x0 + panel_w/2}" y="{y0 + panel_h + 56}" text-anchor="middle">pooled trajectories</text>')
         parts.append(f'<text class="small" transform="translate({x0 - 65},{y0 + panel_h/2}) rotate(-90)" text-anchor="middle">{esc(y_label)}</text>')
+        parts.append(f'<text class="note" x="{x0 + panel_w - 18}" y="{y0 + 30}" text-anchor="end">{esc(note)}</text>')
 
-        for k in K_VALUES:
+        for k in plot_k_values:
             pts = grouped.get((direction, k), [])
             if not pts:
                 continue
             pts = sorted(pts, key=lambda r: int(r["pool_size"]))
-            metric = "success_mean" if row == 0 else "conflicts_mean"
+            metric = "success_mean"
             coords = [(tx(float(r["pool_size"]), x0), ty(float(r[metric]), y0, ymax)) for r in pts if float(r["pool_size"]) <= 125]
             if not coords:
                 continue
@@ -306,14 +305,13 @@ def make_svg(curve_rows: list[dict[str, object]]) -> str:
                 parts.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3.4" fill="{colors[k]}"/>')
 
     # Legend
-    legend_x, legend_y = 475, 850
-    for idx, k in enumerate(K_VALUES):
+    legend_x, legend_y = 610, 455
+    for idx, k in enumerate(plot_k_values):
         x = legend_x + idx * 120
         dash_attr = f' stroke-dasharray="{dash[k]}"' if dash[k] else ""
         parts.append(f'<line x1="{x}" x2="{x+42}" y1="{legend_y}" y2="{legend_y}" stroke="{colors[k]}" stroke-width="4"{dash_attr}/>')
         parts.append(f'<text class="legend" x="{x+50}" y="{legend_y+7}">k={k}</text>')
 
-    parts.append('<text class="small" x="750" y="885" text-anchor="middle">top2 is packet-limited; top4/top10 accumulate conflicts; top3 and top5 are direction-specific calibrated operating points.</text>')
     parts.append("</svg>")
     return "\n".join(parts)
 

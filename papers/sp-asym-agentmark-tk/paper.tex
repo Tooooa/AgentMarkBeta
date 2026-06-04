@@ -542,16 +542,16 @@ Heavy & .272 & .271 & .312 & .409 & .594 & .011 & 45/14 \\
 
 We also run ToolBench cross-model calibration experiments in which the verifier reconstructs top-$k$ ranks with a different model from the embedder. The same-model curve in Fig.~\ref{fig:topk-same-model-pool} checks whether the rank codec has enough packet yield under matched conditions; the cross-model rerank checks whether the verifier model preserves the rank paths well enough for pooled recovery.
 
-Figure~\ref{fig:l5-rank-depth} summarizes the cross-model audit-window calibration. Cross-model verification is more selective than the same-model reruns: small $k$ can be packet-limited, while larger $k$ can accumulate conflicting packets as lower-ranked candidates become less stable across models. The successful depths are direction-dependent, with DeepSeek-to-Gemini favoring a shallower rank view and Gemini-to-DeepSeek favoring a slightly deeper one.
+Figure~\ref{fig:l5-rank-depth} summarizes the cross-model audit-window calibration as an operating-point choice. Cross-model verification is not simply improved by increasing $k$: the useful depth depends on the embedder--verifier direction. DeepSeek-to-Gemini recovers with the shallower top-3 view as the audit window grows, while Gemini-to-DeepSeek needs the slightly deeper top-5 view.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_l5_rank_depth_calibration.png}
-\caption{Live ToolBench L5 cross-model rank-depth calibration. The top row shows sampled pooled recovery; the bottom row shows mean packet conflicts over the same pools. Small $k$ is packet-limited, while larger $k$ can accumulate conflicts as lower-ranked candidates become less stable across verifier models.}
+\caption{Live ToolBench L5 cross-model operating-point calibration. Curves show sampled pooled payload recovery for two rank depths under cross-model verification. DeepSeek-to-Gemini favors top-3, while Gemini-to-DeepSeek favors top-5, showing that the verifier rank depth must be calibrated for the deployed model pair.}
 \label{fig:l5-rank-depth}
 \end{figure*}
 
-Figure~\ref{fig:l5-rank-depth} makes the mechanism visible. Increasing $k$ can increase packet yield, but it also asks the verifier to reconstruct lower-ranked candidates whose rank paths are less stable across models. In the rank tree, even a one-position displacement can move a selected behavior to a different parity branch and turn a useful RLNC equation into a conflicting one. Thus the relevant quantity is not nominal depth alone; it is the balance between independent packet yield and rank-path consistency.
+Figure~\ref{fig:l5-rank-depth} makes the mechanism visible without relying on a separate conflict panel. Increasing $k$ can increase packet yield, but it also asks the verifier to reconstruct lower-ranked candidates whose rank paths are less stable across models. In the rank tree, even a one-position displacement can move a selected behavior to a different parity branch and turn a useful RLNC equation into a conflicting one. Thus the relevant quantity is not nominal depth alone; it is the balance between independent packet yield and rank-path consistency, selected for the model pair.
 
 The same live L5 protocol exposes a boundary on ALFWorld. Cross-model top-10 overlap is moderate (0.596 for DeepSeek-to-Gemini and 0.633 for Gemini-to-DeepSeek), but top-1 agreement is only about 0.20, and pooled recovery succeeds only for the Gemini-to-DeepSeek ID pool in the pulled artifact. We therefore treat cross-model rerank as a ToolBench-positive but domain-dependent result, not as evidence that every agent domain has stable enough ranks for pooled recovery without calibration.
 
