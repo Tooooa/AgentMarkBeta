@@ -486,26 +486,16 @@ The same mechanism appears more clearly in pooled audit windows. Figure~\ref{fig
 
 \subsection{\texorpdfstring{Top-$k$}{Top-k} Calibration}
 
-Increasing $k$ raises both the amount of available rank information and the risk of rank instability, matching Proposition~4's saturation view. Table~\ref{tab:topk} reports the matched-top-$k$ ToolBench reruns where the embedder and verifier use the same rank depth and RLNC recovery is evaluated on actual generated trajectories. Single trajectories almost never recover the 8-bit payload because ToolBench traces are short and packet yield is sparse. Pooling all ToolBench splits within each seed produces the audit-window behavior: very small $k$ can be packet-limited, while moderate and larger $k$ provide enough independent packets for same-model recovery.
+Increasing $k$ raises both the amount of available rank information and the risk of rank instability, matching Proposition~4's saturation view. Figure~\ref{fig:topk-same-model-pool} reports the matched-top-$k$ ToolBench reruns where the embedder and verifier use the same rank depth and RLNC recovery is evaluated on actual generated trajectories. Single trajectories almost never recover the 8-bit payload because ToolBench traces are short and packet yield is sparse. Pooling trajectories into larger audit windows shows the operating regime directly: very small $k$ can be packet-limited, while moderate and larger $k$ provide enough independent packets for same-model recovery.
 
-This calibration is a real decoding result, not the offline capacity proxy used for Table~\ref{tab:utility}. We keep the ALFWorld top-$k$ sweep out of the table because the local ALFWorld artifact is an offline replay over logged rank traces rather than a matched-top-$k$ rerun. The corresponding proxy still helps explain candidate-set saturation, but it should not be read as task-level or audit-window payload recovery.
+This calibration is a real decoding result, not the offline capacity proxy used for Table~\ref{tab:utility}. We keep the ALFWorld top-$k$ sweep out of this figure because the local ALFWorld artifact is an offline replay over logged rank traces rather than a matched-top-$k$ rerun. The corresponding proxy still helps explain candidate-set saturation, but it should not be read as task-level or audit-window payload recovery.
 
-\begin{table}[t]
+\begin{figure*}[t]
 \centering
-\caption{ToolBench matched-top-$k$ real decoding calibration for \ours{}. Strict recovery is single-trajectory exact payload recovery over 360 trajectories. Pooled recovery is mean$\pm$standard deviation over three seed-level all-split audit windows; packets are mean deduplicated RLNC packets in those pooled windows.}
-\label{tab:topk}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrr}
-\toprule
-$k$ & DS strict & DS pooled & DS pkt & Gemini strict & Gemini pooled & Gemini pkt \\
-\midrule
-2 & .000 & .00$\pm$.00 & 2.67 & .000 & .00$\pm$.00 & 2.67 \\
-3 & .000 & .33$\pm$.58 & 9.67 & .000 & .00$\pm$.00 & 5.00 \\
-4 & .003 & .33$\pm$.58 & 8.67 & .022 & .67$\pm$.58 & 9.67 \\
-5 & .008 & .67$\pm$.58 & 10.33 & .003 & .33$\pm$.58 & 7.67 \\
-10 & .028 & 1.00$\pm$.00 & 14.00 & .011 & 1.00$\pm$.00 & 12.00 \\
-\bottomrule
-\end{tabular}}
-\end{table}
+\includegraphics[width=\textwidth]{figures/fig_toolbench_same_model_topk_pool_curve.png}
+\caption{ToolBench matched-top-$k$ same-model real decoding calibration for \ours{}. Curves show sampled pooled payload recovery as the audit window grows; each panel uses trajectories generated and verified by the same model.}
+\label{fig:topk-same-model-pool}
+\end{figure*}
 
 \subsection{Rank Noise and Erasure}
 
@@ -524,26 +514,9 @@ To test Proposition~2 on the quantity it bounds, Fig.~\ref{fig:prop2-noise} dire
 
 \subsection{\texorpdfstring{Top-$k$}{Top-k} Audit Calibration}
 
-We also run ToolBench calibration experiments in which the embedder and verifier use the same top-$k$ depth. This removes a basic confound: if the two sides use different candidate depths, packet scarcity and top-$k$ truncation are entangled. The same-model rerun checks whether the rank codec has enough packet yield under matched conditions; the cross-model rerank checks whether a different verifier model preserves the rank paths well enough for pooled recovery.
+We also run ToolBench cross-model calibration experiments in which the verifier reconstructs top-$k$ ranks with a different model from the embedder. The same-model curve in Fig.~\ref{fig:topk-same-model-pool} checks whether the rank codec has enough packet yield under matched conditions; the cross-model rerank checks whether the verifier model preserves the rank paths well enough for pooled recovery.
 
-Table~\ref{tab:topk-calibration} summarizes the cross-model audit-window calibration. Cross-model verification is more selective than the same-model reruns in Table~\ref{tab:topk}: small $k$ can be packet-limited, while larger $k$ can accumulate conflicting packets as lower-ranked candidates become less stable across models. The successful depths are direction-dependent, with DeepSeek-to-Gemini favoring a shallower rank view and Gemini-to-DeepSeek favoring a slightly deeper one.
-
-\begin{table}[t]
-\centering
-\caption{ToolBench cross-model top-$k$ audit calibration. Cells report pooled recovery / packet conflicts, showing where verifier-rank disagreement dominates.}
-\label{tab:topk-calibration}
-\begin{tabular}{lcc}
-\toprule
-$k$ & DS$\rightarrow$Gemini & Gemini$\rightarrow$DS \\
-\midrule
-2 & .00/0 & .00/0 \\
-3 & 1.00/15 & .00/5 \\
-4 & .00/14 & .00/17 \\
-5 & .00/12 & 1.00/7 \\
-10 & .00/22 & .00/11 \\
-\bottomrule
-\end{tabular}
-\end{table}
+Figure~\ref{fig:l5-rank-depth} summarizes the cross-model audit-window calibration. Cross-model verification is more selective than the same-model reruns: small $k$ can be packet-limited, while larger $k$ can accumulate conflicting packets as lower-ranked candidates become less stable across models. The successful depths are direction-dependent, with DeepSeek-to-Gemini favoring a shallower rank view and Gemini-to-DeepSeek favoring a slightly deeper one.
 
 \begin{figure*}[t]
 \centering
