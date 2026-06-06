@@ -1,0 +1,158 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{yao2022react}
+\citation{achiam2023gpt4}
+\citation{team2023gemini}
+\citation{kirchenbauer2023watermark}
+\citation{dathathri2024synthid}
+\citation{agentmark2026}
+\citation{weakasym2026}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:introduction}{{1}{1}{Introduction}{section.1}{}}
+\citation{weakasym2026}
+\citation{shridhar2021alfworld}
+\citation{qin2023toolllm}
+\citation{gao2024oasis}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background and Motivation}{2}{section.2}\protected@file@percent }
+\newlabel{sec:background}{{2}{2}{Background and Motivation}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Behavioral Watermarking for Agents}{2}{subsection.2.1}\protected@file@percent }
+\citation{hopper2002provably}
+\citation{kaptchuk2021meteor}
+\citation{weakasym2026}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}The Symmetry Bottleneck}{3}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Weak Asymmetry}{3}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Problem Formulation}{3}{section.3}\protected@file@percent }
+\newlabel{sec:formulation}{{3}{3}{Problem Formulation}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Agent Behavior Channel}{3}{subsection.3.1}\protected@file@percent }
+\citation{agentmark2026}
+\citation{weakasym2026}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Adversary and Requirements}{4}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Non-Goals}{4}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Design}{4}{section.4}\protected@file@percent }
+\newlabel{sec:design}{{4}{4}{Design}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Overview}{4}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Binary Distribution-Preserving Primitive}{4}{subsection.4.2}\protected@file@percent }
+\citation{ho2006random}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces System view of AsymMark-R{}, the rank-order instance of AsymMark{}. The embedder needs calibrated probabilities to preserve utility; the verifier needs only the rank invariant for decoding, plus enough observed coded bits for RLNC recovery.}}{5}{figure.1}\protected@file@percent }
+\newlabel{fig:system}{{1}{5}{System view of \ours {}, the rank-order instance of \framework {}. The embedder needs calibrated probabilities to preserve utility; the verifier needs only the rank invariant for decoding, plus enough observed coded bits for RLNC recovery}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Rank Encoder}{5}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Rank Decoder}{5}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Coding Layer}{5}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Verification Protocol}{5}{subsection.4.6}\protected@file@percent }
+\newlabel{sec:verification-protocol}{{4.6}{5}{Verification Protocol}{subsection.4.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces One-step rank codec. The encoder uses probability masses only to sample from the original behavior policy, while the verifier decodes from the selected behavior's top-$k$ rank path.}}{6}{figure.2}\protected@file@percent }
+\newlabel{fig:rank-codec}{{2}{6}{One-step rank codec. The encoder uses probability masses only to sample from the original behavior policy, while the verifier decodes from the selected behavior's top-$k$ rank path}{figure.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Security Analysis}{6}{section.5}\protected@file@percent }
+\newlabel{sec:security}{{5}{6}{Security Analysis}{section.5}{}}
+\citation{shridhar2021alfworld}
+\citation{qin2023toolllm}
+\citation{deepseek2024}
+\citation{team2023gemini}
+\citation{agentguide2025}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Evaluation}{8}{section.6}\protected@file@percent }
+\newlabel{sec:evaluation}{{6}{8}{Evaluation}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Setup}{8}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Protocol}{8}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Reproducibility}{8}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Evaluation Questions}{8}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Metrics}{9}{subsection.6.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Verifier-Channel Diagnosis}{9}{subsection.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Utility and Behavioral Stealth}{9}{subsection.6.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.8}Rank-Only Verification}{9}{subsection.6.8}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Main utility, stealth, and verifier-channel capacity summary. Success, steps, JSD, and $\ensuremath  {C_{\mathrm  {eff}}}$/task report mean$\pm $standard deviation over the available aggregation cells; lower JSD is closer to clean behavior frequencies. $L0$ is exact-probability verification, $L1$ is top-10 rank-only verification, $\ensuremath  {C_{\mathrm  {eff}}}$/task is the proxy effective capacity per task trajectory, and Retained is the ratio of means $L1/L0$. RG denotes red-green behavior bias.}}{10}{table.1}\protected@file@percent }
+\newlabel{tab:utility}{{1}{10}{Main utility, stealth, and verifier-channel capacity summary. Success, steps, JSD, and $\Ceff $/task report mean$\pm $standard deviation over the available aggregation cells; lower JSD is closer to clean behavior frequencies. $L0$ is exact-probability verification, $L1$ is top-10 rank-only verification, $\Ceff $/task is the proxy effective capacity per task trajectory, and Retained is the ratio of means $L1/L0$. RG denotes red-green behavior bias}{table.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Rank-only pooled recovery on ALFWorld/DeepSeek/ID, top-10 verifier view. The plotted window stops at 50 trajectories to show the audit-window regime before very large pools require conflict-aware aggregation.}}{10}{figure.3}\protected@file@percent }
+\newlabel{fig:rank-only-pooled}{{3}{10}{Rank-only pooled recovery on ALFWorld/DeepSeek/ID, top-10 verifier view. The plotted window stops at 50 trajectories to show the audit-window regime before very large pools require conflict-aware aggregation}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.9}Top-$k$ Calibration}{10}{subsection.6.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.10}Supplemental Boundary Checks}{10}{subsection.6.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.11}False Positives and Evidence Thresholds}{10}{subsection.6.11}\protected@file@percent }
+\newlabel{sec:false-positive-results}{{6.11}{10}{False Positives and Evidence Thresholds}{subsection.6.11}{}}
+\citation{kirchenbauer2023watermark}
+\citation{dathathri2024synthid}
+\citation{kirchenbauer2024reliability}
+\citation{kuditipudi2024robust}
+\citation{agentguide2025}
+\citation{agentmark2026}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Relative effective capacity retained over the L0--L6 verifier-channel ladder. The two panels separate ALFWorld and ToolBench because their absolute proxy $\ensuremath  {C_{\mathrm  {eff}}}$ scales differ by almost two orders of magnitude; each curve is normalized by its own L0 exact-probability value. AgentMark-F{} loses usable capacity as soon as the verifier only has ranks, while AsymMark-R{} degrades more gradually under top-$k$ rank views.}}{11}{figure.4}\protected@file@percent }
+\newlabel{fig:channel-ladder}{{4}{11}{Relative effective capacity retained over the L0--L6 verifier-channel ladder. The two panels separate ALFWorld and ToolBench because their absolute proxy $\Ceff $ scales differ by almost two orders of magnitude; each curve is normalized by its own L0 exact-probability value. \agentmark {} loses usable capacity as soon as the verifier only has ranks, while \ours {} degrades more gradually under top-$k$ rank views}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Discussion}{11}{section.7}\protected@file@percent }
+\newlabel{sec:discussion}{{7}{11}{Discussion}{section.7}{}}
+\citation{hopper2002provably}
+\citation{kaptchuk2021meteor}
+\citation{christ2024undetectable}
+\citation{zamir2024steganography}
+\citation{sparsamp2025}
+\citation{weakasym2026}
+\citation{ho2006random}
+\citation{shridhar2021alfworld}
+\citation{qin2023toolllm}
+\citation{gao2024oasis}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces ToolBench matched-top-$k$ same-model real decoding calibration for AsymMark-R{}. Curves show sampled pooled payload recovery for $k\in \{3,4,5,10\}$ as the audit window grows; each panel uses trajectories generated and verified by the same model, with panel-specific x-axis ranges to show the different saturation regimes.}}{12}{figure.5}\protected@file@percent }
+\newlabel{fig:topk-same-model-pool}{{5}{12}{ToolBench matched-top-$k$ same-model real decoding calibration for \ours {}. Curves show sampled pooled payload recovery for $k\in \{3,4,5,10\}$ as the audit window grows; each panel uses trajectories generated and verified by the same model, with panel-specific x-axis ranges to show the different saturation regimes}{figure.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Related Work}{12}{section.8}\protected@file@percent }
+\newlabel{sec:related-work}{{8}{12}{Related Work}{section.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Threats to Validity and Ethics}{12}{section.9}\protected@file@percent }
+\newlabel{sec:validity}{{9}{12}{Threats to Validity and Ethics}{section.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Ethics Considerations}{12}{subsection.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{13}{section.10}\protected@file@percent }
+\newlabel{sec:conclusion}{{10}{13}{Conclusion}{section.10}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  A: Distribution-Preservation Details}{13}{section*.1}\protected@file@percent }
+\newlabel{app:dist-preservation}{{A}{13}{\appendixname \nobreakspace \thesectiondis \\* Distribution-Preservation Details}{section*.1}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  B: DRBG Synchronization}{13}{section*.2}\protected@file@percent }
+\newlabel{app:drbg-sync}{{B}{13}{\appendixname \nobreakspace \thesectiondis \\* DRBG Synchronization}{section*.2}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  C: RLNC Payload Recovery}{13}{section*.3}\protected@file@percent }
+\newlabel{app:rlnc}{{C}{13}{\appendixname \nobreakspace \thesectiondis \\* RLNC Payload Recovery}{section*.3}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  D: Rank Stability and Top-$k$ Choice}{13}{section*.4}\protected@file@percent }
+\newlabel{app:rank-stability}{{D}{13}{\appendixname \nobreakspace \thesectiondis \\* Rank Stability and Top-\texorpdfstring {$k$}{k} Choice}{section*.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Fine-grid ToolBench rank-noise diagnostic for Proposition~2. Solid lines show empirical decoded-path step-flip rates under adjacent swaps; dashed lines show an empirical envelope $1-(1-\epsilon )^{c\lceil \log _2 n_t\rceil }$ with fitted $c=0.404$.}}{14}{figure.6}\protected@file@percent }
+\newlabel{fig:prop2-noise}{{6}{14}{Fine-grid ToolBench rank-noise diagnostic for Proposition~2. Solid lines show empirical decoded-path step-flip rates under adjacent swaps; dashed lines show an empirical envelope $1-(1-\epsilon )^{c\lceil \log _2 n_t\rceil }$ with fitted $c=0.404$}{figure.6}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  E: Robustness Saturation and Medium-Window Diagnostics}{14}{section*.5}\protected@file@percent }
+\newlabel{app:robustness-diagnostics}{{E}{14}{\appendixname \nobreakspace \thesectiondis \\* Robustness Saturation and Medium-Window Diagnostics}{section*.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Medium-window path consistency under adjacent-swap rank noise. ToolBench, DeepSeek, G1 instruction split, 500 trials per cell. Values are path-window success rates, not full payload recovery.}}{14}{table.2}\protected@file@percent }
+\newlabel{tab:medium-window-noise}{{2}{14}{Medium-window path consistency under adjacent-swap rank noise. ToolBench, DeepSeek, G1 instruction split, 500 trials per cell. Values are path-window success rates, not full payload recovery}{table.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Semantic-rewrite pooled recovery for AsymMark-R{} on ToolBench, DeepSeek, top-10. Curves show sampled payload recovery as the audit window grows; the final point pools all 183 trajectories and matches the packets/conflicts endpoint in Table~\ref {tab:semantic-rewrite}.}}{14}{figure.7}\protected@file@percent }
+\newlabel{fig:semantic-rewrite-pool}{{7}{14}{Semantic-rewrite pooled recovery for \ours {} on ToolBench, DeepSeek, top-10. Curves show sampled payload recovery as the audit window grows; the final point pools all 183 trajectories and matches the packets/conflicts endpoint in Table~\ref {tab:semantic-rewrite}}{figure.7}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  F: Semantic Rewrite Diagnostics}{14}{section*.6}\protected@file@percent }
+\newlabel{app:semantic-rewrite}{{F}{14}{\appendixname \nobreakspace \thesectiondis \\* Semantic Rewrite Diagnostics}{section*.6}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  G: Cross-Model Rank Calibration}{14}{section*.7}\protected@file@percent }
+\newlabel{app:cross-model-calibration}{{G}{14}{\appendixname \nobreakspace \thesectiondis \\* Cross-Model Rank Calibration}{section*.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Semantic rewrite diagnostics for AsymMark-R{} on ToolBench, DeepSeek, top-10. Similarity and rank metrics are step-weighted over 359 rewritten steps per strength; strict DSR is single-trajectory payload recovery over 183 trajectories; packets/conflicts are measured on the full pooled audit window.}}{15}{table.3}\protected@file@percent }
+\newlabel{tab:semantic-rewrite}{{3}{15}{Semantic rewrite diagnostics for \ours {} on ToolBench, DeepSeek, top-10. Similarity and rank metrics are step-weighted over 359 rewritten steps per strength; strict DSR is single-trajectory payload recovery over 183 trajectories; packets/conflicts are measured on the full pooled audit window}{table.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Live ToolBench L5 cross-model operating-point calibration. Curves show sampled pooled payload recovery for two rank depths under cross-model verification. DeepSeek-to-Gemini favors top-3, while Gemini-to-DeepSeek favors top-5, showing that verifier rank depth should be calibrated for the deployed model pair.}}{15}{figure.8}\protected@file@percent }
+\newlabel{fig:l5-rank-depth}{{8}{15}{Live ToolBench L5 cross-model operating-point calibration. Curves show sampled pooled payload recovery for two rank depths under cross-model verification. DeepSeek-to-Gemini favors top-3, while Gemini-to-DeepSeek favors top-5, showing that verifier rank depth should be calibrated for the deployed model pair}{figure.8}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  H: Evidence Confidence Diagnostics}{15}{section*.8}\protected@file@percent }
+\newlabel{app:evidence-diagnostics}{{H}{15}{\appendixname \nobreakspace \thesectiondis \\* Evidence Confidence Diagnostics}{section*.8}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  I: Vanilla Baseline}{15}{section*.9}\protected@file@percent }
+\newlabel{app:vanilla-baseline}{{I}{15}{\appendixname \nobreakspace \thesectiondis \\* Vanilla Baseline}{section*.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces ALFWorld vanilla sanity check for explicit behavior induction, expanded by model and split. Success and steps are mean$\pm $standard deviation over the completed runs.}}{15}{table.4}\protected@file@percent }
+\newlabel{tab:vanilla-baseline}{{4}{15}{ALFWorld vanilla sanity check for explicit behavior induction, expanded by model and split. Success and steps are mean$\pm $standard deviation over the completed runs}{table.4}{}}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  J: Reproducibility Mapping}{15}{section*.10}\protected@file@percent }
+\newlabel{app:artifacts}{{J}{15}{\appendixname \nobreakspace \thesectiondis \\* Reproducibility Mapping}{section*.10}{}}
+\bibstyle{IEEEtran}
+\bibdata{references}
+\bibcite{yao2022react}{1}
+\bibcite{achiam2023gpt4}{2}
+\bibcite{team2023gemini}{3}
+\bibcite{kirchenbauer2023watermark}{4}
+\bibcite{dathathri2024synthid}{5}
+\bibcite{agentmark2026}{6}
+\bibcite{weakasym2026}{7}
+\bibcite{shridhar2021alfworld}{8}
+\bibcite{qin2023toolllm}{9}
+\bibcite{gao2024oasis}{10}
+\bibcite{hopper2002provably}{11}
+\bibcite{kaptchuk2021meteor}{12}
+\bibcite{ho2006random}{13}
+\bibcite{deepseek2024}{14}
+\bibcite{agentguide2025}{15}
+\bibcite{kirchenbauer2024reliability}{16}
+\bibcite{kuditipudi2024robust}{17}
+\bibcite{christ2024undetectable}{18}
+\bibcite{zamir2024steganography}{19}
+\bibcite{sparsamp2025}{20}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Bit-level evidence confidence under the binomial null. Curves aggregate completed model/split cells and report the mean one-sided $\log _{10}p$ value as the verifier observes more decoded coded bits. These curves size evidence windows; positive attribution still requires pre-registered payload recovery.}}{16}{figure.9}\protected@file@percent }
+\newlabel{fig:evidence-confidence}{{9}{16}{Bit-level evidence confidence under the binomial null. Curves aggregate completed model/split cells and report the mean one-sided $\log _{10}p$ value as the verifier observes more decoded coded bits. These curves size evidence windows; positive attribution still requires pre-registered payload recovery}{figure.9}{}}
+\@writefile{toc}{\contentsline {section}{References}{16}{section*.11}\protected@file@percent }
+\gdef \@abspage@last{16}
